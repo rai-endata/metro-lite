@@ -1,0 +1,18 @@
+* No resetear despues de programar parametros, salir con una tecla ahi resetear
+* No desaparece punto con cuando supera la velocidad de transicion
+* Agregar al tiket de viaje el numero de viaje.
+
+**pedido de iITEMS DE alberto uruguay
+*************************************
+
+hora de inicio 
+hora de fin del turno
+ticket numerado correlativo
+kms libre
+kms ocupado
+desconexiones
+cantidad de viajes hora a hora (se observan en el ticket las horas del turno y cada barra al lado de la hora significa un viaje dentro de esa hora )
+cantidad de banderas y cantidad de fichas (discriminando diurnas y nocturnas y sus valores correspondientes)
+al final del ticket sale la liquidación del turno hecha discriminado el porcentaje de salario del conductor
+valor km en el turno
+velocidad maxima en libre y en ocupado (en lo personal me parece que no agrega)

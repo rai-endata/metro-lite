@@ -1,0 +1,69 @@
+ Raimundo Orue @rai.endata
+ raimundo@endata.com.ar
+ pass: cale324fon
+
+//book 
+https://git-scm.com/book/es/v2   //español 
+
+https://desarrolloweb.com/manuales/manual-de-git.html#capitulos185
+ 
+ //crear un repositorio
+ git init    	(en la carpeta donde esta el proyecto, ejecuta el comando)
+ git config --global user.name 'tu nombre'
+ git config --global user.email 'tu@email.com'
+ 
+ //agregar carpeta o archivos al directorio stage (y tambien para iniciar el seguimieto de git del archivo)
+ git add
+ 
+ //para sacar del directorio stage
+ git reset HEAD <file>..." to unstage
+ 
+ //crear nueva version (guardar en el stage area)
+ git commit -m "comentario"
+ 
+ //modificar un commit
+ git commit --amend -m "comentario"
+ 
+ //ver estado
+ git status
+ 
+ 
+ //subir projecto gitlab
+ git push --set-upstream https://gitlab.com/rai.endata/relojes.git master
+ o
+ git push origin master(reemplazar master por la rama que se quiere enviar los cambios)
+ 
+ //crear etiquetas
+ git tag 1.0.0 1b2e1d63ff (donde 1b2e1d63ff es el id del commit que se puese ver con git log)
+ 
+ 
+ //bajar projecto desde gitlab
+ git clone https://gitlab.com/rai.endata/relojes
+
+//cambiar usuario 
+# Siempre puedes curiosear con lo existente en la configuración...
+git config --global --list
+ 
+# Primero, elimina el usuario actual (nombre y correo).
+git config --global --unset-all user.name
+git config --global --unset-all user.email
+ 
+# Luego, vuelve a configurar las propiedades con tus datos.
+git config --global --add user.name "El nuevo usuario"
+git config --global --add user.email "nuevo@correo.com"
+
+//solucion de error de certificado (ca-bundle.crt)
+git config --global http.sslVerify false
+
+
+
+//remover del stage area
+git reset HEAD nombre_de_archivo
+
+//borrar archivos del repositorio
+git rm --cached nombre_archivo
+git rm -r --cached nombre_directorio
+
+//diferencia entre clone y pull
+Clonar : obtenga una copy de trabajo del repository remoto.
+Pull : estoy trabajando en esto, por favor consígueme los nuevos cambios que otros pueden actualizar.

@@ -1,0 +1,23 @@
+Programacion
+*************
+verificar grabacion en eeprom (recibida y grabada) 
+guardar chksum y verificar al levantar en el inicio
+beep de status grabacion correcta e incorreta
+probar funcionalidad de todos los parametros de programcion
+programar solo en libre
+mirar jumpre de programacion
+
+cuando programa rtc esta funcion me error a veces
+RTC_EnterInitMode(hrtc)
+
+
+Backup
+*******
+
+Reportes
+********
+
+*****************************
+puntoDECIMAL
+equivalencia en pesos impresion
+TARIFA.numero

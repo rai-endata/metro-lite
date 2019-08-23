@@ -1,0 +1,32 @@
+apps android - comandos fin de turno
+************************************
+
+reloj -> App
+
+inicio de turno: 01 03 00 01 01 03 
+resp:			 01 02 81 81 03
+
+Entrada Descanso: 01 02 0C 0C 03
+Resp: 			  01 02 8C 8C 03
+
+Salida Descanso:  01 02 0D 0D 03
+Resp: 			  01 02 8D 8D 03
+
+
+print ticket de viaje: 01 03 09 08 01 03
+resp:				   01 02 88 88 03
+
+print ticket fin de turno : 01 03 0A 08 02 03
+resp:				   		01 02 88 88 03
+
+
+
+
+
+App -> reloj
+
+01 texto -> Primer inicio de turno con el chofer 1
+			finalizo turno chofer 1, inicio turno chofer 2
+			no se pudo inicar el turno por ...
+			Imprimiendo ...
+			

@@ -1,0 +1,10 @@
+/Debug
+/RemoteSystemsTempFiles
+.metadata
+.settings
+metroB1.xml
+metroBLUE-01.xml
+objects.list
+objects.mk
+output.map
+sources.mk

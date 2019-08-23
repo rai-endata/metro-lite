@@ -1,0 +1,110 @@
+*********
+ Equipos
+*********
+
+1 - Reloj LIBRE/OCUPADO (trabaja con reloj externo)
+ 
+ sensa banderita
+ sensa emergencia
+ sensa pulsos
+ no tiene display ni botones
+ La APP solo sirve como visualizador
+
+2 - Reloj APP
+ Cambio de Reloj: Se cambia con la app y el sensor de asiento
+ Sin Boton
+ Si Display
+ sensa emergencia
+ sensa pulsos
+ sensa asiento
+ maneja salida banderita
+ maneja impresora
+ *maneja gps
+ *maneja gprs
+ 
+3 - reloj homologado
+ 
+ Cambio de Reloj: Se cambia con los botones y el sensor de asiento (opcional con la app)
+ Con Boton
+ Con Display
+ sensa emergencia
+ sensa pulsos
+ sansa asiento
+ maneja salida banderita
+ maneja impresora
+ *maneja gprs
+ *maneja gps
+    
+*********************************
+ Comandos del Reloj al telefono
+*********************************
+
+Pase a libre 
+ Datos: Del resumen viaje (o en otro comando)
+ 
+Pase a Ocupado
+  Datos: Del Comando Valor de viaje 
+  
+ enviar comando valor de viaje periodicamente
+ dentro del valor de viaje enviar: 
+   valor de viaje
+   punto decimal 
+   nor de tarifa
+   
+   
+Pase a Cobrando
+ Datos: Del Comando Valor de viaje 
+
+Pase a Fuera de Servicio
+
+Mostrar sgte Mensaje
+  No puede hacer cambios de reloj por:
+   Vehiculo en movimiento
+   Espere el beep para el pase a Libre (en cobrando)
+  ....
+  ....
+  
+  Puede pasar a Libre
+  
+Reporte de estado cuando detecta comunicacion Bluetooh
+	    
+		TARIFA.numero; 			 //numero de tarifa
+		fichaPESOS;  			 //ficha o pesos
+		puntoDECIMAL;  			 //ficha o pesos
+		VALOR_VIAJE;             //necesario en ocupado y cobrando
+		
+		estado de reloj
+		estado de turno
+		nroChofer chofer quien inicio turno
+		tipo de equipo
+		
+estado de reloj
+nroChofer
+estado de turno
+tipo de equipo
+
+Comando para central (transparente - datos encapsulados para enviar a la central)  
+
+Comandos del telefono a metroBLUE
+**********************************
+
+Pedido Pase a libre
+     cuando pasa envia resumen de viaje
+     puede no pasar por tiempo de espera a cobrando	 
+Pedido Pase a Ocupado
+     cuando pasa envia valor de viaje
+     puede no pasar por estar en movimiento	 
+Pedido Pase a Cobrando
+     cuando pasa envia valor de viaje
+     puede no pasar por estar en movimiento	 
+	 cuatro bytes numero de viaje
+
+Comando para el reloj (transparente - datos encapsulados enviados por la central)
+
+********************************************************************************
+modificar comando status
+cuando se detecta bluetooth ver se se envia valor de viaje
+
+problema con grabacion de hora
+con adc activo genera error de grabacion.
+		

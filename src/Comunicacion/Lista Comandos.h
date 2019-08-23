@@ -1,0 +1,66 @@
+#ifndef _LISTA_COMANDOS_
+  #define _LISTA_COMANDOS_
+
+
+
+/* ********************************************************
+ * COMANDOS DE TRANSMISION DEL RELOJ AL DISPOSITIVO ANDROID
+ ******************************************************* */
+	#define cmdEncendido_EQUIPO					0x01
+	#define cmdBoton_EMERGENCIA					0x02
+	#define cmdValor_BAJADA_BANDERA				0x03
+	#define cmdValor_VIAJE						0x04
+	#define cmdPedidoPase_OCUPADO				0x05
+	#define cmdResumen_VIAJE					0x06
+	#define cmdPosicion							0x07
+	#define cmdStatus_RELOJ						0x08
+	#define cmdTARIFAS							0x09
+	#define cmdConf_inicioTURNO					0x0A
+	#define cmdConf_finTURNO					0x0B
+	#define cmdDistancia_Velocidad				0x0C
+	#define CMD_RELOJ_Pase_a_LIBRE              0x18
+	#define CMD_RELOJ_Pase_a_OCUPADO            0x19
+	#define CMD_RELOJ_Pase_a_COBRANDO           0x1A
+    #define CMD_RELOJ_Pase_a_FUERA_SERVICIO     0x1B
+	#define CMD_RELOJ_Pase_a_OCUPADO_SA		    0x1C
+	#define CMD_RELOJ_Pase_a_OCUPADO_BANDERA    0x1D
+	#define CMD_RELOJ_Pase_a_OCUPADO_APP	    0x1E
+    #define CMD_comandoTRANSPARENTE				0x40
+	#define CMD_comandoMENSAJE					0x50
+
+
+	#define CMD_RELOJ  ((CMD_a_Tx == CMD_RELOJ_Pase_a_LIBRE)			|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO)			|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_SA)		|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_BANDERA)	|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_APP)		|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_COBRANDO)			|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_FUERA_SERVICIO)	   \
+						)
+
+
+   #define CMD_RELOJ_RESP		(((CMD_a_RESP == 0x83) && (CMD_a_Tx == 0x80)) || \
+		                         ((CMD_a_RESP == 0x84) && (CMD_a_Tx == 0x80)) || \
+								 ((CMD_a_RESP == 0x85) && (CMD_a_Tx == 0x80)))
+
+
+
+
+/* *************************************************************
+ * COMANDOS DE RECEPCION DEL RELOJ-UNIK DEL DISPOSITIVO ANDROID
+ *************************************************************** */
+
+	#define cmdInicio_TURNO						0x01
+	#define cmdFin_TURNO						0x02
+	#define cmdPase_LIBRE						0x03
+	#define cmdPase_OCUPADO						0x04
+	#define cmdPase_Cobrando					0x05
+	#define cmdInicio_EPERA						0x06
+	#define cmdFin_ESPERA						0x07
+	#define cmdImpresion						0x08
+	#define cmdConsultaTarifas					0x09
+	#define cmdConsultaEstado					0x0A
+	#define cmdPase_fueraServicio				0x0B
+
+
+#endif

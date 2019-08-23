@@ -1,0 +1,4 @@
+EEPROM_ptr
+corregir lectura / grabacion campo dezplazados
+Levantar parametros de programacion por defecto
+guardar/leer datos de backup
