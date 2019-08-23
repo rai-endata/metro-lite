@@ -27,42 +27,53 @@ byte indexMenu_IniTurno;
 void  ini_tecla1(void){
 	GPIO_InitTypeDef gpioinitstruct;
 
-	TECLA1_GPIO_CLK_ENABLE();
+	if(EQUIPO_METRO_LITE){
+		// Configura pin como salida para que no meta ruido
+		TECLA1_GPIO_CLK_ENABLE();
+		gpioinitstruct.Pin = TECLA1_PIN;
+		gpioinitstruct.Pull = GPIO_NOPULL;
+		gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
+		gpioinitstruct.Mode = GPIO_MODE_OUTPUT_OD;
+		HAL_GPIO_Init(TECLA1_PORT, &gpioinitstruct);
+	}else{
+		TECLA1_GPIO_CLK_ENABLE();
+		gpioinitstruct.Pin = TECLA1_PIN;
+		gpioinitstruct.Pull = GPIO_NOPULL;
+		gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
+		// Configura pin como entrada con interrupcion externa
+		gpioinitstruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+		HAL_GPIO_Init(TECLA1_PORT, &gpioinitstruct);
+		//habilita y setea set PULSADOR IMPRESAION EXTI Interrupt a la mas baja prioridad
+		HAL_NVIC_SetPriority((IRQn_Type)(TECLA1_EXTI_IRQn), 0x03, 0x00);
+		HAL_NVIC_EnableIRQ((IRQn_Type)(TECLA1_EXTI_IRQn));
+		indexMenu_IniTurno = 1;
+	}
 
-	gpioinitstruct.Pin = TECLA1_PIN;
-	gpioinitstruct.Pull = GPIO_NOPULL;
-	gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-	// Configura pin como entrada con interrupcion externa
-	//gpioinitstruct.Mode = GPIO_MODE_IT_FALLING;
-	gpioinitstruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-
-	HAL_GPIO_Init(TECLA1_PORT, &gpioinitstruct);
-
-	//habilita y setea set PULSADOR IMPRESAION EXTI Interrupt a la mas baja prioridad
-	HAL_NVIC_SetPriority((IRQn_Type)(TECLA1_EXTI_IRQn), 0x03, 0x00);
-	HAL_NVIC_EnableIRQ((IRQn_Type)(TECLA1_EXTI_IRQn));
-	indexMenu_IniTurno = 1;
 }
 
 void  ini_tecla2(void){
 	GPIO_InitTypeDef gpioinitstruct;
 
-	TECLA2_GPIO_CLK_ENABLE();
-
-	gpioinitstruct.Pin = TECLA2_PIN;
-	gpioinitstruct.Pull = GPIO_NOPULL;
-	gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-	// Configura pin como entrada con interrupcion externa
-	//gpioinitstruct.Mode = GPIO_MODE_IT_FALLING;
-	gpioinitstruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-
-	HAL_GPIO_Init(TECLA2_PORT, &gpioinitstruct);
-
-	//habilita y setea set PULSADOR IMPRESAION EXTI Interrupt a la mas baja prioridad
-	HAL_NVIC_SetPriority((IRQn_Type)(TECLA2_EXTI_IRQn), 0x03, 0x00);
-	HAL_NVIC_EnableIRQ((IRQn_Type)(TECLA2_EXTI_IRQn));
+	if(EQUIPO_METRO_LITE){
+		TECLA2_GPIO_CLK_ENABLE();
+		gpioinitstruct.Pin = TECLA2_PIN;
+		gpioinitstruct.Pull = GPIO_NOPULL;
+		gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
+		// Configura pin como entrada con interrupcion externa
+		gpioinitstruct.Mode = GPIO_MODE_OUTPUT_OD;
+		HAL_GPIO_Init(TECLA2_PORT, &gpioinitstruct);
+	}else{
+		TECLA2_GPIO_CLK_ENABLE();
+		gpioinitstruct.Pin = TECLA2_PIN;
+		gpioinitstruct.Pull = GPIO_NOPULL;
+		gpioinitstruct.Speed = GPIO_SPEED_FREQ_HIGH;
+		// Configura pin como entrada con interrupcion externa
+		gpioinitstruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+		HAL_GPIO_Init(TECLA2_PORT, &gpioinitstruct);
+		//habilita y setea set PULSADOR IMPRESAION EXTI Interrupt a la mas baja prioridad
+		HAL_NVIC_SetPriority((IRQn_Type)(TECLA2_EXTI_IRQn), 0x03, 0x00);
+		HAL_NVIC_EnableIRQ((IRQn_Type)(TECLA2_EXTI_IRQn));
+	}
 }
 
 
@@ -352,5 +363,4 @@ void stopCONTADOR_tiempoPULSADO_T2(void){
     	}
     }
   }
-
 
