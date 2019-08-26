@@ -8,7 +8,6 @@
 #include "tipo de equipo.h"
 #include "stm32f0xx_hal_gpio.h"
 
-
 /* HAY DOS EQUIPOS (DOS PLACAS DISTINTAS)
  *
  * El FIRMWARE DIFERENCIA ESTAS DOS PLACAS ATRAVEZ DE DOS JUMPERS
@@ -19,9 +18,9 @@
  * -----------------------
  *  0  |  0  | METRO BLUE
  * -----------------------
- *  0  |  1  | NO DEFINIDO
+ *  0  |  1  | NO DEFINIDO (METRO LITE con jumper)
  * ----------------------
- *  1  |  0  | NO DEFINIDO
+ *  1  |  0  | NO DEFINIDO (METRO BLUE sin boton ... siempre programable ...)
  * -----------------------
  *  1  |  1  | METRO LITE
  *  ----------------------
@@ -50,6 +49,7 @@
  *
  *
  * */
+
 
 
 static void check_pressTIPO_EQUIPO_PIN0(void);

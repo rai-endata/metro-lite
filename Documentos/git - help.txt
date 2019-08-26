@@ -6,6 +6,9 @@
 https://git-scm.com/book/es/v2   //español 
 
 https://desarrolloweb.com/manuales/manual-de-git.html#capitulos185
+
+http://aprendegit.com/
+
  
  //crear un repositorio
  git init    	(en la carpeta donde esta el proyecto, ejecuta el comando)
@@ -67,3 +70,26 @@ git rm -r --cached nombre_directorio
 //diferencia entre clone y pull
 Clonar : obtenga una copy de trabajo del repository remoto.
 Pull : estoy trabajando en esto, por favor consígueme los nuevos cambios que otros pueden actualizar.
+
+"origin" —es el nombre predeterminado que le da Git al servidor del que clonaste
+
+
+Para un repositorio local existente, puedes crear un remoto llamado gitlab del siguiente modo:
+
+$ git remote add gitlab https://server/namespace/project.git
+
+Si no tienes copia local del repositorio, puedes hacer esto:
+
+$ git clone https://server/namespace/project.git
+
+//borrar un commit y manteniendo las modificaciones en el directorio de trabajo
+git reset HEAD~1
+
+
+//borrar un commit eliminando las modificaciones en el directorio de trabajo
+git reset --hard HEAD~1
+
+//este comando tambien modifica el reposiorio remoto
+git revert HEAD
+
+

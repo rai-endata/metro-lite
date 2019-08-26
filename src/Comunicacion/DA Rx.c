@@ -222,7 +222,7 @@
 	  const typeTABLA_RxCMD Tabla_RxDA[]={
 		Rx_comando_00,                    // 0x00 - Acepta Viaje
 		Inicio_TURNO_Rx,
-		Fin_TURNO_Rx,
+		Rx_comando_02,
 		Pase_LIBRE_Rx,
 		Pase_OCUPADO_Rx,
 		Pase_COBRANDO_Rx,
@@ -232,8 +232,8 @@
 		ConsultaTarifas,
 		ConsultaEstado,
 		Rx_comando_0B,
-	    Rx_comando_0C,
-	    Rx_comando_0D,
+		Entra_DESCANSO_Rx,
+		Sale_DESCANSO_Rx,
 	    Rx_comando_0E,
 	    Rx_comando_0F,
 
@@ -853,18 +853,18 @@
 			nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
 			//informa que el turno fue iniciado correctamente
 		    //prendo bandera
-			if(ESTADO_RELOJ == LIBRE){
+			if(ESTADO_RELOJ == FUERA_SERVICIO){
 				BanderaOut_On();
 				RELOJ_INTERNO_newSesion(nroChofer);
-				Tx_Conf_inicioTURNO(okINICIO);
+				//Tx_Conf_inicioTURNO(okINICIO);
 			}else{
-				Tx_Conf_inicioTURNO(noINICIO);
+				//Tx_Conf_inicioTURNO(noINICIO);
 			}
 		}
 
 		/* RECEPCION DE  */
 		/**************************************/
-		void Fin_TURNO_Rx (byte* Rx_data_ptr){
+		void Entra_DESCANSO_Rx (byte* Rx_data_ptr){
 			//
 			// El formato de datos de recepcion es
 			//
@@ -883,14 +883,42 @@
 			nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
 
 			if(ESTADO_RELOJ == LIBRE){
-				BanderaOut_Off();
-				RELOJ_INTERNO_newSesion(nroChofer);
-				Tx_Conf_finTURNO(okFIN);
+				Pase_a_FUERA_SERVICIO();
 			}else{
-				Tx_Conf_finTURNO(noFIN);
+				//Tx_Conf_finTURNO(noFIN);
 			}
 
 		}
+
+		void Sale_DESCANSO_Rx (byte* Rx_data_ptr){
+					//
+					// El formato de datos de recepcion es
+					//
+					//    | N | CMD | DATA_1 | DATA_2 | . | . |
+					//
+					//
+					// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+					// cantidad maxima de FICHAS/PESOS.
+					byte N;
+					byte cmd;
+
+					N 	= *Rx_data_ptr++;               // Extraigo N
+					cmd = *Rx_data_ptr++;               // Extraigo CMD
+					//nroChofer = 0;
+				    //apago bandera
+					nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
+
+					if(ESTADO_RELOJ == FUERA_SERVICIO){
+						//BanderaOut_Off();
+						//RELOJ_INTERNO_newSesion(nroChofer);
+						//Tx_Conf_finTURNO(okFIN);
+						//print_ticket_turno();
+						Pase_a_LIBRE();
+					}else{
+						//Tx_Conf_finTURNO(noFIN);
+					}
+
+				}
 
 		/* RECEPCION DE  */
 		/**************************************/

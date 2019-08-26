@@ -51,7 +51,6 @@
  *************************************************************** */
 
 	#define cmdInicio_TURNO						0x01
-	#define cmdFin_TURNO						0x02
 	#define cmdPase_LIBRE						0x03
 	#define cmdPase_OCUPADO						0x04
 	#define cmdPase_Cobrando					0x05
@@ -61,6 +60,9 @@
 	#define cmdConsultaTarifas					0x09
 	#define cmdConsultaEstado					0x0A
 	#define cmdPase_fueraServicio				0x0B
+    #define cmdEntra_DESCANSO_Rx				0x0C
+	#define cmdSale_DESCANSO_Rx					0x0D
+
 
 
 #endif

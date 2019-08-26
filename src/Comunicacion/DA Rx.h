@@ -17,13 +17,14 @@ extern	byte CMD_a_RESP;                            // Comando a Responder
 //							 (Rx_cmd == cmdFin_TURNO))
 
 #define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO)   		||	\
-							 (Rx_cmd == cmdFin_TURNO)			||	\
 							 (Rx_cmd == cmdPase_LIBRE)			||  \
 							 (Rx_cmd == cmdPase_OCUPADO)		||  \
 							 (Rx_cmd == cmdPase_Cobrando)		||  \
 							 (Rx_cmd == cmdInicio_EPERA)		||  \
 							 (Rx_cmd == cmdFin_ESPERA)			||  \
 							 (Rx_cmd == cmdImpresion)			||  \
+							 (Rx_cmd == Entra_DESCANSO_Rx)		||	\
+							 (Rx_cmd == Sale_DESCANSO_Rx)		||	\
 							 (Rx_cmd == cmdPase_fueraServicio))
 
 
@@ -54,7 +55,8 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void RxDA_process (void);
 
 	extern void Inicio_TURNO_Rx (byte* Rx_data_ptr);
-	extern void Fin_TURNO_Rx (byte* Rx_data_ptr);
+	extern void Entra_DESCANSO_Rx (byte* Rx_data_ptr);
+	extern void Sale_DESCANSO_Rx (byte* Rx_data_ptr);
 	extern void Pase_LIBRE_Rx (byte* Rx_data_ptr);
 	extern void Pase_OCUPADO_Rx (byte* Rx_data_ptr);
 	extern void Pase_COBRANDO_Rx (byte* Rx_data_ptr);

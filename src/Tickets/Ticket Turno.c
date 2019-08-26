@@ -68,7 +68,7 @@ void print_ticket_turno(void){
     byte statusSESION;
     uint32_t datosMOV[4][3];
     uint32_t kmTotal, velMaxTotal, tMarchaTotal,tParadoTotal;
-
+  if(ESTADO_RELOJ==FUERA_SERVICIO){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
 		statusPRINT = IMPRESION_EN_PROCESO;
 
@@ -452,6 +452,7 @@ void print_ticket_turno(void){
 			PRINT_send(print_buffer, N_print);
 		}
 	}
+  }
  }
 
 /* SETEAR PUNTERO DE INICIO DE TURNO */

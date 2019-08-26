@@ -912,8 +912,8 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
    void Tx_Conf_inicioTURNO  (byte status){
 
-     		CMD_Conf_inicioTURNO.Tx_F = 1;                      // Levanto Bandera de Tx
-     		CMD_Conf_inicioTURNO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+     		CMD_Conf_inicioTURNO.Tx_F = 1;                   // Levanto Bandera de Tx
+     		CMD_Conf_inicioTURNO.Reintentos = reint_3;   	 // Cargo Cantidad de Reintentos (INFINITOS)
 
      		Conf_inicioTURNO_Buffer[0] = RTC_Date.hora[0];   // HORA
      		Conf_inicioTURNO_Buffer[1] = RTC_Date.hora[1];   // MINUTOS
@@ -1210,5 +1210,4 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
          Tabla_ComandosTx[OFFSET_RTA]->Tx_F = 1;        // Levanto Bandera de Tx Respuesta
        }
-
 

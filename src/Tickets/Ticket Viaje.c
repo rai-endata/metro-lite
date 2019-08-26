@@ -34,18 +34,14 @@ void print_ticket_viaje(void){
 	uint32_t fichas_x_Pulsos;
 	uint32_t fichas_x_Tiempo;
 	uint16_t N_print;
-
+  if(ESTADO_RELOJ==COBRANDO){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
-		statusPRINT = IMPRESION_EN_PROCESO;
+    		statusPRINT = IMPRESION_EN_PROCESO;
+    		to_print_cnt = TO_PRINTING_VIAJE;
+			//preparar_print (nroTICKET, 0, &buffer_nro_correlativo_viaje, 0 );
+    		preparar_print_nroTICKET (nroTICKET, &buffer_nroTICKET);
+    		//preparar_print (nroCorrelativo_INTERNO, 0, &buffer_nro_correlativo_viaje, 0 );
 
-
-		to_print_cnt = TO_PRINTING_VIAJE;
-		//preparar_print (nroTICKET, 0, &buffer_nro_correlativo_viaje, 0 );
-		preparar_print_nroTICKET (nroTICKET, &buffer_nroTICKET);
-		//preparar_print (nroCorrelativo_INTERNO, 0, &buffer_nro_correlativo_viaje, 0 );
-
-
-		if(ESTADO_RELOJ==COBRANDO){
 			ptrSimple = &print_buffer;
 			ptrDouble = &ptrSimple;
 
@@ -343,8 +339,8 @@ void print_ticket_viaje(void){
 			N_print = ptrSimple - (uint16_t)&print_buffer;
 			//inicio envio por el puerto
 			PRINT_send(print_buffer, N_print);
-		}
     }
+  }
 }
 void  ini_pulsador_impresion(void){
 	ini_tecla2();
@@ -371,4 +367,3 @@ void inc_nroTICKET (void){
 	}
 	EEPROM_writeDouble ((uint32_t*)EEPROM_NRO_TICKET, nroTICKET);
 }
-
