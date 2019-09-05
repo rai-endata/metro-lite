@@ -137,6 +137,8 @@
 #define TARIFA_INVALIDA					MENSAJE4
 #define TARIFA_NO_PROGRAMADA			MENSAJE5
 #define COMANDO_TRANSPARENTE			MENSAJE6
+#define RECAUDACION_PARCIAL				MENSAJE7
+
 
 #define CUENTA_MAX_TARIFA	4
 /*******************************************************************

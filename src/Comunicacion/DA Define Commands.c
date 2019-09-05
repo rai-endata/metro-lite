@@ -13,6 +13,10 @@
 #include "reloj.h"
 #include "Parametros Reloj.h"
 #include "main.h"
+#include "Ticket Turno.h"
+#include "Reportes.h"
+#include "Ticket Parcial.h"
+
 
 typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
@@ -417,7 +421,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		//HoraApagado.fecha[0] = 31;  // Día
 		//HoraApagado.fecha[1] = 12;  // Mes
 		//HoraApagado.fecha[2] = 17;  // Año
-
+	    getDate();
 		EncendidoEquipo_Buffer[0] = HORA_source;        // Hora GPS/RTC (0:GPS - 1:RTC)
 		EncendidoEquipo_Buffer[1] = RTC_Date.hora[0];   // HORA
 		EncendidoEquipo_Buffer[2] = RTC_Date.hora[1];   // MINUTOS
@@ -448,7 +452,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
    			CMD_Boton_EMERGENCIA.Tx_F = 1;                      // Levanto Bandera de Tx
    			CMD_Boton_EMERGENCIA.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+   			getDate();
    			Boton_EMERGENCIA_Buffer[0] = HORA_source;        // Hora GPS/RTC (0:GPS - 1:RTC)
 
    			Boton_EMERGENCIA_Buffer[1] = RTC_Date.hora[0];   // HORA
@@ -543,7 +547,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				tarifa_mostrar = tarifa_1_4+0x80;
 			}
 		}
-
+		getDate();
 		Valor_VIAJE_Buffer[0] = HORA_source;   				//fuente de hora
 
 		Valor_VIAJE_Buffer[1] = RTC_Date.hora[0];   // HORA
@@ -628,7 +632,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		ptrDISTAMNCIAm = &DISTANCIAm;
 		ptrVELOCIDAD   = &VELOCIDAD;
-
+		getDate();
 		Distancia_Velocidad_Buffer[0] = RTC_Date.hora[0];   // HORA
 		Distancia_Velocidad_Buffer[1] = RTC_Date.hora[1];   // MINUTOS
 		Distancia_Velocidad_Buffer[2] = RTC_Date.hora[2];   // SEGUNDOS
@@ -658,7 +662,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		CMD_PedidoPase_OCUPADO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
 
 		// Armo el buffer. Solo los datos de ESTE comando
-
+		getDate();
 		PedidoPase_OCUPADO_Buffer[0] = RTC_Date.hora[0];   // HORA
 		PedidoPase_OCUPADO_Buffer[1] = RTC_Date.hora[1];   // MINUTOS
 		PedidoPase_OCUPADO_Buffer[2] = RTC_Date.hora[2];   // SEGUNDOS
@@ -723,9 +727,10 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
  	    //BANDERA DE TRANSMISION
  		CMD_Resumen_VIAJE.Tx_F = 1;                      // Levanto Bandera de Tx
  		CMD_Resumen_VIAJE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+ 		getDate();
  		Resumen_VIAJE_Buffer[0] = HORA_source;        // Hora GPS/RTC (0:GPS - 1:RTC)
  		//DATE
+ 		getDate();
  		Resumen_VIAJE_Buffer[1] = RTC_Date.hora[0];   					// HORA
  		Resumen_VIAJE_Buffer[2] = RTC_Date.hora[1];   					// MINUTOS
  		Resumen_VIAJE_Buffer[3] = RTC_Date.hora[2];   					// SEGUNDOS
@@ -780,7 +785,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 	    CMD_Posicion.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_Posicion.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+		getDate();
 		Posicion_Buffer[0]  = HORA_source;        // Hora GPS/RTC (0:GPS - 1:RTC)
 		Posicion_Buffer[1]  = RTC_Date.hora[0];   // HORA
 		Posicion_Buffer[2]  = RTC_Date.hora[1];   // MINUTOS
@@ -825,7 +830,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		CMD_Status_RELOJ.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_Status_RELOJ.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+		getDate();
 		Status_RELOJ_Buffer[0] = 0;   				//fuente de hora
 		Status_RELOJ_Buffer[1] = RTC_Date.hora[0];   // HORA
 		Status_RELOJ_Buffer[2] = RTC_Date.hora[1];   // MINUTOS
@@ -856,7 +861,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		ptr_pulsosXKm        		  = &PULSOS_x_KM;
 		ptr_carreraBandera   		  = &CARRERA_BANDERA;
-
+		getDate();
 		//inicio punteo a fecha y hora
 		ptrRTC_Date = &RTC_Date;
 		//inicio puntero a tarifas
@@ -914,7 +919,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
      		CMD_Conf_inicioTURNO.Tx_F = 1;                   // Levanto Bandera de Tx
      		CMD_Conf_inicioTURNO.Reintentos = reint_3;   	 // Cargo Cantidad de Reintentos (INFINITOS)
-
+     		getDate();
      		Conf_inicioTURNO_Buffer[0] = RTC_Date.hora[0];   // HORA
      		Conf_inicioTURNO_Buffer[1] = RTC_Date.hora[1];   // MINUTOS
      		Conf_inicioTURNO_Buffer[2] = RTC_Date.hora[2];   // SEGUNDOS
@@ -932,7 +937,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 			CMD_Conf_finTURNO.Tx_F = 1;                      // Levanto Bandera de Tx
 			CMD_Conf_finTURNO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+			getDate();
 			Conf_finTURNO_Buffer[0] = RTC_Date.hora[0];   // HORA
 			Conf_finTURNO_Buffer[1] = RTC_Date.hora[1];   // MINUTOS
 			Conf_finTURNO_Buffer[2] = RTC_Date.hora[2];   // SEGUNDOS
@@ -1008,7 +1013,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
    	    CMD_MENSAJE.Tx_F = 1;                      // Levanto Bandera de Tx
    		CMD_MENSAJE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
-
+   		getDate();
    		i=0;
    		comandoMENSAJE_Buffer[i++] = 0;   				//fuente de hora
    		comandoMENSAJE_Buffer[i++] = RTC_Date.hora[0];   // HORA
@@ -1037,6 +1042,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		byte i;
 		byte chk;
 		byte n;
+		uint16_t k;
 
 		CMD_MENSAJE.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_MENSAJE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
@@ -1052,139 +1058,66 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		comandoMENSAJE_Buffer[i++] = subCMD;   			 //tipo de mensaje
 
 		if(subCMD == MENSAJE1){
-			comandoMENSAJE_Buffer[i++] = 'V';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'h';
-			comandoMENSAJE_Buffer[i++] = 'i';
-			comandoMENSAJE_Buffer[i++] = 'c';
-			comandoMENSAJE_Buffer[i++] = 'u';
-			comandoMENSAJE_Buffer[i++] = 'l';
-			comandoMENSAJE_Buffer[i++] = 'o';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'n';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'm';
-			comandoMENSAJE_Buffer[i++] = 'o';
-			comandoMENSAJE_Buffer[i++] = 'v';
-			comandoMENSAJE_Buffer[i++] = 'i';
-			comandoMENSAJE_Buffer[i++] = 'm';
-			comandoMENSAJE_Buffer[i++] = 'i';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'n';
-			comandoMENSAJE_Buffer[i++] = 't';
-			comandoMENSAJE_Buffer[i++] = 'o';
+			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Vehiculo en movimiento");
+			i=i+k;
 		}
 
 		if(subCMD == MENSAJE2){
-			comandoMENSAJE_Buffer[i++] = 'E';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = 'p';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'r';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'u';
-			comandoMENSAJE_Buffer[i++] = 'n';
-			comandoMENSAJE_Buffer[i++] = 'o';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'g';
-			comandoMENSAJE_Buffer[i++] = 'u';
-			comandoMENSAJE_Buffer[i++] = 'n';
-			comandoMENSAJE_Buffer[i++] = 'd';
-			comandoMENSAJE_Buffer[i++] = 'o';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'p';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = 'r';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'p';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = 'r';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'L';
-			comandoMENSAJE_Buffer[i++] = 'I';
-			comandoMENSAJE_Buffer[i++] = 'B';
-			comandoMENSAJE_Buffer[i++] = 'R';
-			comandoMENSAJE_Buffer[i++] = 'E';
+			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Espere unos segundos para pasar a LIBRE");
+			i=i+k;
 		}
 
 		if(subCMD == MENSAJE3){
-			comandoMENSAJE_Buffer[i++] = 'Y';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'P';
-			comandoMENSAJE_Buffer[i++] = 'u';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = 'd';
-			comandoMENSAJE_Buffer[i++] = 'e';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'p';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = 's';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = 'r';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'a';
-			comandoMENSAJE_Buffer[i++] = ' ';
-			comandoMENSAJE_Buffer[i++] = 'L';
-			comandoMENSAJE_Buffer[i++] = 'I';
-			comandoMENSAJE_Buffer[i++] = 'B';
-			comandoMENSAJE_Buffer[i++] = 'R';
-			comandoMENSAJE_Buffer[i++] = 'E';
+			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Ya puede pasar a LIBRE");
+			i=i+k;
 		}
 
 		if(subCMD == MENSAJE4){
-					comandoMENSAJE_Buffer[i++] = 'T';
-					comandoMENSAJE_Buffer[i++] = 'a';
-					comandoMENSAJE_Buffer[i++] = 'r';
-					comandoMENSAJE_Buffer[i++] = 'i';
-					comandoMENSAJE_Buffer[i++] = 'f';
-					comandoMENSAJE_Buffer[i++] = 'a';
-					comandoMENSAJE_Buffer[i++] = ' ';
-					comandoMENSAJE_Buffer[i++] = 'I';
-					comandoMENSAJE_Buffer[i++] = 'N';
-					comandoMENSAJE_Buffer[i++] = 'V';
-					comandoMENSAJE_Buffer[i++] = 'A';
-					comandoMENSAJE_Buffer[i++] = 'L';
-					comandoMENSAJE_Buffer[i++] = 'I';
-					comandoMENSAJE_Buffer[i++] = 'D';
-					comandoMENSAJE_Buffer[i++] = 'A';
-				}
+					k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Tarifa INVALIDA");
+					i=i+k;
+		}
 
 		if(subCMD == MENSAJE5){
-					comandoMENSAJE_Buffer[i++] = 'T';
-					comandoMENSAJE_Buffer[i++] = 'a';
-					comandoMENSAJE_Buffer[i++] = 'r';
-					comandoMENSAJE_Buffer[i++] = 'i';
-					comandoMENSAJE_Buffer[i++] = 'f';
-					comandoMENSAJE_Buffer[i++] = 'a';
-					comandoMENSAJE_Buffer[i++] = ' ';
-					comandoMENSAJE_Buffer[i++] = 'N';
-					comandoMENSAJE_Buffer[i++] = 'O';
-					comandoMENSAJE_Buffer[i++] = ' ';
-					comandoMENSAJE_Buffer[i++] = 'P';
-					comandoMENSAJE_Buffer[i++] = 'R';
-					comandoMENSAJE_Buffer[i++] = 'O';
-					comandoMENSAJE_Buffer[i++] = 'G';
-					comandoMENSAJE_Buffer[i++] = 'R';
-					comandoMENSAJE_Buffer[i++] = 'A';
-					comandoMENSAJE_Buffer[i++] = 'M';
-					comandoMENSAJE_Buffer[i++] = 'A';
-					comandoMENSAJE_Buffer[i++] = 'D';
-					comandoMENSAJE_Buffer[i++] = 'A';
+					k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Tarifa NO PROGRAMADA");
+					i=i+k;
 				}
 
 		if(subCMD == MENSAJE6){
+		}
+
+		if(subCMD == MENSAJE7){
+
+			uint16_t aux16; uint32_t aux32; uint8_t buffer_aux[20];
+
+				iniTURNO_ptr = &iniTURNO;	finTURNO_ptr = &finTURNO;
+
+				REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+				TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
+
+				//Nro Turno
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nNro. Turno:       ");
+				i=i+k;
+				preparar_print (finTURNO_ptr->nroTurno, 0, &buffer_aux, 0);
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				i=i+k;
+
+				//viajes
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nViajes:               ");
+				i=i+k;
+				aux16 = getViajes_Parcial();
+				aux16 = aux16 + 1;
+				preparar_print (aux16, 0, &buffer_aux, 0);
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				i=i+k;
+
+				//REC PARCIAL
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nREC. PARCIAL:  ");
+				i=i+k;
+				aux32 = getRecaudacion_Parcial();
+				aux32 = aux32 + VALOR_VIAJE; //solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
+				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				i=i+k;
 		}
 
 		CMD_MENSAJE.N = N_CMD +i;

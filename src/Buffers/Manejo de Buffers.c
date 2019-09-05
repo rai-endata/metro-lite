@@ -245,6 +245,22 @@
         }
 
 
+        /* STRING COPY DEVUELVE CANTIDAD DE DATOS COPIADOS */
+          /***************/
+
+        uint16_t string_copy_reurnN (byte* dest_ptr, byte* orig_ptr){
+            uint16_t n;
+            n=0;
+        	while (*orig_ptr != 0){
+               *dest_ptr++ = *orig_ptr++;
+               n++;
+             }
+
+             *dest_ptr = 0;
+             return(n);
+        }
+
+
   /* STRING N COPY */
   /*****************/
     void string_N_copy (byte* dest_ptr, byte* orig_ptr, byte N){

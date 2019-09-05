@@ -1887,6 +1887,7 @@ void setTARIFA_MANUAL(void){
 		//la tarifa depende del horario
 		TARIFA_D_ptr = &TARIFA_D;
 		TARIFA_N_ptr = &TARIFA_N;
+        getDate();
 		resultTarifaPTR = determineTarifaDiurnaNocturna(RTC_Date,TARIFA_D_ptr,TARIFA_N_ptr);
 		tarifa_1_8 = resultTarifaPTR->numero;
 	}else{
@@ -2109,6 +2110,8 @@ void cambio_de_reloj_x_sensor_asiento(void){
 		//BANDERA DE TRANSMISION
 		CMD_Pase_a_LIBRE.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_Pase_a_LIBRE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		getDate();
+
 		//fuente de hora
 		Pase_a_LIBRE_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)
  		//DATE
@@ -2248,6 +2251,8 @@ void cambio_de_reloj_x_sensor_asiento(void){
 			}
 		}
 
+		getDate();
+
 		//fuente de hora
 		Pase_a_OCUPADO_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)
 
@@ -2258,7 +2263,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_OCUPADO_Buffer[5] = RTC_Date.fecha[1];  // MES
  		Pase_a_OCUPADO_Buffer[6] = RTC_Date.fecha[2];  // AÑO
 
- 		Pase_a_OCUPADO_Buffer[7]  = tarifa_mostrar;  				  //numero de tarifa
+ 		Pase_a_OCUPADO_Buffer[7]  = tarifa_mostrar;  			  //numero de tarifa
  		Pase_a_OCUPADO_Buffer[8]  = fichaPESOS;  				  //ficha o pesos
 
 
@@ -2372,6 +2377,8 @@ void cambio_de_reloj_x_sensor_asiento(void){
   					}
   		}
 
+  		getDate();
+
   		//fuente de hora
   		Pase_a_COBRANDO_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)
 
@@ -2448,6 +2455,8 @@ void cambio_de_reloj_x_sensor_asiento(void){
 
    	    CMD_Pase_a_FUERA_SERVICIO.Tx_F = 1;                      // Levanto Bandera de Tx
    		CMD_Pase_a_FUERA_SERVICIO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+
+   		getDate();
 
   		//fuente de hora
    		Pase_a_FUERA_SERVICIO_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)

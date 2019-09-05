@@ -346,6 +346,7 @@ DESCONEXION ALIM
 			uint32_t valor;
 			uint8_t bufferPRINT[50];
 			uint8_t k;
+			uint8_t buffer_aux[20];
 
 	          uint16_t      idx;            // Indice
 	          uint8_t       tipo;           // Tipo de registro
@@ -373,6 +374,13 @@ DESCONEXION ALIM
 		        PRINT_DEBUG_encolarBUFFER("nroTRURNO = ");
 		        printVARIABLE((uint32_t)nroTurno, &bufferPRINT, 5, 0);
 
+		        PRINT_DEBUG_encolarBUFFER("Date Actual: ");
+				date_to_string(buffer_aux, getDate());
+				PRINT_DEBUG_encolarBUFFER(&buffer_aux);
+
+		        PRINT_DEBUG_encolarBUFFER("   Date IniTurno: ");
+				date_to_string(buffer_aux, date);
+				PRINT_DEBUG_encolarBUFFER(&buffer_aux);
 
 		        PRINT_DEBUG_encolarBYTE(0x00);
 		        printDEBUG_DATOScnt++;

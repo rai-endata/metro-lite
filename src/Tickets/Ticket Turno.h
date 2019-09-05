@@ -17,28 +17,15 @@
 
 
 #define PROG_TICKET_percentChofer     ((const) EEPROM_PROG_TICKET_RECAUD.chofer)
-//#define PROG_TICKET_percentChofer     35
-/*
-#define 	datosMOV[0]  	km_LIBRE;
-#define 	datosMOV[1]  	km_OCUPADO;
-#define 	datosMOV[2]  	km_FSERV;
-#define 	datosMOV[3]  	velMax_LIBRE;
-#define 	datosMOV[4]  	velMax_OCUPADO;
-#define 	datosMOV[5]  	velMax_FSERV;
-#define 	datosMOV[6]  	tiempoMarcha_LIBRE;
-#define 	datosMOV[7]  	tiempoMarcha_OCUPADO;
-#define 	datosMOV[8]  	tiempoMarcha_FSERV;
-#define 	datosMOV[9]  	tiempoParado_LIBRE;
-#define 	datosMOV[10]  	tiempoParado_OCUPADO;
-#define 	datosMOV[11]  	tiempoParado_FSERV;
-*/
-	//extern tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
-	//extern tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 
-	//extern void TICKET_TURNO_setIni (tREG_SESION* ptr);
-	//extern void TICKET_TURNO_setFin (tREG_SESION* ptr);
+extern tREG_SESION iniTURNO;
+extern tREG_SESION finTURNO;
+extern tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
+extern tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
+extern tREG_SESION* sesion_ptrs[max_turnosReporte];
 
 #ifdef VISOR_REPORTES
+	extern void print_ticket_turno(void);
 	extern void TICKET_TURNO_setIni (tREG_SESION* addr_iniSESION, tREG_SESION* reg_iniSESION );
 	extern void TICKET_TURNO_setFin (tREG_SESION* addr_finSESION, tREG_SESION* reg_finSESION );
 	void REPORTES_calVarios (tREG_GENERIC* INI_ptr, tREG_GENERIC* FIN_ptr, uint32_t* datosMOV);

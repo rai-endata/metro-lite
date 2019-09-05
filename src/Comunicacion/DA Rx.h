@@ -7,6 +7,7 @@
 /***********/
 #define IMPRESION_TICKET_VIAJE 		1
 #define IMPRESION_TICKET_TURNO 		2
+#define IMPRESION_TICKET_PARCIAL	3
 
 extern	byte CMD_a_RESP;                            // Comando a Responder
 		#define TX_F_CMD_A_RESP                 (Tabla_ComandosTx[OFFSET_RTA]->Tx_F)

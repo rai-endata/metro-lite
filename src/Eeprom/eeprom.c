@@ -94,6 +94,7 @@ void write_backup_eeprom(void){
 	buffer_backup[i] = cobrandoDATE.hora[2];   i++;
 
 	//guarda hora apagado
+	getDate();
 	buffer_backup[i] = RTC_Date.fecha[0]; i++;
 	buffer_backup[i] = RTC_Date.fecha[1]; i++;
 	buffer_backup[i] = RTC_Date.fecha[2]; i++;

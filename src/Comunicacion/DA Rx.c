@@ -940,6 +940,7 @@
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 
 				Pase_a_LIBRE();
+
 				//Tx_Resumen_VIAJE();
 				//TxRta_conDATOS(0x02);
 
@@ -1017,6 +1018,8 @@
 						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
 						Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
 					}
+					Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
+
 			}
 
 
@@ -1140,15 +1143,20 @@
 			DATA_1 = *Rx_data_ptr++;            // Extraigo DATA_1
 			DATA_2 = *Rx_data_ptr++;            // Extraigo DATA_2
 			dirNEXT_ptr = Rx_data_ptr;
+
+			//imprime ticket de viaje ?
 			if(DATA_1 == IMPRESION_TICKET_VIAJE){
 				print_ticket_viaje();
-			}else if(DATA_1 == IMPRESION_TICKET_TURNO){
-		#ifdef VISOR_REPORTES
-				if (REPORTES_HABILITADOS){
-					print_ticket_turno();
-				}
-		#endif
 			}
+
+		 #ifdef VISOR_REPORTES
+			//imprime ticket de turno o parcial ?
+			if(DATA_1 == IMPRESION_TICKET_TURNO && REPORTES_HABILITADOS){
+					print_ticket_turno();
+			}else if(DATA_1 == IMPRESION_TICKET_PARCIAL && REPORTES_HABILITADOS){
+					print_ticket_parcial();
+			}
+		 #endif
 
 		}
 

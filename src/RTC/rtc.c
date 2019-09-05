@@ -18,6 +18,7 @@
 #include "Tarifacion Reloj.h"
 #include "Reloj.h"
 #include "Odometro.h"
+#include "Timer.h"
 
 tDATE RTC_Date;
 tDATE DateApagado;                        // Fecha y Hora de APAGADO
@@ -37,11 +38,11 @@ tDATE HoraApagado;
 	   return(*DATE_ptr);
    }
 
+
 void rtc__actDATE (void){
 	RTC_TimeTypeDef stm32_time;
 	RTC_DateTypeDef stm32_date;
-
-	//byte buffer_Date[20];
+    uint16_t aux;
 
 	if(HAL_RTC_GetTime(&hrtc, &stm32_time, RTC_FORMAT_BCD)==HAL_OK){
 		RTC_Date.hora[0] = stm32_time.Hours;       // Actualizo HORA
@@ -51,9 +52,7 @@ void rtc__actDATE (void){
 		RTC_Date.hora[0] = 0xff;       // Actualizo HORA
 		RTC_Date.hora[1] = 0xff;     // Actualizo MINUTOS
 		RTC_Date.hora[2] = 0xff;     // Actualizo SEGUNDOS
-
 	}
-
 	if(HAL_RTC_GetDate(&hrtc, &stm32_date, RTC_FORMAT_BCD)==HAL_OK){
 		RTC_Date.fecha[0] =	stm32_date.Date;      // Actualizo dia del mes
 		RTC_Date.fecha[1] =	stm32_date.Month;     // Actualizo MES
@@ -66,31 +65,6 @@ void rtc__actDATE (void){
 		RTC_Date.fecha[3] =	0xff;   // Actualizo dia de semana
 	}
 
-
-
-
-	//prueba
-	/*
-	byte cnt_hora = 00;
-	byte cnt_min = 0;
-	byte cnt_sec = 10;
-	if((stm32_time.Hours == cnt_hora)){
-					cnt_hora++;
-					cnt_min = 0;
-		}
-
-		if((stm32_time.Minutes == cnt_min)){
-			cnt_min++;
-			cnt_sec = 0;
-			BSP_LED_Toggle(LED4);
-		}
-
-		if(stm32_time.Seconds == cnt_sec){
-			cnt_sec = cnt_sec+10;
-			if(cnt_sec == 60 ){cnt_sec =0;}
-			BSP_LED_Toggle(LED3);
-		}
-	 */
 }
 
 

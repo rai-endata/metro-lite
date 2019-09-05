@@ -122,7 +122,6 @@ int main(void)
 		//NVIC_SystemReset();
 		//chk_crc();
 		set_tipo_de_equipo();
-
 		//ini spi
 		MX_SPIx_Init();
 		EPROM_CS_Init();
@@ -231,7 +230,7 @@ int main(void)
 		//check_pressBLUETOOTH();
 		check_pressPANICO();
 		check_pressTECLA();
-		rtc__actDATE();
+		//rtc__actDATE();
 		set_TIMEandDATE();
 		TMR_GRAL_LOOP();
 		relojINTERNO_updateCHOFER();
@@ -301,6 +300,9 @@ void set_TIMEandDATE (void){
 
 	RTC_TimeTypeDef sTime;
 	RTC_DateTypeDef sDate;
+
+	getDate();
+
     if(RTC_Date.fecha[2]==0x00){
     	sTime.Hours = 13;
     	sTime.Minutes = 38;

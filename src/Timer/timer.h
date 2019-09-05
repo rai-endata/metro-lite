@@ -30,6 +30,8 @@ typedef union {
 } tmr_gral_flags;
 
 extern byte   checkTIME;
+
+
    /* TIMEOUT DE LAZO */
    /*******************/
   extern void dispararTO_lazo (void);

@@ -249,7 +249,7 @@
         		 // watchDOG ();
         	  }
         	  ASIENTO_chkSensor_timer();
-        	  rtc__actDATE();
+        	  //rtc__actDATE();
         	  timeOut_FRECUENCIA();
         	  RELOJ_chkVelTransicion();
         	  RELOJ_a_pagar_to_libre_timer();

@@ -36,6 +36,7 @@
   #define MENSAJE4		0x04		//tarifa invalida
   #define MENSAJE5		0x05		//tarifa no programada
   #define MENSAJE6		0x06		//comando transparente
+  #define MENSAJE7		0X07		//Recaudacion Parcial
 
 
 

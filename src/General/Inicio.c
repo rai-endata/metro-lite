@@ -114,7 +114,8 @@ void SOURCE_DATE_Ini (void){
          // El tema es que si quisiera usar esto con el GPS, no me serviría de mucho, xq
          // inicialmente me carga la fecha de produccion/fabricacion del modulo GPS => Para cuando
          // la hora es de GPS, ademas debo tener posicion valida
-         if (!INICIO_firstDate && (DATE_ptr->fecha[0] != 0) && ((HORA_GPS && GPS.valid) || HORA_RTC) /*&& !PROGRAMADOR_chkReset()*/){
+    	  getDate();
+    	  if (!INICIO_firstDate && (DATE_ptr->fecha[0] != 0) && ((HORA_GPS && GPS.valid) || HORA_RTC) /*&& !PROGRAMADOR_chkReset()*/){
            // Si todavia no tengo el primer date y la fecha NO ES cero => Ya tengo el primer
            // date
            INICIO_firstDate = 1;                         // Seteo Bandera
@@ -282,7 +283,8 @@ void check_corte_alimentacion(void){
 		  INICIO_microCorte = 0;
 
 		  read_horaAPAGADO_eeprom();
-		  rtc__actDATE();
+		  //rtc__actDATE();
+	      getDate();
 		  read_backup_eeprom();
 		  INICIO_microCorte = diferenciaHoraria(RTC_Date.hora, HoraApagado.hora,16);
 	      //ACCIONES SEGUN TIPO DE CORTE

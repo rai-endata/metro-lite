@@ -464,7 +464,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       #ifdef VISOR_REPORTES
       if (REPORTES_HABILITADOS && dateValid(getDate())){
         regSesion.tipo = REG_sesion;       // Tipo de registro
-        regSesion.date = getDate();        // Fecha y Hora actual
+        regSesion.date = *DATE_ptr;        // Fecha y Hora actual
         regSesion.chofer = chofer;         // Chofer
         //string_FAR_copy(regSesion.choferSys, LOGUEO_getChoferLogueado()); 	// Chofer logueado al Sistema en ASCII
         queueDone = queueNewReg((tREG_GENERIC*) &regSesion);  				// Intento encolar nuevo registro
@@ -811,15 +811,15 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       // La busqueda no es eterna, si no que se hace hasta el fin de busqueda
       byte exit;
       tREG_GENERIC* GET_ptr;
-      tREG_GENERIC* aux_GET_ptr;
+      tREG_GENERIC aux_GET;
       
       GET_ptr = REPORTE_PUTptr;               // Comienzo desde el puntero actual
       decFlashRep_ptr(&GET_ptr);              // Retrocedo puntero
       
-      EEPROM_ReadBuffer(&aux_GET_ptr,GET_ptr,sizeof(tREG_GENERIC));
+      EEPROM_ReadBuffer(&aux_GET,GET_ptr,sizeof(tREG_GENERIC));
       exit = 0;
       dispararTO_lazo();
-      while ((aux_GET_ptr->tipo != tipo) && !exit){
+      while ((aux_GET.tipo != tipo) && !exit){
         // Continuo retrocediendo el puntero hasta encontrar (por primera vez) el
         // tipo especificado => Ahi ya habria encontrada el registro anterior mas
         // proximo.
@@ -831,7 +831,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         if (chkTO_lazo_F() == 1){
           exit = 1;
         }else{
-        	EEPROM_ReadBuffer(&aux_GET_ptr,GET_ptr,sizeof(tREG_GENERIC));
+        	EEPROM_ReadBuffer(&aux_GET,GET_ptr,sizeof(tREG_GENERIC));
         }
 
       }

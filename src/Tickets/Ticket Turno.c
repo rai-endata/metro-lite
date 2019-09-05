@@ -45,15 +45,15 @@ byte tarifasTurno;
 uint8_t print_buffer[2000];
 
 
-static tREG_SESION iniTURNO;
-static tREG_SESION finTURNO;
-static tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
-static tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
+tREG_SESION iniTURNO;
+tREG_SESION finTURNO;
+tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
+tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 
 static tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
 static tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
 
-static  tREG_SESION* sesion_ptrs[max_turnosReporte];
+tREG_SESION* sesion_ptrs[max_turnosReporte];
 
 void print_ticket_turno(void){
 
@@ -674,10 +674,6 @@ void print_ticket_turno(void){
         i++;
       }
 
-      #ifdef VISOR_TARIFACION_ESPECIAL
-        viajes += REPORTES_getCantidadViajes_byRango((tREG_GENERIC*)iniTURNO_ptr_aux, (tREG_GENERIC*)finTURNO_ptr_aux, REG_apagar, nroTARIFA_ESPECIAL);
-      #endif
-
       return(viajes);
     }
 
@@ -733,11 +729,7 @@ void print_ticket_turno(void){
         i++;
       }
 
-      #ifdef VISOR_TARIFACION_ESPECIAL
-        recaudacion += TURNO_getRecaudacion_tarifa(NULL,nroTARIFA_ESPECIAL);
-      #endif
-
-      TICKET_importeToString(recaudacion, buffer);
+       TICKET_importeToString(recaudacion, buffer);
 
       return(recaudacion);
     }
