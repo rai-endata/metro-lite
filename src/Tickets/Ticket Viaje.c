@@ -3,14 +3,13 @@
 #include "Reloj.h"
 #include "odometro.h"
 #include "Calculo Velocidad.h"
-#include "Ticket Common.h"
+#include "Common Ticket.h"
 #include "Ticket Viaje.h"
 #include "teclas.h"
 #include "eeprom.h"
 
 
 uint32_t nroTICKET;
-uint8_t print_buffer[1100];
 
 void print_ticket_viaje(void){
 

@@ -21,3 +21,388 @@ Reportes
 puntoDECIMAL
 equivalencia en pesos impresion
 TARIFA.numero
+
+
+
+*PONER NUEVO GATEWAY EN LA ESTACION
+*AGREGAR REPORTES MYSQL EN PRIMERA SATELITAL
+*Limpiar grabaciones de audio cada 3 meses
+AGREGAR COMANDOS NUEVOS A METROLITE
+
+GUARDAR 4A CAMBIOS DE RELOJ EN EEPROM
+SEGUIR CON REPORTE 30DIAS
+
+
+
+LIBRE
+Celular ->  Reloj  
+*****************
+Pedido pase a libre SIN CONEXION: 01 02 23 23 03
+resp pase a libre SIN CONEXION: 01 02 A8 A8 03
+
+Reloj -> celular 
+*****************
+Repuesta a pedido pase a libre SIN CONEXION: 01 03 A3 A3 00 03
+Pase a libre SIN CONEXION:  01 22 28 28 01 01 02 03 04 05 06 01 02 03 98 01 02 03 04 01 02 03 99 01 02 03 04 01 02 01 02 03 04 01 02 03 03
+
+OCUPADO
+Celular -> Reloj 
+**************** 
+Pedido pase a ocupado SIN CONEXION: 01 03 05 24 01 03
+Respuesta a pase ocupado APP SIN CONEXION: 01 02 AE AE 03
+Respuesta a pase ocupado S.A. SIN CONEXION: 01 02 AC AC 03
+
+Reloj -> celular
+****************
+Respuesta a pedido pase a ocupado: 01 03 A4 A4 00 03
+Pase a ocupado APP SIN CONEXION:	01 24 13 2E 00 14 04 12 29 01 18 01 02 02 00 01 A1 F8 00 00 04 44 09 00 00 01 00 00 00 00 00 00 00 00 00 00 00 1E 03
+Pase a ocupado S.A. SIN CONEXION:	01 24 11 2C 00 14 04 12 29 01 18 01 02 02 00 01 A1 F8 00 00 04 44 09 00 00 01 00 00 00 00 00 00 00 00 00 00 00 1E 03
+
+COBRANDO
+Celular -> Reloj 
+****************
+Pedido pase a cobrando SIN CONEXION: 01 02 25 25 03
+Respuesta a pase cobrando SIN CONEXION: 01 02 AA  AA 03
+
+Reloj -> celular 
+****************
+Respuesta a pedido pase a cobrando SIN CONEXION: 01 03 A5 A5 00 03
+Pase a cobrando SIN CONEXION:	01 24 17 2A 00 14 04 12 29 01 18 01 02 02 00 01 A1 F8 00 00 04 44 09 00 00 01 00 00 00 00 00 00 00 00 00 00 00 1E 03
+
+
+
+COMANDOS TRANPARENTE
+********************
+1 - Eco : devuelve el dato enviado
+    Central: 01 07 41 40 01 50 65 50 65 03
+	Reloj: 	 01 02 C0 C0 03 
+			 01 07 41 40 01 50 65 50 65 03
+			 
+2 - Pedido estado de Reloj :
+		a - Central a Reloj
+		    CENTRAL:	01 03 42 40 02 03
+			
+		
+		b - Reloj a Central
+		    01 XX XX 40  D1 D2 …..DN 03
+
+3 - consulta de viajes por numero
+		01 04 42 40 03 nroViaje 03
+		respuesta
+		*********
+		
+		//viaje 14
+		01 3A 80 40 03 00 14 56 30 31 10 19 00 0E 01 01 83 42 01 02 00 00 0E 00 00 1B 00 00 01 8E 00 00 00 0E 00 01 00 51 00 38 00 89 11 05 32 31 10 19 11 06 30 31 10 19 11 10 08 31 10 19 03 0D 0A
+		//viaje 15
+		01 3A AE 40 03 00 11 44 20 31 10 19 00 0F 01 01 85 43 01 01 00 00 02 00 00 11 00 00 01 12 00 00 00 02 00 01 00 10 00 07 00 55 11 10 55 31 10 19 11 11 03 31 10 19 11 12 44 31 10 19 03 0D 0A 
+		
+		01 3A 03 40 03 00 17 52 40 25 10 19 00 01 01 01 00 00 00 03 00 00 00 00 00 24 00 00 01 CC 00 00 00 00 00 00 00 00 33 41 00 B6 12 30 56 25 10 19 16 09 51 25 10 19 16 12 54 25 10 19 03 0D 0A
+		
+		01 3A 03 
+		40 							//comando transparente
+		03                          //subcomando consulta viaje
+		00                          //fuente de hora	
+		17 52 40 25 10 19           //fecha y hora	
+		00                          //status (0: encontro el viaje, 1: no encontro viaje)
+		01 							//nro viaje
+		01 							//chofer:		
+		01                          //tarifa:		
+		00                          //velMaxLIBRE:	
+		00                          //velMaxOCUPADO:
+		00                          //sensor:		
+		03                          //minutosEspera:
+		00 00 00                    //ficha dis
+		00 00 24 					//ficha tiempo 36
+		00 00 01 CC 				//importe 460
+		00 00 				        //kmLIBRE (kmLIBRE/10 =[km])			
+		00 00                       //kmOCUPADO	(kmOCUPADO/10 =[km])	
+		00 00                       //segMarchaLIBRE	
+		00 00                       //segMarchaOCUPADO
+		33 41                       //segParado LIBRE 1
+		00 B6                       //segParado OCUPADO
+		12 30 56 25 10 19           //dateLIBRE:	
+		16 09 51 25 10 19           //dateOCUPADO:
+		16 12 54 25 10 19           //dateA_PAGAR.
+		03 0D 0A		
+
+		
+		//viaje 18
+		01 3C 7D 
+//comando transparente											40 
+//subcomando consulta viaje										03 
+//fuente de hora												00 
+//fecha y hora													18 43 39 31 10 19 
+//status (0: encontro el viaje, 1: no encontro viaje)			00 
+//nro viaje														12 
+//chofer:														01 
+//tarifa:														01 
+//velMaxLIBRE:													00 
+//velMaxOCUPADO:												42 
+//sensor:														00 
+//minutosEspera:												01 
+//fichaPesos;													01 
+//puntoDecimal;													03 
+//ficha dis														00 00 05 
+//ficha tiempo 36												00 00 13 
+//importe 460													00 00 01 2C 
+//kmLIBRE (kmLIBRE/10 =[km])									00 00 
+//kmOCUPADO	(kmOCUPADO/10 =[km])								00 05 
+//segMarchaLIBRE												00 00 
+//segMarchaOCUPADO												00 22               				
+//segParado LIBRE 1												01 05 
+//segParado OCUPADO												00 60 
+//dateLIBRE:													17 51 23 31 10 19 
+//dateOCUPADO:													17 55 44 31 10 19 
+//dateA_PAGAR.													17 57 54 31 10 19 
+		03 0D 0A		
+			
+			
+			
+			
+				
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		
+		
+		
+3 - consulta de Reporte de  turno
+
+
+4 - en el ivr de san nicolas (empresa avio), cuando queda sin intenet debe pasarse a modo telefonia y parece que no paso eso
+
+
+DEPURAR APPS
+************
+
+Cuando el equipo se apaga y se prende y la app no estaba en libre (Problema de sincronizacion) 
+Estaba en cobrando el equipo no me pasaba mas a libre, apague y prendi el equipo...no se que paso luego el nro corrlativo se incremento de 10 a 12
+
+borrado de epprom
+error en las direcciones
+0xabc
+0xada
+0xaf8
+ab4 24times
+
+
+//Pase a Libre
+***************
+	    LIBRE
+	    ******
+	    DISTANCIAm_LIBRE		(2 BYTE ) m recorrido en libre
+	    velMax_LIBRE			(1 BYTE) velocidad máxima en libre
+	    timerMarcha_cnt			(2 BYTE) tiempo en marcha en libre
+	    timerParado_cnt  		(2 BYTE) tiempo parado en libre
+
+	    OCUPADO
+	    *******
+	    DISTANCIAm_OCUPADO		(2 BYTE) m recorrido en ocupado
+	    velMax_OCUPADO 			(1 BYTE) velocidad máxima en ocupado
+	    timerMarcha_cnt			(2 BYTE) tiempo en marcha en ocupado
+	    timerParado_cnt  		(2 BYTE) tiempo parado en ocupado
+	    
+		minutosEspera 			(1 BYTE) minutos de espera
+	    TARIFA.numero 			(1 BYTE) tarifa
+	    VALOR_VIAJE  			(4 BYTE) importe de viaje
+		PUNTO_DECIMAL			(1 BYTE)
+	    nroChofer  	 			(1 BYTE) nro chofer con que inicio turno (1,2,3,4)
+	    nroCorrelativo_INTERNO	(1 BYTE) nro correlativo
+
+//Pase a Ocupado
+*****************
+		
+		fichaPESOS			(1 BYTE) fichaPESOS
+		BajadaBandera		(2 BYTE) Bajada Bandera
+		
+		FichasDistancia		(4 BYTE) cantidad de fichas por distancia
+        FichasTiempo		(4 BYTE) cantidad de fichas por tiempo
+ 			
+
+
+			
+La app tiene algun problema y no entra a descanso
+Modificar deteccion de bluetooth
+preparar comandos para gerardo			
+
+seguir con comandos fuera de linea
+******************************
+
+
+
+
+
+nroChofer, 
+DISTANCIAm_LIBRE,   velMax_LIBRE,   timerMarcha_cnt, timerParado_cnt  		
+DISTANCIAm_OCUPADO, velMax_OCUPADO, timerMarcha_cnt, timerParado_cnt  		
+TARIFA.numero, VALOR_VIAJE,  FichasDistancia, FichasTiempo, minutosEspera, nroCorrelativo_INTERNO
+fichaPESOS, PUNTO_DECIMAL, BajadaBandera,			
+
+
+12 B4 20 46 00 20 02 20 31 10 19 05 11 06 30 20 01 20 00 0E 00 42 00 89 00 51 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+12 D2 20 47 00 20 03 20 31 10 19 05 11 10 08 20 01 20 0E 01 00 00 0E 00 00 1B 00 8E 01 00 00 89 00 87 00 02 0D 0A  FIN DE DATO
+12 F0 20 48 00 20 01 20 31 10 19 05 11 10 55 20 01 20 00 00 00 85 00 07 00 01 00 01 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+13 0E 20 49 00 20 02 20 31 10 19 05 11 11 03 20 01 20 00 02 00 43 00 55 00 10 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+13 2C 20 4A 00 20 03 20 31 10 19 05 11 12 44 20 01 20 0F 01 00 00 02 00 00 11 00 12 01 00 00 55 00 55 00 01 0D 0A  FIN DE DATO
+13 4A 20 4B 00 20 01 20 31 10 19 05 11 13 22 20 01 20 00 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+13 68 20 4C 00 20 04 20 31 10 19 05 11 13 22 20 01 20 20 00 00 00 00 3D 00 00 00 E7 7F 00 20 E7 7F 00 20 88 0D 0A  FIN DE DATO
+13 86 20 4D 00 20 05 20 31 10 19 05 11 14 22 20 01 20 11 09 00 01 20 00 00 00 00 3D 00 00 00 E7 7F 00 20 E7 0D 0A  FIN DE DATO
+13 A4 20 4E 00 20 01 20 31 10 19 05 16 28 05 20 01 20 00 00 00 00 00 1D 06 00 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+13 C2 20 4F 00 20 02 20 31 10 19 05 16 54 12 20 01 20 00 05 00 42 00 49 00 22 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+13 E0 20 50 00 20 03 20 31 10 19 05 16 55 59 20 01 20 10 01 00 00 05 00 00 0E 00 FA 00 00 00 49 00 46 00 01 0D 0A  FIN DE DATO
+13 FE 20 51 00 20 01 20 31 10 19 05 16 57 49 20 01 20 00 00 00 00 00 16 0B 00 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+14 1C 20 52 00 20 01 20 31 10 19 05 17 51 23 20 01 20 00 00 00 00 00 05 01 00 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+14 3A 20 53 00 20 02 20 31 10 19 05 17 55 44 20 01 20 00 05 00 42 00 60 00 22 00 64 00 01 00 00 00 00 00 00 0D 0A  FIN DE DATO
+14 58 20 54 00 20 03 20 31 10 19 05 17 57 54 20 01 20 12 01 00 00 05 00 00 13 00 2C 01 00 00 60 00 5F 00 01 0D 0A  FIN DE DATO
+14 76 20 55 00 20 01 20 31 10 19 05 18 11 04 20 01 20 00 00 00 00 00 47 00 00 00 00 00 00 00 00 00 00 00 00 0D 0A  FIN DE DATO
+14 94 20 56 00 20 02 20 31 10 19 05 18 12 15 20 01 20 00 00 00 00 00 09 00 00 00 64 00 01 00 00 00 00 00 00 0D 0A  FIN DE DATO
+14 B2 20 57 00 20 03 20 31 10 19 05 18 12 23 20 01 20 13 01 00 00 00 00 00 01 00 6E 00 00 00 08 00 05 00 00 0D 0A  FIN DE DATO
+14 D0 20 FF FF 20 FF 20 FF F8 FF CF FF BE FE 20 C0 20 FF F8 F7 FF F0 F8 FF CF FF CC FE DF F9 C0 73 D2 F8 FE 0D 0A  FIN DE DATO
+
+
+
+
+
+
+-------------------------------
+TICKET DE VIAJE             826
+-------------------------------
+Tarifa:                     1D
+Bajada:                $ 0.100
+Valor F. Dist:         $ 0.002
+Valor F. Tiempo:        $ 0.010
+-------------------------------
+INICIO:    04/11/2019 17:34:16
+FIN:       04/11/2019 17:37:41
+Distancia:             1.69 Km
+Fichas Dist:                16
+Fichas Tiempo:              13
+Vel. Max:              45 km/h
+-------------------------------
+A PAGAR:               $ 0.262
+-------------------------------
+espera; 1 min
+tmO: 2
+tmP: 1
+
+
+-------------------------------
+TICKET DE VIAJE             827
+-------------------------------
+Montevideo
+-------------------------------
+Tarifa:                     2D
+Bajada:                $ 0.200
+Valor F. Dist:         $ 0.004
+Valor F. Tiempo:        $ 0.010
+-------------------------------
+INICIO:    04/11/2019 17:44:42
+FIN:       04/11/2019 17:47:55
+Distancia:             1.42 Km
+Fichas Dist:                14
+Fichas Tiempo:              76
+Vel. Max:              46 km/h
+-------------------------------
+A PAGAR:               $ 1.016
+-------------------------------
+Espera 1min
+
+
+-------------------------------
+TICKET DE VIAJE             828
+-------------------------------
+Tarifa:                     1D
+Bajada:                $ 0.100
+Valor F. Dist:         $ 0.002
+Valor F. Tiempo:        $ 0.010
+-------------------------------
+INICIO:    04/11/2019 17:57:54
+FIN:       04/11/2019 18:02:37
+Distancia:             1.58 Km
+Fichas Dist:                15
+Fichas Tiempo:              30
+Vel. Max:              45 km/h
+-------------------------------
+A PAGAR:               $ 0.430
+-------------------------------
+espera:                   2
+
+
+@-------------------------------
+       REPORTE DE TURNO
+-------------------------------
+Montevideo
+-------------------------------
+Nro Turno                    1
+Chofer                       1
+Inicio     04/11/2019 17:33:12
+Fin        04/11/2019 18:06:07
+-------------------------------
+LIBRE        
+  Distancia [Km]           3.3
+  Vel: Max  [Km/h]         111
+  T. Marcha [hh:mm]      00:02
+  T. Parado [hh:mm]      00:04
+
+OCUPADO      
+  Distancia [Km]           4.5
+  Vel: Max  [Km/h]          46
+  T. Marcha [hh:mm]      00:06
+  T. Parado [hh:mm]      00:04
+
+FUERA DE SERVICIO      
+  Distancia [Km]           0.0
+  Vel: Max  [Km/h]        255+
+  T. Marcha [hh:mm]      00:01
+  T. Parado [hh:mm]      00:01
+
+-------------------------------
+TARIFA 1D
+  Viajes                     2
+  Fichas                    74
+  Recaudado [$]          0.692
+TARIFA 2D
+  Viajes                     1
+  Fichas                    90
+  Recaudado [$]          1.016
+-------------------------------
+TOTALES
+  Viajes                     3
+  Viajes asiento             1
+  Recaudado [$]          1.708
+  Km Totales               7.8
+  40% Chofer [$]         0.683
+-------------------------------
+$ x km                     218
+%km Ocupado                 57
+-------------------------------
+Desconex. alim.              1
+Tiempo [hh:mm:ss]     00:03:19
+$ Perdidos               0.130
+-------------------------------
+           Gracias 
+-------------------------------
+
+
+
+
+
+

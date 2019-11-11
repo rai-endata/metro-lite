@@ -14,19 +14,19 @@ extern	byte CMD_a_RESP;                            // Comando a Responder
 		#define N_CMD_A_RESP                    (Tabla_ComandosTx[OFFSET_RTA]->N)
 		#define BUFFER_CMD_A_RESP               (Tabla_ComandosTx[OFFSET_RTA]->buffer)
 
-//#define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO) || \
-//							 (Rx_cmd == cmdFin_TURNO))
 
-#define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO)   		||	\
-							 (Rx_cmd == cmdPase_LIBRE)			||  \
-							 (Rx_cmd == cmdPase_OCUPADO)		||  \
-							 (Rx_cmd == cmdPase_Cobrando)		||  \
-							 (Rx_cmd == cmdInicio_EPERA)		||  \
-							 (Rx_cmd == cmdFin_ESPERA)			||  \
-							 (Rx_cmd == cmdImpresion)			||  \
-							 (Rx_cmd == Entra_DESCANSO_Rx)		||	\
-							 (Rx_cmd == Sale_DESCANSO_Rx)		||	\
-							 (Rx_cmd == cmdPase_fueraServicio))
+#define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO)   			||	\
+							 (Rx_cmd == cmdPedido_Pase_LIBRE)		||  \
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO)		||  \
+							 (Rx_cmd == cmdPedido_Pase_COBRANDO)	||  \
+							 (Rx_cmd == cmdPedido_Pase_LIBRE_SC)	||	\
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO_SC)	||	\
+							 (Rx_cmd == cmdPedido_Pase_COBRANDO_SC)	||	\
+							 (Rx_cmd == cmdInicio_EPERA)			||  \
+							 (Rx_cmd == cmdFin_ESPERA)				||  \
+							 (Rx_cmd == cmdImpresion)				||  \
+							 (Rx_cmd == Entra_DESCANSO_Rx)			||	\
+							 (Rx_cmd == Sale_DESCANSO_Rx))
 
 
 
@@ -55,18 +55,29 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void DA_iniRx (void);
 	extern void RxDA_process (void);
 
+	extern void Leer_EEPROM_Rx (byte* Rx_data_ptr);
+	extern void Leer_REGISTRO_Rx (byte* Rx_data_ptr);
+	extern void Escribir_BYTE_Rx (byte* Rx_data_ptr);
+	extern void Escribir_BUFFER_Rx (byte* Rx_data_ptr);
+
 	extern void Inicio_TURNO_Rx (byte* Rx_data_ptr);
 	extern void Entra_DESCANSO_Rx (byte* Rx_data_ptr);
 	extern void Sale_DESCANSO_Rx (byte* Rx_data_ptr);
-	extern void Pase_LIBRE_Rx (byte* Rx_data_ptr);
-	extern void Pase_OCUPADO_Rx (byte* Rx_data_ptr);
-	extern void Pase_COBRANDO_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_LIBRE_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_OCUPADO_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_COBRANDO_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_LIBRE_SC_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_OCUPADO_SC_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_COBRANDO_SC_Rx (byte* Rx_data_ptr);
+
 	extern void ConsultaTarifas (byte* Rx_data_ptr);
 	extern void Inicio_EPERA_Rx (byte* Rx_data_ptr);
 	extern void Fin_EPERA_Rx (byte* Rx_data_ptr);
 	extern void Impresion_Rx (byte* Rx_data_ptr);
 	extern void ConsultaEstado (byte* Rx_data_ptr);
 	extern void Comando_TRANSPARENTE_Rx (byte* Rx_data_ptr);
+
+	extern void Pedido_reportePARCIAL_Rx (byte* Rx_data_ptr);
 
 
 #endif

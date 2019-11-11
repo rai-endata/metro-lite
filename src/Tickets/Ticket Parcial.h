@@ -13,7 +13,7 @@
 
 #define TO_PRINTING_TURNO		5
 #define MENU_REPORTE_TURNO_index	0
-#define max_turnosReporte           3        // Maximo de turnos a mostrar
+
 
 
 #define PROG_TICKET_percentChofer     ((const) EEPROM_PROG_TICKET_RECAUD.chofer)

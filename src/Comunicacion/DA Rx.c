@@ -1,4 +1,6 @@
 #include "DA Rx.h"
+#include "main.h"
+#include "print UART.h"
 #include "DA Communication.h"
 #include "DA Define Commands.h"
 #include "Manejo de Buffers.h"
@@ -14,6 +16,12 @@
 #include "buzzer.h"
 #include "Reportes.h"
 #include "tipo de equipo.h"
+#include "printDEBUG.h"
+#include "Bluetooth.h"
+#include "Lista Comandos.h"
+#include "ConsultaTurno.h"
+
+//#include "usart1.h"
 
 /*********************************************************************************************/
 /* ESTRUCTURAS */
@@ -42,7 +50,6 @@
 	static	void DA_RxData_procesado (void);
 	static void DA_newGET_inGPA (byte* GETptr);
 	static void DA_incGPAidx (byte* idxPTR);
-
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -223,9 +230,9 @@
 		Rx_comando_00,                    // 0x00 - Acepta Viaje
 		Inicio_TURNO_Rx,
 		Rx_comando_02,
-		Pase_LIBRE_Rx,
-		Pase_OCUPADO_Rx,
-		Pase_COBRANDO_Rx,
+		Pedido_Pase_LIBRE_Rx,
+		Pedido_Pase_OCUPADO_Rx,
+		Pedido_Pase_COBRANDO_Rx,
 		Inicio_EPERA_Rx,
 		Fin_EPERA_Rx,
 		Impresion_Rx,
@@ -234,7 +241,7 @@
 		Rx_comando_0B,
 		Entra_DESCANSO_Rx,
 		Sale_DESCANSO_Rx,
-	    Rx_comando_0E,
+		Pedido_reportePARCIAL_Rx,
 	    Rx_comando_0F,
 
 		Rx_comando_10,
@@ -257,9 +264,9 @@
 		Rx_comando_20,
 	    Rx_comando_21,
 	    Rx_comando_22,
-	    Rx_comando_23,
-	    Rx_comando_24,
-	    Rx_comando_25,
+		Pedido_Pase_LIBRE_SC_Rx,
+		Pedido_Pase_OCUPADO_SC_Rx,
+		Pedido_Pase_COBRANDO_SC_Rx,
 	    Rx_comando_26,
 	    Rx_comando_27,
 	    Rx_comando_28,
@@ -350,10 +357,10 @@
 	    Rx_comando_78,
 	    Rx_comando_79,
 	    Rx_comando_7A,
-	    Rx_comando_7B,
-	    Rx_comando_7C,
-	    Rx_comando_7D,
-	    Rx_comando_7E,
+		Escribir_BUFFER_Rx,
+		Escribir_BYTE_Rx,
+	    Leer_REGISTRO_Rx,
+		Leer_EEPROM_Rx,
 	    Rx_comando_7F
 	  };
 
@@ -532,7 +539,7 @@
 					//      | N | CMD | DATOS |
 					//
 					// El comando se encuentra en la 2da posición del buffer
-
+					//setTO_Bluetooth(TO_BLUETOOTH_3);
 					Rx_cmd = RxDA_buffer[1];        // Extraigo comando
 					if(EQUIPO_METRO_LITE_RELOJ_INTERNO ||
 					  (((EQUIPO_METRO_BLUE) || (EQUIPO_METRO_LITE_RELOJ_BANDERITA)) && !CMD_ACTIONS)){
@@ -545,8 +552,10 @@
 							  BUFFER_CMD_A_RESP = NULL;     						// No lleva Buffer (Rta Simple)
 							  Tabla_RxDA[Rx_cmd](RxDA_buffer);      			// Proceso Comando
 							  CMD_a_RESP = Rx_cmd;        							// Qué voy a Responder
-							  if(Rx_cmd != cmdConsultaTarifas){
-							  TX_F_CMD_A_RESP = 1;        							// Levanto Bandera de Tx Respuesta
+							  if(Rx_cmd != cmdConsultaTarifas ){
+								 //if(Rx_cmd != 0x0B){
+								  TX_F_CMD_A_RESP = 1;        							// Levanto Bandera de Tx Respuesta
+								 //}
 							  }
 						  }else{
 							// Recibí la respuesta a un comando
@@ -768,10 +777,11 @@
 	}
 
 	/* DATO RECIBIDO POR DA, PROCESADO */
-	/*************************************/
+	/***********************************/
+
 	static	void DA_RxData_procesado (void){
-		DA_incGPAidx(&DA_RxGPAidxGET);    // Avanzo GET del GPA de Rx
-		DA_decRx_cnt;                      // Decremento Contador de Datos Recibidos, xq fueron procesados
+		DA_incGPAidx(&DA_RxGPAidxGET);    			// Avanzo GET del GPA de Rx
+		DA_decRx_cnt;                      			// Decremento Contador de Datos Recibidos, xq fueron procesados
 	}
 
 	/* CALCULAR ESPACIO DISPONIBLE EN BUFFER Rx DE DA */
@@ -834,6 +844,298 @@
 	}
 
 
+
+	void Leer_EEPROM_Rx (byte* Rx_data_ptr){
+
+		tREG_GENERIC bufferDATOS_LEIDOS;
+		uint8_t bufferTx[2*sizeof(tREG_GENERIC)];
+
+		tREG_GENERIC* ptrTABLA;
+
+		//
+		// El formato de datos de recepcion es
+		//
+		//    | N | CMD | DATA_1 | DATA_2 | . | . |
+		//
+		//
+		// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+		// cantidad maxima de FICHAS/PESOS.
+		byte N, cmd,i,dato;
+		uint16_t aux16;
+		uint8_t*  aux_ptr;
+        uint status;
+		N 	= *Rx_data_ptr++;               // Extraigo N
+		cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+		//apunto a inicio de tabla en eeprom
+		ptrTABLA = ADDR_EEPROM_REPORTE;
+		status = 0;
+		while(ptrTABLA < FIN_EEPROM_REPORTE){
+
+			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+
+				i=0;
+				if(!status){
+					status=1;
+					stringCopyN(&bufferTx[i], "Direcc. ", 8);       	i = i+8;
+					stringCopyN(&bufferTx[i], "Indice   ", 9);		   	i = i+9;
+					stringCopyN(&bufferTx[i], "Tipo          ", 14); 	i = i+14;
+					stringCopyN(&bufferTx[i], "Fecha           ", 16);	i = i+16;
+					stringCopyN(&bufferTx[i], "Chofer", 6);				i = i+6;
+					bufferTx[i++] = 0x0D;
+					bufferTx[i++] = 0x0A;
+					statusPRINT = IMPRESION_EN_PROCESO;
+					PRINT_send(bufferTx, i+1);
+				}else{
+
+
+					EEPROM_ReadBuffer(&bufferDATOS_LEIDOS, ptrTABLA, sizeof(tREG_GENERIC));
+					aux16 = ptrTABLA;
+					aux_ptr = &aux16;
+					bufferTx[i++] = aux_ptr[1];
+					bufferTx[i++] = aux_ptr[0];
+					bufferTx[i++] = ' ';
+					bufferTx[i]   = ' ';
+					//stringCopyN(&bufferTx[i], bufferDATOS_LEIDOS, sizeof(tREG_GENERIC));
+					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.idx, 2); 		i=i+2;
+					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.tipo, 1); 	i=i+1;
+					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.date, 7);		i=i+7;
+					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.chofer, 1);	i=i+1;
+					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.empty, 18);	i=i+18;
+					bufferTx[i++] = 0x0D;
+					bufferTx[i++] = 0x0A;
+					statusPRINT = IMPRESION_EN_PROCESO;
+					PRINT_send(bufferTx, i+1);
+					while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
+											//espera fin de transmision
+											//porque el buffer de tx esta en el stack
+											//y si vuelvo al loop principal es probable que se pise el
+											//stack mientras se transmite los datos desde la sci
+					}
+					ptrTABLA++;
+					//da tiempo al docklight que no se me cuelque
+					HAL_Delay(50);
+				}
+			}
+		}
+	}
+
+
+	void Leer_REGISTRO_Rx (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+
+
+			uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+			tREG_GENERIC* 	ptrTABLA;
+
+			byte N, 	cmd,i,dato;
+			uint32_t 	aux32;
+			uint32_t 	aux_TABLA;
+			uint8_t*  	aux_Rx_data_ptr;
+			uint8_t* 	aux_ptrTABLA;
+	        uint 		status;
+	        uint16_t* 	aux16_ptr;
+
+	    	tREG_GENERIC 	bufferDATOS_LEIDOS;
+
+
+	        N 	= *Rx_data_ptr++;               // Extraigo N
+			cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+
+			aux_Rx_data_ptr = &Rx_data_ptr;
+			aux_ptrTABLA = &ptrTABLA;
+			//apunto al registro de tabla que quiero leer (con ptrTABLA)
+			aux_ptrTABLA[3] = 0;
+			aux_ptrTABLA[2] = 0;
+			aux_ptrTABLA[1] = *Rx_data_ptr;
+			aux_ptrTABLA[0] = *(Rx_data_ptr+1);
+
+			EEPROM_ReadBuffer(&bufferDATOS_LEIDOS, ptrTABLA, sizeof(tREG_GENERIC));
+
+			i=0;
+			bufferTx[i++] = aux_ptrTABLA[1];
+			bufferTx[i++] = aux_ptrTABLA[0];
+			bufferTx[i++] = ' ';
+			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.idx, 2); 		i=i+2;
+			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.tipo, 1); 	i=i+1;
+			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.date, 7);		i=i+7;
+			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.chofer, 1);	i=i+1;
+			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
+			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.empty, 18);	i=i+18;
+			bufferTx[i++] = 0x0D;
+			bufferTx[i++] = 0x0A;
+
+			status = 1;
+			while(status){
+				if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+					statusPRINT = IMPRESION_EN_PROCESO;
+					PRINT_send(bufferTx, i+1);
+					while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
+						//espera fin de transmision
+						//porque el buffer de tx esta en el stack
+						//y si vuelvo al loop principal es probable que se pise el
+						//stack mientras se transmite los datos desde la sci
+						status=0;
+					}
+				}
+			}
+		}
+
+	void Escribir_BYTE_Rx (byte* Rx_data_ptr){
+				//
+				// El formato de datos de recepcion es
+				//
+				//    | N | CMD | DATA_1 | DATA_2 | . | . |
+				//
+				//
+				// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+				// cantidad maxima de FICHAS/PESOS.
+
+
+				uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+				tREG_GENERIC* 	ptrTABLA;
+
+				byte N, 	cmd,i,dato;
+				uint32_t 	aux32;
+				uint32_t 	aux_TABLA;
+				uint8_t*  	aux_Rx_data_ptr;
+				uint8_t* 	aux_ptrTABLA;
+		        uint 		status;
+		        uint16_t* 	aux16_ptr;
+
+		    	uint8_t 	DATOS_LEIDO;
+
+
+		        N 	= *Rx_data_ptr++;               // Extraigo N
+				cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+				aux_ptrTABLA = &ptrTABLA;
+				//apunto al registro de tabla que quiero leer (con ptrTABLA)
+				aux_ptrTABLA[3] = 0;
+				aux_ptrTABLA[2] = 0;
+				aux_ptrTABLA[1] = *Rx_data_ptr;
+				aux_ptrTABLA[0] = *(Rx_data_ptr+1);
+
+				//escribir dato
+				//uint32_t prim = __get_PRIMASK();
+				//__disable_irq();
+				uint8_t err = EEPROM_WriteByte((uint32_t) ptrTABLA, *(Rx_data_ptr+2));
+			  	//if (!prim) {
+			  	//			__enable_irq();
+			  	//}
+
+				//leer dato
+				EEPROM_ReadBuffer(&DATOS_LEIDO, ptrTABLA, 1);
+
+				i=0;
+				bufferTx[i++] = aux_ptrTABLA[1];
+				bufferTx[i++] = aux_ptrTABLA[0];
+				bufferTx[i++] = ' ';
+				bufferTx[i++] = *(Rx_data_ptr+2);
+				bufferTx[i++] = DATOS_LEIDO;
+				bufferTx[i++] = err;
+				bufferTx[i++] = 0x0D;
+				bufferTx[i++] = 0x0A;
+
+				status = 1;
+				while(status){
+					if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+						statusPRINT = IMPRESION_EN_PROCESO;
+						PRINT_send(bufferTx, i+1);
+						while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
+							//espera fin de transmision
+							//porque el buffer de tx esta en el stack
+							//y si vuelvo al loop principal es probable que se pise el
+							//stack mientras se transmite los datos desde la sci
+							status=0;
+						}
+					}
+				}
+			}
+
+	void Escribir_BUFFER_Rx (byte* Rx_data_ptr){
+					//
+					// El formato de datos de recepcion es
+					//
+					//    | N | CMD | DATA_1 | DATA_2 | . | . |
+					//
+					//
+					// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+					// cantidad maxima de FICHAS/PESOS.
+
+
+					uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+					tREG_GENERIC* 	ptrTABLA;
+
+					byte N, 	cmd,i,dato;
+					uint32_t 	aux32;
+					uint32_t 	aux_TABLA;
+					uint8_t*  	aux_Rx_data_ptr;
+					uint8_t* 	aux_ptrTABLA;
+			        uint 		status;
+			        uint16_t* 	aux16_ptr;
+
+
+			        N 	= *Rx_data_ptr++;               // Extraigo N
+					cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+					aux_ptrTABLA = &ptrTABLA;
+					//apunto al registro de tabla que quiero leer (con ptrTABLA)
+					aux_ptrTABLA[3] = 0;
+					aux_ptrTABLA[2] = 0;
+					aux_ptrTABLA[1] = *Rx_data_ptr;
+					aux_ptrTABLA[0] = *(Rx_data_ptr+1);
+
+					(void)EEPROM_WriteBuffer((Rx_data_ptr+3), (uint32_t) ptrTABLA, *(Rx_data_ptr+2) );
+
+					i=0;
+					bufferTx[i++] = aux_ptrTABLA[1];
+					bufferTx[i++] = aux_ptrTABLA[0];
+					bufferTx[i++] = ' ';
+
+					uint8_t k = *(Rx_data_ptr+2);
+					uint8_t j = 0;
+					while(k > 0){
+						bufferTx[i++] = *(Rx_data_ptr+3+j);
+						k--;
+						j++;
+					}
+
+					bufferTx[i++] = 0x0D;
+					bufferTx[i++] = 0x0A;
+
+					status = 1;
+					while(status){
+						if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+							statusPRINT = IMPRESION_EN_PROCESO;
+							PRINT_send(bufferTx, i+1);
+							while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
+								//espera fin de transmision
+								//porque el buffer de tx esta en el stack
+								//y si vuelvo al loop principal es probable que se pise el
+								//stack mientras se transmite los datos desde la sci
+								status=0;
+							}
+						}
+					}
+				}
+
+
 		/* RECEPCION DE  */
 		/**************************************/
 		void Inicio_TURNO_Rx (byte* Rx_data_ptr){
@@ -847,6 +1149,7 @@
 			// cantidad maxima de FICHAS/PESOS.
 			byte N;
 			byte cmd;
+			uint16_t aux16;
 
 			N 	= *Rx_data_ptr++;               // Extraigo N
 			cmd = *Rx_data_ptr++;               // Extraigo CMD
@@ -854,11 +1157,16 @@
 			//informa que el turno fue iniciado correctamente
 		    //prendo bandera
 			if(ESTADO_RELOJ == FUERA_SERVICIO){
-				BanderaOut_On();
-				RELOJ_INTERNO_newSesion(nroChofer);
-				//Tx_Conf_inicioTURNO(okINICIO);
-			}else{
-				//Tx_Conf_inicioTURNO(noINICIO);
+				//BanderaOut_On();
+				aux16 = getViajes_Parcial();
+				if(aux16 != 0){
+					RELOJ_INTERNO_newSesion(nroChofer);
+					Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
+				}else{
+					Tx_Comando_MENSAJE(DEBE_REALIZAR_UN_VIAJE);
+					//RELOJ_INTERNO_newSesion(nroChofer);
+				}
+
 			}
 		}
 
@@ -882,11 +1190,11 @@
 		    //apago bandera
 			nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
 
-			if(ESTADO_RELOJ == LIBRE){
+		//	if(ESTADO_RELOJ == LIBRE){
 				Pase_a_FUERA_SERVICIO();
-			}else{
+		//	}else{
 				//Tx_Conf_finTURNO(noFIN);
-			}
+		//	}
 
 		}
 
@@ -908,21 +1216,40 @@
 				    //apago bandera
 					nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
 
-					if(ESTADO_RELOJ == FUERA_SERVICIO){
+					//if(ESTADO_RELOJ == FUERA_SERVICIO){
 						//BanderaOut_Off();
 						//RELOJ_INTERNO_newSesion(nroChofer);
 						//Tx_Conf_finTURNO(okFIN);
 						//print_ticket_turno();
 						Pase_a_LIBRE();
-					}else{
+				//	}else{
 						//Tx_Conf_finTURNO(noFIN);
-					}
+				//	}
 
 				}
 
+		void Pedido_reportePARCIAL_Rx (byte* Rx_data_ptr){
+						//
+						// El formato de datos de recepcion es
+						//
+						//    | N | CMD | DATA_1 | DATA_2 | . | . |
+						//
+						//
+						// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+						// cantidad maxima de FICHAS/PESOS.
+						byte N;
+						byte cmd;
+
+						N 	= *Rx_data_ptr++;               // Extraigo N
+						cmd = *Rx_data_ptr++;               // Extraigo CMD
+						if(ESTADO_RELOJ != OCUPADO){
+							Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
+						}
+					}
+
 		/* RECEPCION DE  */
 		/**************************************/
-		void Pase_LIBRE_Rx (byte* Rx_data_ptr){
+		void Pedido_Pase_LIBRE_Rx (byte* Rx_data_ptr){
 			//
 			// El formato de datos de recepcion es
 			//
@@ -952,7 +1279,7 @@
 		/* RECEPCION DE  */
 		/**************************************/
 
-		void Pase_OCUPADO_Rx (byte* Rx_data_ptr){
+		void Pedido_Pase_OCUPADO_Rx (byte* Rx_data_ptr){
 			//
 			// El formato de datos de recepcion es
 			//
@@ -995,7 +1322,7 @@
 
 		/* RECEPCION DE  */
 		/*****************/
-			void Pase_COBRANDO_Rx (byte* Rx_data_ptr){
+			void Pedido_Pase_COBRANDO_Rx (byte* Rx_data_ptr){
 				//
 				// El formato de datos de recepcion es
 				//
@@ -1008,19 +1335,128 @@
 				byte cmd;
 
 					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
-						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-						N 	= *Rx_data_ptr++;               // Extraigo N
-						cmd = *Rx_data_ptr++;               // Extraigo CMD
-						Pase_a_COBRANDO();
-						Tx_Valor_VIAJE();
+						if(ESTADO_RELOJ==OCUPADO){
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							N 	= *Rx_data_ptr++;               // Extraigo N
+							cmd = *Rx_data_ptr++;               // Extraigo CMD
+							Pase_a_COBRANDO();
+							Tx_Valor_VIAJE();
+						}else{
+							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+							Tx_Comando_MENSAJE(PASE_A_COBRANDO_NO_PERMITIDO);
+						}
 
 					}else{
 						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
 						Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
 					}
-					Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
+					//Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
 
 			}
+
+
+
+			/* RECEPCION DE  */
+					/**************************************/
+					void Pedido_Pase_LIBRE_SC_Rx (byte* Rx_data_ptr){
+						//
+						// El formato de datos de recepcion es
+						//
+						//    | N | CMD | DATA_1 | DATA_2 | . | . |
+						//
+						//
+						// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+						// cantidad maxima de FICHAS/PESOS.
+						byte N;
+						byte cmd;
+
+						//if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ && (ESTADO_RELOJ != LIBRE)){
+
+							N 	= *Rx_data_ptr++;               // Extraigo N
+							cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+							Pase_a_LIBRE_SC();
+
+							//Tx_Resumen_VIAJE();
+							//TxRta_conDATOS(0x02);
+
+						//}
+
+
+					}
+
+					/* RECEPCION DE  */
+					/**************************************/
+
+					void Pedido_Pase_OCUPADO_SC_Rx (byte* Rx_data_ptr){
+						//
+						// El formato de datos de recepcion es
+						//
+						//    | N | CMD | DATA_1 | DATA_2 | . | . |
+						//
+						//
+						// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+						// cantidad maxima de FICHAS/PESOS.
+						byte N;
+						byte cmd;
+
+						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+							N 	= *Rx_data_ptr++;               // Extraigo N
+							cmd = *Rx_data_ptr++;               // Extraigo CMD
+							//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
+							tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
+							if(tarifa > 4){
+							//tarifa invalida
+								TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+								Tx_Comando_MENSAJE(TARIFA_INVALIDA);
+							}else if(tarifa > nroTARIFA_HAB_MANUAL){
+							//tarifa no programada
+								TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+								Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
+							}else{
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								paseOCUPADO_APP=1;
+								tarifa_1_4 = tarifa;
+								setTARIFA_MANUAL();
+								Pase_a_OCUPADO_SC();
+								//envia valor de viaje para que muestre bajada de bandera
+								Tx_Valor_VIAJE();
+							}
+
+						}else{
+							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+							Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+						}
+					}
+
+					/* RECEPCION DE  */
+					/*****************/
+						void Pedido_Pase_COBRANDO_SC_Rx (byte* Rx_data_ptr){
+							//
+							// El formato de datos de recepcion es
+							//
+							//    | N | CMD | DATA_1 | DATA_2 | . | . |
+							//
+							//
+							// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+							// cantidad maxima de FICHAS/PESOS.
+							byte N;
+							byte cmd;
+
+								if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+									N 	= *Rx_data_ptr++;               // Extraigo N
+									cmd = *Rx_data_ptr++;               // Extraigo CMD
+									Pase_a_COBRANDO_SC();
+									Tx_Valor_VIAJE();
+
+								}else{
+									TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+									Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+								}
+								Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
+
+						}
 
 
 			void Comando_TRANSPARENTE_Rx (byte* Rx_data_ptr){
@@ -1033,18 +1469,191 @@
 				// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
 				// cantidad maxima de FICHAS/PESOS.
 				byte N;
-				byte cmd;
+				byte cmd,subcmd,i;
+				uint8_t dataBYTE;
+				uint16_t dataWORD;
+				byte buff_aux[400];
+				byte status;  //0: encontro viaje // 1: no encontro viaje
+				byte cantidad_de_sesion;
+				byte statusSESION;
+				tREG_GENERIC* ptrLIBRE;
+				tREG_GENERIC* ptrOCUPADO;
+				tREG_GENERIC* ptrREG_APAGAR;
 
-				//if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ && (ESTADO_RELOJ != COBRANDO)){
-					N 	= *Rx_data_ptr++;               // Extraigo N
-					cmd = *Rx_data_ptr++;               // Extraigo CMD
-				//}
-					//ENVIA UN ECO
-					Tx_Comando_TRANSPARENTE(N, Rx_data_ptr );
-					//ENVIA AL CEL PARA QUE MUESTRE POR PANTALLA
-					Tx_Comando_MENSAJE_fromBUFFER(N, Rx_data_ptr, COMANDO_TRANSPARENTE);
-					//CON UN BEEP INDICA RECEPCION DE COMANDO TRANSPARENTE
-					Buzzer_On(BEEP_TECLA_LARGA);
+				uint8_t* Rx_data_ptr_aux;
+
+				N 	= *Rx_data_ptr++;               // Extraigo N
+				cmd = *Rx_data_ptr++;               // Extraigo CMD
+				subcmd = *Rx_data_ptr++;              // Extraigo sub CMD
+				dataBYTE  = *Rx_data_ptr;
+				Rx_data_ptr_aux = &dataWORD;
+				Rx_data_ptr_aux[1]  = Rx_data_ptr[0];
+				Rx_data_ptr_aux[0]  = Rx_data_ptr[1];
+
+				switch (subcmd){
+				      case subCMD_ECO:	//ECO
+				    	  	  	i=0;
+				    	  	  	buff_aux[i++] = subCMD_ECO;
+				    	  	    bufferNcopy(&buff_aux[i] ,Rx_data_ptr	,N); i = i + N;
+				    	  	  	N = i+1;
+  				    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+				      	  	  	break;
+				      case subCMD_estadoRELOJ:  //ESTADO DE RELOJ
+                                i=0;
+								getDate();
+								buff_aux[i++] = subCMD_estadoRELOJ;
+								buff_aux[i++] = 0;   				//fuente de hora
+								buff_aux[i++] = RTC_Date.hora[0];   // HORA
+								buff_aux[i++] = RTC_Date.hora[1];   // MINUTOS
+								buff_aux[i++] = RTC_Date.hora[2];   // SEGUNDOS
+								buff_aux[i++] = RTC_Date.fecha[0];  // DIA
+								buff_aux[i++] = RTC_Date.fecha[1];  // MES
+								buff_aux[i++] = RTC_Date.fecha[2];  // AÑO
+								buff_aux[i++] = (byte)ESTADO_RELOJ;    // estado de reloj
+								buff_aux[i++] = nroChofer;  		   // chofer quien inicio turno (si no inicio turno es cero)
+
+								buff_aux[i++] = TIPO_DE_EQUIPO;  		   // chofer quien inicio turno (si no inicio turno es cero)
+								buff_aux[i++] = VELOCIDAD;  		   // chofer quien inicio turno (si no inicio turno es cero)
+                                N = i+1;
+				    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+
+
+				               break;
+				      case subCMD_consultaVIAJE:
+								i=0;
+								getDate();
+								buff_aux[i++] = subCMD_consultaVIAJE;   //subcomando
+								buff_aux[i++] = 0;   					//fuente de hora
+								buff_aux[i++] = RTC_Date.hora[0];   	//HORA
+								buff_aux[i++] = RTC_Date.hora[1];   	//MINUTOS
+								buff_aux[i++] = RTC_Date.hora[2];   	//SEGUNDOS
+								buff_aux[i++] = RTC_Date.fecha[0];  	//DIA
+								buff_aux[i++] = RTC_Date.fecha[1];  	//MES
+								buff_aux[i++] = RTC_Date.fecha[2];  	//AÑO
+
+								ptrREG_APAGAR = get_regAPAGAR_byNUMERO_VIAJE(dataBYTE);
+
+								if(ptrREG_APAGAR != NULL){
+									ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR);
+									ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR);
+									if((ptrOCUPADO != NULL) && (ptrLIBRE != NULL) ){
+
+										//doy vuelta los bytes
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasDist, 3);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasTime, 3);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.importe, 4);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmLIBRE			, 2);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmOCUPADO		, 2);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaLIBRE	, 2);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaOCUPADO, 2);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoLIBRE	, 2);
+										convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoOCUPADO, 2);
+
+
+										status = 0;
+										buff_aux[i++] = status;
+										buff_aux[i++] = regVIAJE.nroViaje;
+										buff_aux[i++] = regVIAJE.chofer;
+										buff_aux[i++] = regVIAJE.tarifa;
+										buff_aux[i++] = regVIAJE.velMaxLIBRE;
+										buff_aux[i++] = regVIAJE.velMaxOCUPADO;
+										buff_aux[i++] = regVIAJE.sensor;
+										buff_aux[i++] = regVIAJE.minutosEspera;
+										buff_aux[i++] = regVIAJE.fichaPesos;
+										buff_aux[i++] = regVIAJE.puntoDecimal;
+										buff_aux[i++] = regVIAJE.fichasDist[2];
+										buff_aux[i++] = regVIAJE.fichasDist[1];
+										buff_aux[i++] = regVIAJE.fichasDist[0];
+										buff_aux[i++] = regVIAJE.fichasTime[2];
+										buff_aux[i++] = regVIAJE.fichasTime[1];
+										buff_aux[i++] = regVIAJE.fichasTime[0];
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.importe			,sizeof(regVIAJE.importe));			 i = i + sizeof(regVIAJE.importe);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.kmLIBRE			,sizeof(regVIAJE.kmLIBRE));			 i = i + sizeof(regVIAJE.kmLIBRE);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.kmOCUPADO		,sizeof(regVIAJE.kmOCUPADO));		 i = i + sizeof(regVIAJE.kmOCUPADO);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segMarchaLIBRE	,sizeof(regVIAJE.segMarchaLIBRE));	 i = i + sizeof(regVIAJE.segMarchaLIBRE);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segMarchaOCUPADO	,sizeof(regVIAJE.segMarchaOCUPADO)); i = i + sizeof(regVIAJE.segMarchaOCUPADO);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segParadoLIBRE	,sizeof(regVIAJE.segParadoLIBRE));	 i = i + sizeof(regVIAJE.segParadoLIBRE);
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segParadoOCUPADO	,sizeof(regVIAJE.segParadoOCUPADO)); i = i + sizeof(regVIAJE.segParadoOCUPADO);
+
+										//hora
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateLIBRE+4	,3); i = i + 3;
+										//fecha
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateLIBRE		,3); i = i + 3;
+										//hora
+										bufferNcopy(&buff_aux[i] ,(byte*)(&regVIAJE.dateOCUPADO)+4	,3); i = i + 3;
+										//fecha
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateOCUPADO		,3); i = i = i + 3;
+										//hora
+										bufferNcopy(&buff_aux[i] ,(byte*)(&regVIAJE.dateA_PAGAR)+4  ,3); i = i + 3;
+										//fecha
+										bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateA_PAGAR	    ,3); i = i + 3;
+
+		                                N = i+1;
+						    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+									}
+								}else{
+									status = 1;
+									buff_aux[i++] = status;
+	                                N = i+1;
+					    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+								}
+				               break;
+				      case subCMD_consultaTURNO:
+								cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, dataWORD, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+								if(cantidad_de_sesion ==0xff){
+									//no hay viajes
+									statusSESION = 1;
+								}else if(cantidad_de_sesion ==0xfe){
+									//ERROR
+									statusSESION = 2;
+								}else{
+									statusSESION = 0;
+								}
+
+								i=0;
+								getDate();
+								buff_aux[i++] = subCMD_consultaTURNO;   //subcomando
+								buff_aux[i++] = 0;   					//fuente de hora
+								buff_aux[i++] = RTC_Date.hora[0];   	//HORA
+								buff_aux[i++] = RTC_Date.hora[1];   	//MINUTOS
+								buff_aux[i++] = RTC_Date.hora[2];   	//SEGUNDOS
+								buff_aux[i++] = RTC_Date.fecha[0];  	//DIA
+								buff_aux[i++] = RTC_Date.fecha[1];  	//MES
+								buff_aux[i++] = RTC_Date.fecha[2];  	//AÑO
+
+								if(REPORTE_NRO_TURNO>=1 && !statusSESION){
+					    	  	    //armo y transmito reporte de turno
+									status = 0;
+									buff_aux[i++] = status;
+									N = consulta_ticket_turno(&buff_aux[i], dataWORD);
+									N = N+i+1;
+									Tx_cmdTRANSPARENTE(N, buff_aux );
+								}else{
+									if(statusSESION == 2){
+										//ERROR EN REPORTE DE TURNO
+										status = 1;
+										buff_aux[i++] = status;
+		                                N = i+1;
+						    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+									}else{
+										//TODAVIA NO FINALIZO NINGUN TURNO
+										status = 1;
+										buff_aux[i++] = status;
+		                                N = i+1;
+						    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+									}
+								}
+
+
+				               break;
+				      case 5 :
+				               break;
+				   default :
+					   	   	   break;
+				 }
+
+
+
 			}
 
 

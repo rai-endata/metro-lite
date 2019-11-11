@@ -162,6 +162,7 @@
 #include "DTE - Tx.h"
 #include "seriePROG.h"
 #include "Print UART.h"
+//#include "file aux1.h"
 
 /** @addtogroup STM32F0xx_HAL_Driver
   * @{
@@ -1817,6 +1818,7 @@ HAL_StatusTypeDef UART_Transmit_IT(UART_HandleTypeDef *huart)
 		  USART1_dataTxSave();
 		}else if(huart->Instance == USART7){
 		  USART7_dataTxSave();
+		  //printPRUEBA(3);
 		}
 		return HAL_OK;
   }else{
@@ -1878,7 +1880,7 @@ HAL_StatusTypeDef UART_Receive_IT(UART_HandleTypeDef *huart)
   uint8_t sci_data;
 
   /* Check that a Rx process is ongoing */
-  if((huart->State == HAL_UART_STATE_READY)||(huart->State == HAL_UART_STATE_BUSY_RX) )
+  if((huart->State == HAL_UART_STATE_READY)||(huart->State == HAL_UART_STATE_BUSY_RX) || (huart->State == HAL_UART_STATE_BUSY_TX_RX))
   {
 
 	  sci_data = (uint8_t)(huart->Instance->RDR & (uint8_t)0x00FFU);
@@ -1928,6 +1930,7 @@ static void UART_Tx_ISR (UART_HandleTypeDef *huart){
 		}
 	}else if(huart->Instance == USART7){
 		UART_Tx_VA(&huart7,&va_txDATA);
+		//printPRUEBA(2);
 	}
 
 }

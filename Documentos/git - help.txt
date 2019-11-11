@@ -33,8 +33,9 @@ http://aprendegit.com/
  
  //subir projecto gitlab
  git push --set-upstream https://gitlab.com/rai.endata/relojes.git master
- o
- git push origin master(reemplazar master por la rama que se quiere enviar los cambios)
+ 
+ git push --set-upstream https://gitlab.com/rai.endata/metroblue.git --tags
+ git pull --tags https://gitlab.com/rai.endata/metroblue.git
  
  //crear etiquetas
  git tag 1.0.0 1b2e1d63ff (donde 1b2e1d63ff es el id del commit que se puese ver con git log)

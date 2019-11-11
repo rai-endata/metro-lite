@@ -13,16 +13,20 @@
 
 #define TO_PRINTING_TURNO		5
 #define MENU_REPORTE_TURNO_index	0
-#define max_turnosReporte           3        // Maximo de turnos a mostrar
+#define max_turnosReporte           2        // Maximo de turnos a mostrar
 
 
 #define PROG_TICKET_percentChofer     ((const) EEPROM_PROG_TICKET_RECAUD.chofer)
+
+extern const byte TICKET_TURNO_estados[3];
 
 extern tREG_SESION iniTURNO;
 extern tREG_SESION finTURNO;
 extern tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
 extern tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 extern tREG_SESION* sesion_ptrs[max_turnosReporte];
+extern byte estadosTurno;
+
 
 #ifdef VISOR_REPORTES
 	extern void print_ticket_turno(void);
@@ -52,6 +56,7 @@ extern tREG_SESION* sesion_ptrs[max_turnosReporte];
 
     extern uint16_t TURNO_getCantDesconexionesAlim_turno(void);
     extern uint32_t TURNO_calcTiempoDesconexionAlim_turno(byte* buffer);
+    extern uint32_t TURNO_calcTiempoDesconexionAlim_turno_HEX(byte* buffer);
     extern uint32_t TURNO_getImportePerdido_tarifa(byte* buffer, byte nroTarifa);
 
     extern uint32_t TURNO_calcImportePerdido_turno(byte* buffer);

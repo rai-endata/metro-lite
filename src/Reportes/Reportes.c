@@ -1,13 +1,5 @@
 /* File: <Reportes.c> */
 //#include "- Reloj-Blue Config -.h"
-#include "Reportes.h"
-#include "- metroBLUE Config -.h"
-#include "tipo de equipo.h"
-
-#ifdef RELOJ_DEBUG
- #include "printDEBUG.h"
-#endif
-
 /*
   Los reportes se trabajan de la siguiente manera:
   
@@ -36,7 +28,17 @@
 
 /* INCLUDES */
 /************/
-  #ifdef VISOR_REPORTES
+
+#include "Reportes.h"
+#include "- metroBLUE Config -.h"
+#include "tipo de equipo.h"
+#include "teclas.h"
+
+#ifdef RELOJ_DEBUG
+ #include "printDEBUG.h"
+#endif
+
+#ifdef VISOR_REPORTES
 
 	#include "Reportes.h"
 	#include "Flash.h"
@@ -52,6 +54,8 @@
 	#include "rtc.h"
 	#include "inicio.h"
 	#include "Ticket Turno.h"
+	#include "display-7seg.h"
+	#include "Tarifacion Reloj.h"
 
   
   #ifdef VISOR_REPORTE_30DIAS
@@ -91,7 +95,7 @@
   static tREG_GENERIC* newReg_GETptr;             // Puntero de extraccion de cola
   static byte newReg_qeueu_cnt;                   // Contador de registros encolados
   
-  static tFLASH_ERROR REPORTE_flashError;
+  tFLASH_ERROR REPORTE_flashError;
   
   static byte REPORTES_forcedReset;               // Reset Forzado de Reportes
   
@@ -121,6 +125,7 @@
 
 
   tREG_LIBRE regLibre;
+  tVIAJE regVIAJE;
 
 /*********************************************************************************************/
 /* RUTINAS */
@@ -133,7 +138,7 @@
       // punteros => Los REINICIALIZO correctamente
       
       #ifdef VISOR_REPORTES
-       if (RELOJ_INTERNO && HORA_RTC){
+       if (HORA_RTC){
           REPORTES_HABILITADOS = 1;
         }else{
           REPORTES_HABILITADOS = 0;
@@ -178,7 +183,6 @@
             REPORTE_30DIAS_ini(1);          // Re-Incializacion del Reporte 30Dias
             
             REPORTES_forcedReset = 1;       // Para saber que hubo un reset forzado
-            mostrar_IAR();                  // Mostrar Aviso: Inicializacion Automatica de Reportes
           }
           #endif
         }
@@ -196,8 +200,12 @@
       byte* data_ptr;
       uint32_t putBKP;
       uint16_t valor;
+      uint16_t sizeTABLA;
       
        uint32_t* addressEEPROM_REPORTE_PUT;
+
+
+       sizeTABLA = dim_REPORTE;
 
       newReg_PUTptr = newRegistro;      // Inicializo puntero PUT de cola
       newReg_GETptr = newRegistro;      // Inicializo puntero GET de cola
@@ -207,6 +215,11 @@
       if (REPORTES_HABILITADOS){
         //if (chkVISOR_firstBoot || reset){
         if (VISOR_firstBoot || reset){
+          //inicializa nro correlativo
+          nroCorrelativo_INTERNO = 0;
+          EEPROM_WriteByte(EEPROM_NRO_CORRELATIVO, nroCorrelativo_INTERNO);
+          //LIMPIA TABLA DE REPOSTES
+          clear_tabREPORTES();
           // PRIMER ENCENDIDO o RESET REPORTES
           REPORTE_PUTptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
           data_ptr = (byte*) &REPORTE_PUTptr;           			// Guardo puntero PUT en EEPROM
@@ -215,7 +228,7 @@
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
           EEPROM_write(ADDR_EEPROM_REPORTE_INDEX, valor);
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
-          EEPROM_write(ADDR_EEPROM_REPORTE_NRO_VIAJE, valor);
+          EEPROM_write(ADDR_EEPROM_REPORTE_NRO_VIAJE, 1);
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
           EEPROM_write(ADDR_EEPROM_REPORTE_NRO_TURNO, valor);
         }
@@ -329,6 +342,8 @@
         regOcupa.velMax = vel;            // Velocidad Maxima en Ocupado
         regOcupa.segParado = segP;        // Segundos que permanecio Detenido en Ocupado
         regOcupa.segMarcha = segM;        // Segundos que estuvo en Movimiento en Ocupado
+        regOcupa.bajadaBandera = TARIFA.bajadaBandera;
+        regOcupa.fichaPesos = fichaPESOS;
         
         queueDone = queueNewReg((tREG_GENERIC*) &regOcupa);  // Intento encolar nuevo registro
       }else{
@@ -343,7 +358,7 @@
 
   /* ENCOLAR NUEVO REGISTRO A PAGAR */
   /**********************************/
-    byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint32_t espera){
+    byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t minutosEspera){
       // Siempre y cuando haya lugar en la cola, encola un nuevo registro A PAGAR para ser
       // grabado en FLASH.
       // Devuelve "1" en caso de haber encolado, devuelve "0" si no pudo encolar
@@ -365,17 +380,19 @@
 +---+---+---+---+---+---+---+---+---+---+---+---+---+----+---+----+
 
 xx xx xx xx   xx xx xx xx    xx xx xx xx  xx xx xx xx   xx xx xx xx   xx xx xx xx   xx xx xx xx
-_____ __ _________________________ __     _____ __ __________ __________    _____   _____
-  |    |            |               |       |    |    |          |            |       |
-indice |           date           chofer  nroVje |  fichasD    fichasT      importe   |
-      tipo										tarifa                              espera
-
+_____ __ _________________________ __     _____ __ __________ __________    _____   _____ _____
+  |    |            |               |       |    |    |          |            |       |      |
+indice |           date           chofer  nroVje |  fichasD    fichasT      importe   |      |
+      tipo										tarifa                        segundosEspera |
+                                                                                         segundosTarifacion
  * */
 
     	regAPagar.tipo = REG_apagar;      // Tipo de registro
         regAPagar.date = date;            // Fecha y Hora del Pase a Ocupado
         regAPagar.chofer = chofer;        // Chofer
         regAPagar.nroViaje = nroViaje;    // Nº Correlativo de Viaje
+        regAPagar.punto_decimal =  PUNTO_DECIMAL;
+
         //cambiar cuando se agrega programador
         /*
         if(tarifa == 1){
@@ -403,7 +420,9 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regAPagar.fichasTime[0] = *ptr++; // Agrego fichasT
         
         regAPagar.importe = valorViaje;   // Agrego Importe (Valor del Viaje)
-        regAPagar.espera = espera;        // Agrego Espera (Segundos de Espera del viaje)
+        regAPagar.segundosEspera = esperaEspera;        // Agrego Espera (Segundos de Espera del viaje)
+        regAPagar.segundosTarifacion = esperaTarifacion;        // Agrego Espera (Segundos de Espera del viaje)
+        regAPagar.minutosEspera = minutosEspera;        //
         
         queueDone = queueNewReg((tREG_GENERIC*) &regAPagar);  // Intento encolar nuevo registro
       }else{
@@ -466,6 +485,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regSesion.tipo = REG_sesion;       // Tipo de registro
         regSesion.date = *DATE_ptr;        // Fecha y Hora actual
         regSesion.chofer = chofer;         // Chofer
+        regSesion.punto_decimal =  PUNTO_DECIMAL;
+        regSesion.bajadaBandera = TARIFA.bajadaBandera;
+        regSesion.fichaPesos = fichaPESOS;
+
+        //EEPROM_ReadBuffer(&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
+
+        //regSesion.nroTurno = REPORTE_NRO_TURNO;         // nro de turno
+
         //string_FAR_copy(regSesion.choferSys, LOGUEO_getChoferLogueado()); 	// Chofer logueado al Sistema en ASCII
         queueDone = queueNewReg((tREG_GENERIC*) &regSesion);  				// Intento encolar nuevo registro
       }else{
@@ -665,19 +692,17 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
         if (newReg_GETptr->tipo == REG_apagar){
           // TIPO A PAGAR => Agrego Nro de Viaje
-          NroViaje = REPORTE_NRO_VIAJE;
-          ((tREG_A_PAGAR*far)newReg_GETptr)->nroViaje = NroViaje;
+         // NroViaje = REPORTE_NRO_VIAJE;
+          //((tREG_A_PAGAR*far)newReg_GETptr)->nroViaje = NroViaje;
         
         }else if (newReg_GETptr->tipo == REG_sesion){
           // TIPO SESION => Agrego Nro de Turno
-        updateNroTURNO_inFlash(newReg_GETptr->tipo);         // Actualizacion de NRO TURNO
-        //EEPROM_ReadBuffer(&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
-        NroTurno = REPORTE_NRO_TURNO;
-          ((tREG_SESION*far)newReg_GETptr)->nroTurno = NroTurno;
+         updateNroTURNO_inFlash(newReg_GETptr->tipo);         // Actualizacion de NRO TURNO
+         ((tREG_SESION*)newReg_GETptr)->nroTurno = REPORTE_NRO_TURNO;
           //debug
 		#ifdef RELOJ_DEBUG
           if((REPORTE_PUTptr < ADDR_EEPROM_REPORTE) || (REPORTE_PUTptr > (ADDR_EEPROM_REPORTE+ dim_REPORTE))){
-        	  NroTurno = 12345;
+        	 // NroTurno = 12345;
           }
         #endif
         }
@@ -695,6 +720,17 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
         #ifdef VISOR_REPORTE_30DIAS
           REPORTE_30DIAS_addData(newReg_GETptr);  // Agrego datos a reporte de 30dias
+
+#ifdef RELOJ_DEBUG
+          tREG_30DIAS newReg_30dias;
+          tREG_30DIAS* newReg_30dias_ptr;
+
+        //imprime direccion de tabla
+        newReg_30dias_ptr = &newReg_30dias;
+		EEPROM_ReadBuffer(newReg_30dias_ptr, REPORTE_30DIAS_PUTptr,sizeof(tREG_30DIAS));
+		printDIR_REPORTES_30DIAS(&bufferPRINT);
+#endif
+
         #endif
         
         // Una vez finalizada la grabacion de FLASH:
@@ -708,7 +744,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         updatePUTptr_inFlash();               // Actualizacion de Puntero de Grabacion
         updateIndexLastSESION_inFlash(tipo);  // Actualizacion de INDICE DE ULTIMA SESION
         updateINDEX_inFlash();                // Actualizacion de INDICE
-        updateNroVIAJE_inFlash(tipo);         // Actualizacion de NRO VIAJE
+      //  updateNroVIAJE_inFlash(tipo);         // Actualizacion de NRO VIAJE
 
 
 #ifdef RELOJ_DEBUG
@@ -985,6 +1021,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
   /* EXTRAER ESPERA DE A PAGAR */
   /*****************************/
+   /*
     uint32_t REPORTE_getEspera_fromAPagar (tREG_A_PAGAR*far REG_ptr){
       // Esta funcion devuelve ESPERA del registro pasado como argumento.
       // Previamente verifica que el puntero sea valido
@@ -1006,6 +1043,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       
       return(espera);
     }        
+*/
 
 
   /* OBTENER CANTIDAD DE VIAJES EN TARIFA SEGUN RANGO */
@@ -1507,12 +1545,13 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           }
         }
 
-        EEPROM_ReadBuffer(&aux_search,search_ptr,sizeof(tREG_GENERIC));
+        EEPROM_ReadBuffer(&aux_search, search_ptr, sizeof(tREG_GENERIC));
 
         if (aux_search.tipo == REG_sesion){
           *buffer_ptr++ = (tREG_SESION*)search_ptr;  // Guardo puntero de SESION
           sesiones++;                               // Incremento contador de sesiones
         }
+
         if (search_ptr <= ADDR_EEPROM_REPORTE){
         	exit = 1;
             if(sesiones == 0){
@@ -1533,21 +1572,80 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       return(sesiones);
     }
 
-    //(void)REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+    byte REPORTES_getTurno (tREG_SESION*far* buffer_ptr, uint16_t nroTurno, byte maxTurnos){
+          // Rutina que devuelve en el buffer pasado como argumento, los punteros a todos los turnos
+          // que se encuentren, siempre y cuando sean menores la cantidad maxima establecida
+          //
+          // Lo que hago es recorrer los registros de reporte, hacia atras, desde donde estoy, hasta
+          // estar de nuevo aca o hasta obtener la cantidad maxima
+          //
+          // Devuelve la cantidad de punteros de sesion extraidas
+          tREG_GENERIC* search_ptr;
+          byte exit;
+          byte sesiones;
+          tREG_GENERIC aux_search;
+          tREG_GENERIC* aux_search_ptr;
+          byte tamanio,tamanio1,tamanio2,tamanio3;
+          tREG_GENERIC* tamanio_ptr;
+
+          search_ptr = REPORTE_PUTptr;               // Extraigo valor actual
 
 
-    /*
-      //MARCHA
-  	  seconds_to_HMS(buffer,tiempoMarchaLIBRE);          			// Convierto a H-M-S
-  	  seconds_to_HMS(buffer,tiempoMarchaOCUPADO);          			// Convierto a H-M-S
-  	  seconds_to_HMS(buffer,tiempoMarchaFSERV);          			// Convierto a H-M-S
-  	  //PARADO
-  	  seconds_to_HMS(buffer,tiempoParadoLIBRE);          			// Convierto a H-M-S
-  	  seconds_to_HMS(buffer,tiempoParadoOCUPADO);          			// Convierto a H-M-S
-  	  seconds_to_HMS(buffer,tiempoParadoFSERV);          			// Convierto a H-M-S
-  	  //buffer[5] = 0;										// Como solo me interesa imprimir HH:MM, pongo un fin de cadena
+          exit = 0;
+          sesiones = 0;
+          dispararTO_lazo();
+          while(!exit){
 
-     * */
+        	decFlashRep_ptr(&search_ptr);              // Retrocedo puntero, porque el actual apunta donde va a agregar
+        	if ((REPORTES_finBackwardSearch(&search_ptr)) || (sesiones >= maxTurnos)){
+              // Si:
+              //  - Finalizo la busqueda hacia atras o
+              //  - Extraje la cantidad maxima de turnos
+              exit = 1;
+              if(sesiones == 0){
+            	 //no hay viajes
+            	  sesiones = 0xff;
+              }
+            }
+
+            EEPROM_ReadBuffer(&aux_search, search_ptr, sizeof(tREG_GENERIC));
+            aux_search_ptr = &aux_search;
+
+            if (aux_search.tipo == REG_sesion){
+            	if (nroTurno == 0x0000){
+            		//DIRECION INICIO Y FIN DE SESION DEL ULTIMO TURNO
+            		*buffer_ptr++ = (tREG_SESION*)search_ptr;  // Guardo puntero de SESION
+                    sesiones++;                               // Incremento contador de sesiones
+            	}else{
+            		//DIRECION INICIO Y FIN DE SESION DE TURNO PEDIDO
+                	if (((tREG_SESION*)aux_search_ptr)->nroTurno == (nroTurno+1)){
+                        *buffer_ptr++ = (tREG_SESION*)search_ptr;  // Guardo puntero de SESION
+                        sesiones++;                               // Incremento contador de sesiones
+                	}else if(((tREG_SESION*)aux_search_ptr)->nroTurno == nroTurno){
+                        *buffer_ptr++ = (tREG_SESION*)search_ptr;  // Guardo puntero de SESION
+                        sesiones++;                               // Incremento contador de sesiones
+                	}
+            	}
+            }
+
+            if (search_ptr <= ADDR_EEPROM_REPORTE){
+            	exit = 1;
+                if(sesiones == 0){
+              	 //no hay viajes
+              	  sesiones = 0xff;
+                }
+            }
+
+            if (chkTO_lazo_F() == 1){
+              exit = 1;
+           	 //error de timeout
+           	  sesiones = 0xfe;
+            }
+          }
+          detenerTO_lazo();
+
+          return(sesiones);
+        }
 
   /* OBTENER DISTANCIA RECORRIDA DESDE EL ULTIMO VIAJE */
   /*****************************************************/
@@ -2082,8 +2180,6 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         indice = dim_REPORTE + 1; // Para que quede registrado que dio una vuelta
       }
       data_ptr = (byte*) &indice;
-      //REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_INDEX, data_ptr, SIZE_EEPROM_REPORTE_INDEX);
-      //REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_INDEX, &indice, SIZE_EEPROM_REPORTE_INDEX);
       EEPROM_write(ADDR_EEPROM_REPORTE_INDEX, indice);
 
     }
@@ -2106,7 +2202,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         NroViaje = REPORTE_NRO_VIAJE;
     	NroViaje++;                         // Incremento NroViaje en FLASH
         if (NroViaje == 0xFFFF){
-          NroViaje = 0;
+          NroViaje = 1;
         }
         data_ptr = (byte*) &NroViaje;
         //REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_NRO_VIAJE, data_ptr, (uint16_t) 2);
@@ -2128,16 +2224,11 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       EEPROM_ReadBuffer(&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
 
       if (type == REG_sesion){
-        NroTurno = *addressEEPROM_REPORTE_NRO_TURNO; // Extraigo valor de FLASH
-        NroTurno = REPORTE_NRO_TURNO;
-        NroTurno++;                         // Incremento NroViaje en FLASH
-        if (NroTurno == 0xFFFF){
-          NroTurno = 0;
+        REPORTE_NRO_TURNO++;                         // Incremento NroViaje en FLASH
+        if (REPORTE_NRO_TURNO == 0xFFFF){
+        	REPORTE_NRO_TURNO = 0;
         }
-        data_ptr = (byte*) &NroTurno;
-        //REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_NRO_TURNO, data_ptr, (uint16_t) 2);
-        //REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_NRO_TURNO, &NroTurno, (uint16_t) 2);
-        EEPROM_write(ADDR_EEPROM_REPORTE_NRO_TURNO, NroTurno);
+       EEPROM_write(ADDR_EEPROM_REPORTE_NRO_TURNO, REPORTE_NRO_TURNO);
       }
     }
 
@@ -2233,6 +2324,195 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
        return(ADDR_EEPROM_REPORTE);
  }
 
+
+
+ tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( nro_viaje){
+
+	  byte TO_F;
+      //tREG_GENERIC aux_INI;
+	  //tREG_GENERIC* aux_INI_ptr;
+	  //tREG_GENERIC* cobrando_ptr;
+
+	  tREG_A_PAGAR aux_INI;
+	  tREG_A_PAGAR* aux_INI_ptr;
+	  tREG_A_PAGAR* cobrando_ptr;
+
+      tREG_GENERIC* INI_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;
+	  tREG_GENERIC* FIN_ptr = (tREG_GENERIC*)FIN_TABLA_REPORTE;
+
+	   FIN_ptr = ADDR_EEPROM_REPORTE + 500*sizeof(tREG_GENERIC);
+
+	    cobrando_ptr = 0;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do {
+          TO_F = chkTO_lazo_F();                  // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_apagar && (((tREG_A_PAGAR*)aux_INI_ptr)->nroViaje == nro_viaje)){
+            // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
+        	  cobrando_ptr = INI_ptr;
+        	  regVIAJE.nroViaje 	 = aux_INI.nroViaje;
+        	  regVIAJE.chofer 		 = aux_INI.chofer;
+        	  regVIAJE.tarifa 		 = aux_INI.tarifa;
+        	  regVIAJE.minutosEspera = aux_INI.minutosEspera;
+        	  regVIAJE.dateA_PAGAR 	 = aux_INI.date;
+        	  regVIAJE.fichasDist[0] = aux_INI.fichasDist[0];
+        	  regVIAJE.fichasDist[1] = aux_INI.fichasDist[1];
+        	  regVIAJE.fichasDist[2] = aux_INI.fichasDist[2];
+        	  regVIAJE.fichasTime[0] = aux_INI.fichasTime[0];
+        	  regVIAJE.fichasTime[1] = aux_INI.fichasTime[1];
+        	  regVIAJE.fichasTime[2] = aux_INI.fichasTime[2];
+        	  regVIAJE.importe 		 = aux_INI.importe;
+        	  regVIAJE.puntoDecimal  = aux_INI.punto_decimal;
+        	 break;
+          }
+          incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
+        }while((INI_ptr != ADDR_EEPROM_REPORTE) );
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+      return( cobrando_ptr);
+    }
+
+
+ tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr){
+
+	 uint16_t movSinPulsos;
+      byte pointer_ok;
+      byte TO_F;
+      tREG_OCUPADO aux_INI;
+      tREG_OCUPADO* aux_INI_ptr;
+      tREG_OCUPADO* ocupado_ptr;
+
+      tREG_GENERIC* FIN_ptr;
+
+        FIN_ptr = INI_ptr;
+	    ocupado_ptr = 0;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do{
+          decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+          TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_ocupado){
+            // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
+        	  ocupado_ptr = INI_ptr;
+        	  regVIAJE.dateOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->date;
+        	  regVIAJE.kmOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->km;
+        	  regVIAJE.segMarchaOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segMarcha;
+        	  regVIAJE.segParadoOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segParado;
+        	  regVIAJE.velMaxOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->velMax;
+        	  regVIAJE.fichaPesos = ((tREG_OCUPADO*)aux_INI_ptr)->fichaPesos;
+        	 break;
+          }
+
+        }while ((INI_ptr != FIN_ptr));
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+      return( ocupado_ptr);
+    }
+
+ tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr){
+
+	   uint16_t movSinPulsos;
+       byte pointer_ok;
+       byte TO_F;
+       tREG_LIBRE aux_INI;
+       tREG_LIBRE* aux_INI_ptr;
+       tREG_LIBRE* libre_ptr;
+
+       tREG_GENERIC* FIN_ptr;
+
+         FIN_ptr = INI_ptr;
+ 	    libre_ptr = 0;
+         TO_F = 0;                                 // Reseteo Bandera de TimeOut
+         dispararTO_lazo();                        // Disparo Time Out de Lazo
+         do{
+           decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+           TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+           EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+           aux_INI_ptr = &aux_INI;
+           if (aux_INI.tipo == REG_libre){
+             // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
+         	  libre_ptr = INI_ptr;
+        	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
+        	  regVIAJE.kmLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->km;
+        	  regVIAJE.segMarchaLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segMarcha;
+        	  regVIAJE.segParadoLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segParado;
+        	  regVIAJE.velMaxLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->velMax;
+        	  regVIAJE.sensor = ((tREG_LIBRE*)aux_INI_ptr)->sensor;
+         	  break;
+           }
+
+         }while ((INI_ptr != FIN_ptr));
+
+         detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+       return( libre_ptr);
+     }
+
+ void clear_tabREPORTES (void){
+	 uint16_t* EEPROM_ptr;
+	 tREG_GENERIC* eeprom_tab_ptr;
+     uint16_t aux,aux1;
+     tREG_GENERIC reg_eeprom;
+     byte* reg_eeprom_ptr;
+
+     mostrar_clear_dsplyEEPROM=1;
+	 mostrar_t_dsplyT=1;
+	 on_display_tarifa();
+	 print_display();
+	 eeprom_tab_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;
+
+	 aux=0;
+	 aux1=5;
+	 indexMenu_IniTurno=99;
+	 while(eeprom_tab_ptr < FIN_EEPROM_REPORTE){
+		EEPROM_ptr = (uint16_t*)eeprom_tab_ptr;
+		//prueba
+		reg_eeprom_ptr = &reg_eeprom;
+		EEPROM_ReadBuffer(&reg_eeprom,EEPROM_ptr,sizeof(tREG_GENERIC));
+
+		clearREGISTER_tabREPORTES((uint8_t*)EEPROM_ptr);
+		//prueba
+		EEPROM_ReadBuffer(&reg_eeprom,EEPROM_ptr,sizeof(tREG_GENERIC));
+		////////
+
+		eeprom_tab_ptr++;
+		aux++;
+		if(aux==aux1){
+			aux1 = aux+5;
+			indexMenu_IniTurno--;
+			print_display();
+			if(indexMenu_IniTurno==0){
+				indexMenu_IniTurno=0;
+			}
+		}
+	}
+
+	mostrar_clear_dsplyEEPROM = 0;
+	mostrar_t_dsplyT=0;
+	indexMenu_IniTurno=0;
+	on_display_tarifa();
+	off_display();
+ }
+
+
+
+ void clearREGISTER_tabREPORTES (uint8_t* ptrEEPROM){
+
+	 uint8_t i =0;
+
+ 	 while(i < sizeof(tREG_GENERIC)){
+ 		EEPROM_WriteByte((uint32_t) ptrEEPROM, 0xff);
+ 		ptrEEPROM++;
+ 		i++;
+ 	 }
+
+  }
 
 
 

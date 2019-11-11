@@ -70,7 +70,7 @@ void ENABLE_SPI_byIRQ (void);
 void ENABLE_SPI_byPOLLING (void);
 
 extern void MX_SPIx_Init(void);
-extern uint8_t SpiTxRxByte(uint8_t byte, uint8_t* status);
+extern uint8_t SpiTxRxByte(uint8_t byte, uint8_t* status_ptr);
 extern void test_spi(void);
 
 extern SPI_HandleTypeDef SpiHandle;

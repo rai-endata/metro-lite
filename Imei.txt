@@ -1,0 +1,4 @@
+Bluetooth
+IMEI
+rai:   98:D3:81:FD:7D:89
+hugo:  98:D3:61:FD:32:04

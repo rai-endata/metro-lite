@@ -30,6 +30,7 @@
    	#define     STM32F091RC
 
 	#define		VISOR_REPORTES
+	//#define		VISOR_REPORTE_30DIAS
 	//#define 	VISOR_REPORTE_ACUMULATIVO
 	#define		VISOR_PRINT_TICKET_FULL
 	#define		VISOR_PRINT_TICKET
@@ -43,6 +44,7 @@
 
 	#define	    HACER_REDONDEO
 	//#define		RELOJ_DEBUG
+	//#define		DEBUG_UART
 	#define		HABILITA_REINTENTOS
 
 #endif

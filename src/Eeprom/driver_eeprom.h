@@ -57,7 +57,6 @@
 
 
 #if defined USING_25LC512
-
 /*
 64K x 8-bit (512 Kbit)
 - 128-byte page
@@ -71,9 +70,10 @@ Read current: 10 mA (Max) at 20 MHz
 Write current: 5 mA (Max) at 20 MHz
 
  */
-#define EEPROM_SIZE					65536
+	#define EEPROM_SIZE					65536
 	#define EEPROM_PAGE_SIZE_BYTES		128
 	#define SPI_SPEED_MHZ				20
+
 #endif
 
 

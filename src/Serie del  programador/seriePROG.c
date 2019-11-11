@@ -10,11 +10,13 @@
 	#include "stm32f0xx_hal.h"
 	#include "main.h"
 	#include "Programacion Parametros.h"
+	//#include "file aux1.h"
 
 /*********************************************************************************************/
 /* VARIABLES */
 /*************/
   
+
   static tBAX PRG_protBAX_STAGE;    // Etapa del protocolo BAX
   
   tBAX_SCI BAX_SCI_PROG;            // Datos de SCI segun protocolo BAX  PROG

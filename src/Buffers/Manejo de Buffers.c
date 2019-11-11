@@ -248,7 +248,7 @@
         /* STRING COPY DEVUELVE CANTIDAD DE DATOS COPIADOS */
           /***************/
 
-        uint16_t string_copy_reurnN (byte* dest_ptr, byte* orig_ptr){
+        uint16_t string_copy_returnN (byte* dest_ptr, byte* orig_ptr){
             uint16_t n;
             n=0;
         	while (*orig_ptr != 0){
@@ -280,6 +280,22 @@
 
           *dest_ptr = 0;
         }
+
+    void bufferNcopy (byte* dest_ptr, byte* orig_ptr, byte N){
+       while (N>0){
+         *dest_ptr++ = *orig_ptr++;
+         N--;
+       }
+    }
+
+    void bufferNcopy_incDst (byte** dest_ptr, byte* orig_ptr, byte N){
+           while (N>0){
+             *(*dest_ptr) = *orig_ptr++;
+             (*dest_ptr)++;
+             N--;
+           }
+    }
+
 
   /* STRING CONCAT */
   /*****************/

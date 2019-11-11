@@ -148,7 +148,7 @@
 			uint8_t mostrar_t_T			:1;
 			uint8_t mostrar_numero_T	:1;
 			uint8_t mostrar_turn_I		:1;
-			uint8_t :1;
+			uint8_t mostrar_clearEEPROM :1;
 		}Bits;
 	}t_displayFLAGS;
 
@@ -163,6 +163,7 @@
 	      #define mostrar_ini_dsplyIMPORTE 		_displayFLAGS.Bits.mostrar_ini_I
 		  #define mostrar_conF_dsplyIMPORTE		_displayFLAGS.Bits.mostrar_conF_I
 		  #define mostrar_turn_dsplyIMPORTE		_displayFLAGS.Bits.mostrar_turn_I
+		  #define mostrar_clear_dsplyEEPROM		_displayFLAGS.Bits.mostrar_clearEEPROM
 
 
 extern void ini_display_7seg (void);
@@ -190,6 +191,7 @@ extern void TEST_DISPLAY_7SEG(void);
 extern void TST_segmentos_display_7seg (void);
 extern void to_test_display (void );
 extern void setTEST_DISPLAY(void);
+extern void mostrar_ini(void);
 
 extern uint8_t cnt_1;
 extern uint8_t cnt_2;

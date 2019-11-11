@@ -87,7 +87,7 @@ uint16_t pauseTx_to_cnt;
 
 	  if (HAY_COMANDO_PENDIENTE ){
 
-		  transmitiendo_RTA = 0;            				// Asumo que no voy a transmitir una Rta
+		  //transmitiendo_RTA = 0;            				// Asumo que no voy a transmitir una Rta
 
 		  if(bluetoothCONECTADO){
 			  space = chkSpace_onDA_TxBuffer();
@@ -98,9 +98,10 @@ uint16_t pauseTx_to_cnt;
 		  }else{
 			//SI NO ESTA CONECTADO EL BLUETOOTH, SOLO ACUMULO
 			//COMANDOS DE RELOJ
-            if(CMD_RELOJ /*|| CMD_RELOJ_RESP*/){
+            if(CMD_RELOJ ){
               space = chkSpace_onDA_TxBuffer();
   			  if(space > 3+Tabla_ComandosTx[CMD_a_Tx]->N){
+  			   //pasa datos de buffer de comandos a buffer intermedio (DA_TxBuffer)
   			   Tabla_TxDA[CMD_a_Tx]();
   			   TxBufferDA_cntCMD++;       						// Incremento cantidad de comandos copiados a buffer de Tx
   			  }
@@ -110,6 +111,7 @@ uint16_t pauseTx_to_cnt;
 		  }
 		}
 	}
+
 
 /* CHEQUEAR SI HAY ALGUN COMANDO POR TRANSMITIR */
 /************************************************/
@@ -135,8 +137,8 @@ uint16_t pauseTx_to_cnt;
 
 	  // Después priorizo Encendido de Equipo
 	  if (CMD_Encendido_EQUIPO.Tx_F && !exit){
-		exit = 1;                         // Salgo xq el Encendido de Visor esta pendiente
-		cmd = CMD_Encendido_EQUIPO.cmd;     // Extraigo comando de Encendido de Visor
+		exit = 1;                            // Salgo xq el Encendido de Visor esta pendiente
+		cmd = CMD_Encendido_EQUIPO.cmd;      // Extraigo comando de Encendido de Visor
 	  }
 
 	  // Después de la Respuesta y el Encendido de EQUIPO, priorizo los Comandos de Reloj
@@ -356,7 +358,7 @@ void Tx_BUFFER_getN (void){
            // Rutina que transmite un BUFFER de datos. El buffer debe finalizar en DF0A.
            //
            // EDIT 25/04/2013
-           //  Se agrego compilación condicional para trasmisión de numero de reintentos
+           // Se agrego compilación condicional para trasmisión de numero de reintentos
            typeERROR error;
 
            byte N,a1,a2;
@@ -392,7 +394,10 @@ void Tx_BUFFER_getN (void){
                DA_TxBuffer_addData(fin_datos_msb);      	// 0xDF
                DA_TxBuffer_addData(fin_datos_lsb);      	// 0x0A
 
-               recargar_Reintento_CMD(CMD_a_Tx);         	// Recargo reintentos
+               if (CMD_a_Tx != CMD_comandoMENSAJE){
+            	   recargar_Reintento_CMD(CMD_a_Tx);         	// Recargo reintentos
+               }
+
 
                DA_requestTx();             				 	// Inicia Transmisión de datos al Aire
 
@@ -533,13 +538,30 @@ void Tx_BUFFER_getN (void){
 			byte i;
 
 			i = 0;
+
 			while(i < 7){
 			    reTx_timer_cnt[CMD_RELOJ_Pase_a_LIBRE+i] = 0;                // Detengo Timer Reintentos
 				Tabla_ComandosTx[CMD_RELOJ_Pase_a_LIBRE+i]->Tx_F = 0;        // Bajo bandera de Transmision
 				Tabla_ComandosTx[CMD_RELOJ_Pase_a_LIBRE+i]->Reintentos = 0;  // Agoto Reintentos
 				i++;
 			}
+			// Detengo Timer Reintentos
+			reTx_timer_cnt[CMD_RELOJ_Pase_a_LIBRE_SC] = 0;
+			reTx_timer_cnt[CMD_RELOJ_Pase_a_OCUPADO_APP_SC] = 0;
+			reTx_timer_cnt[CMD_RELOJ_Pase_a_OCUPADO_SA_SC] = 0;
+			reTx_timer_cnt[CMD_RELOJ_Pase_a_COBRANDO_SC] = 0;
+			// Bajo bandera de Transmision
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_LIBRE_SC]->Tx_F = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_OCUPADO_APP_SC]->Tx_F = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_OCUPADO_SA_SC]->Tx_F = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_COBRANDO_SC]->Tx_F = 0;
+			// Agoto Reintentos
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_LIBRE_SC]->Reintentos = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_OCUPADO_APP_SC]->Reintentos = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_OCUPADO_SA_SC]->Reintentos = 0;
+			Tabla_ComandosTx[CMD_RELOJ_Pase_a_COBRANDO_SC]->Reintentos = 0;
 		}
+
 
     void pauseTx_TIMEOUT (void){
           // Ejecutada cada 10 mseg

@@ -527,14 +527,20 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
       tEEPROM_ERROR error;
       uint16_t buffer_backup[1];
       uint32_t address_eeprom;
+      error_t err;
 
       error = EEPROM_OK;                // Asumo que no hay error
 
   		buffer_backup[0] = dato;
   		address_eeprom = EEPROM_ptr;
 
-  		EEPROM_WriteBuffer((uint8_t*) &buffer_backup,address_eeprom,(uint16_t)2);
-
+  		err = EEPROM_WriteBuffer((uint8_t*) &buffer_backup,address_eeprom,(uint16_t)2);
+        if(err != errNone){
+        	//para debug
+       // 	uint8_t stop=1;
+        //	while(stop){
+        //	}
+        }
   		return(error);
     }
 

@@ -166,33 +166,64 @@
  	 * !CS=H for data to be written.
  */
 	 uint8_t status;
-
+	 uint8_t* status_ptr;
+     uint8_t error;
+     status_ptr = &status;
+     error=0;
 #if defined 	USING_MEMORY_PROTECT
  	 if(EEPROM_IsProtected(addr,addr))
  	 {
- 		 return errProtected;
+ 		 //return errProtected;
+ 		error=1;
+ 		//return error;
  	 }
 #endif
  	//Set CS low for the write sequence
   	 GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
-  	 SpiTxRxByte(EEPROM_WREN, (uint8_t*)&status);							//Send the write sequence
-     GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);			//CS==H
-     //end of write sequence. Write latch is enabled
+ // EEPROM_MilliSecDelay(1);
+  	 SpiTxRxByte(EEPROM_WREN, status_ptr);							//Send the write sequence
+  	 GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);			//CS==H
+ // EEPROM_MilliSecDelay(1);
+  	 //end of write sequence. Write latch is enabled
 
       //Set CS low for the command sequence
       GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
-      SpiTxRxByte(EEPROM_WRITE, (uint8_t*)&status);							//send the WRITE command
-      SpiTxRxByte((uint8_t)(addr >> 8), (uint8_t*)&status);					//send H 8 bits of addr
-      SpiTxRxByte((uint8_t)(addr &255), (uint8_t*)&status);					//send low 8 bits of addr
-      SpiTxRxByte(byte, (uint8_t*)&status);									//send the byte DATA to the eeprom
+ //EEPROM_MilliSecDelay(1);
+      status = 7;
+      SpiTxRxByte(EEPROM_WRITE, status_ptr);							//send the WRITE command
+      if(status !=errorNONE){
+   		error=2;
+   		return error;
+      }
+      SpiTxRxByte((uint8_t)(addr >> 8), status_ptr);					//send H 8 bits of addr
+      if(status !=errorNONE){
+   		error=3;
+   		return error;
+      }
+      SpiTxRxByte((uint8_t)(addr &255), status_ptr);					//send low 8 bits of addr
+      if(status !=errorNONE){
+   		error=4;
+   		return error;
+      }
+
+      SpiTxRxByte(byte, status_ptr);									//send the byte DATA to the eeprom
+      if(status !=errorNONE){
+   		error=5;
+   		return error;
+      }
+
       //byte written. Page writes are more efficient as the write time
       //for a page and a byte are the same at about 5mS
       GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);			//CS==H
+ //  EEPROM_MilliSecDelay(1);
       //we have a minimum of 3 mS delay here so rather than generate a lot
       //of useless sck's and perhaps noise, lets do a software delay
       EEPROM_MilliSecDelay(4);		//this could be as little as 3mS and no greater than 4mS
+      //EEPROM_MilliSecDelay(16);		//this could be as little as 3mS and no greater than 4mS
       EEPROM_WaitForWIP();
       return errNone;
+
+
  }
 
 /****************************************************************************
@@ -406,7 +437,7 @@ error_t WriteBuffer_EEPROM(uint8_t *array, uint32_t addr, uint16_t num)
  *! \brief
  *Read a buffer of data
  ***************************************************************************/
-error_t EEPROM_ReadBuffer(uint8_t *buff,uint32_t addr, uint16_t num)
+error_t EEPROM_ReadBuffer(uint8_t *buff, uint32_t addr, uint16_t num)
 	{
 	/*
 	 !CS =L

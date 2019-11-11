@@ -13,13 +13,15 @@
 #include "Manejo de Buffers.h"
 #include "stdint.h"
 #include "Print UART.h"
-#include "Ticket Common.h"
+#include "Common Ticket.h"
 #include "Reportes.h"
 
 
 extern	void PRINT_DEBUG_encolarBYTE(uint8_t data);
 extern	void PRINT_DEBUG_encolarBUFFER(uint8_t* buffer);
 extern	void PRINT_DEBUG_imprimir (void);
+extern	void printPRUEBA(uint8_t n);
+
 #ifdef VISOR_REPORTES
 	extern	void printCabecera_REGISTER_TAB_REPORTES(tREG_GENERIC* newReg_GETptr);
 	extern void printLiOcFs_REGISTER_TAB_REPORTES(tREG_GENERIC* newReg_GETptr);

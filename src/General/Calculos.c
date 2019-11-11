@@ -1535,7 +1535,7 @@
   /* CONVERTIR SEGUNDOS A HORA-MIN-SEG */
   /*************************************/
     void seconds_to_HMS (byte* HMS_buffer, uint32_t seg){
-      // Rutina que convierte los segundos pasados como argumento en "HH:MM:SS"
+      // Rutina que convierte los segundos pasados como argumento en "HH:MM:SS en asci"
       //
       // Como con un HMS no puedo representar mas que 99:59:59
       // => el valor de entrada de los segundos esta limitado a 359999
@@ -1564,6 +1564,31 @@
       string_concat(HMS_buffer, time);
     }
     
+    /* CONVERTIR SEGUNDOS A HORA-MIN-SEG */
+      /*************************************/
+        void seconds_to_HMS_HEX (byte* HMS_buffer, uint32_t seg){
+          // Rutina que convierte los segundos pasados como argumento en "HHMMSS EN HEX"
+          //
+          // Como con un HMS no puedo representar mas que 99:59:59
+          // => el valor de entrada de los segundos esta limitado a 359999
+          // En caso de superarse este valor, devuelve 99:99:99
+          volatile uint32_t aux, aux1, aux2;
+          byte time[4];
+
+          aux = seg / 3600;                      // Extraigo HORAS
+          aux1 = (seg - (aux*3600)) / 60;        // Extraigo MINUTOS
+          aux2 = seg - (aux*3600) - (aux1*60);   // Extraigo SEGUNDOS
+
+          if ((aux > 99) || (aux1 > 59) || (aux2 > 59)){
+            aux = 99;
+            aux1 = 99;
+            aux2 = 99;
+          }
+          HMS_buffer[0]=HEXtoBCD(aux);
+          HMS_buffer[1]=HEXtoBCD(aux1);
+          HMS_buffer[2]=HEXtoBCD(aux2);
+        }
+
 
   /* RESTA HORARIA */
   /*****************/
@@ -2188,7 +2213,7 @@ byte  rotarBuffIzq(byte *buff,uint16_t N, byte BIT){
 	  uint8_t aux,j;
 
 	  j=0;
-	  while(j < n-1){
+	  while(j < n/2){
 		  aux = *(buffer+j);
 		  *(buffer+j) = *(buffer+(n-1)-j);
 		  *(buffer+(n-1)-j) = aux;

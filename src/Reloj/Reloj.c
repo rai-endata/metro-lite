@@ -49,7 +49,6 @@ static void RELOJ_resetBuffer (void);
 static void RELOJ_resetReintentos (void);
 static void RELOJ_requestBKP_enFLASH (void);
 static tRELOJ_ERROR RELOJ_incGETptr_endDATA (void);
-static byte RELOJ_procesarRTA (tRELOJ estadoReloj_Rx);
 static tTARIFA* updateTarifa (tDATE date, byte numTarifaActual);
 
 static tUPDATE_CHOFER       _CHOFER_F;
@@ -145,18 +144,22 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 	#define N_Pase_a_LIBRE									(N_CMD + N_DATOS_Pase_a_LIBRE)
 	static byte Pase_a_LIBRE_Buffer[N_DATOS_Pase_a_LIBRE + 2];       // Sumo DF + 0A
 	typeTxCMD   CMD_Pase_a_LIBRE={0,CMD_RELOJ_Pase_a_LIBRE,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
+	typeTxCMD   CMD_Pase_a_LIBRE_SC={0,CMD_RELOJ_Pase_a_LIBRE_SC,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
 
 	// Comando OCUPADO
     #define N_DATOS_Pase_a_OCUPADO         34				//12
     #define N_Pase_a_OCUPADO               (N_CMD + N_DATOS_Pase_a_OCUPADO)
     static byte Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_OCUPADO={0,CMD_RELOJ_Pase_a_OCUPADO,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
+    typeTxCMD   CMD_Pase_a_OCUPADO_APP_SC={0,CMD_RELOJ_Pase_a_OCUPADO_APP_SC,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
+
 
     // Comando OCUPADO
         #define N_DATOS_Pase_a_OCUPADO_SA         34				//12
         #define N_Pase_a_OCUPADO_SA               (N_CMD + N_DATOS_Pase_a_OCUPADO_SA)
        // static byte Pase_a_OCUPADO_SA_Buffer[N_DATOS_Pase_a_OCUPADO_SA + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_SA={0,CMD_RELOJ_Pase_a_OCUPADO_SA,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
+        typeTxCMD   CMD_Pase_a_OCUPADO_SA_SC={0,CMD_RELOJ_Pase_a_OCUPADO_SA_SC,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
 
     	// Comando OCUPADO
         #define N_DATOS_Pase_a_OCUPADO_APP         34				//12
@@ -176,6 +179,7 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
     #define N_Pase_a_COBRANDO               (N_CMD + N_DATOS_Pase_a_COBRANDO)
     static byte Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_COBRANDO={0,CMD_RELOJ_Pase_a_COBRANDO,0,timeReint_rapido,N_Pase_a_COBRANDO,Pase_a_COBRANDO_Buffer};
+    typeTxCMD   CMD_Pase_a_COBRANDO_SC={0,CMD_RELOJ_Pase_a_COBRANDO_SC,0,timeReint_rapido,N_Pase_a_COBRANDO,Pase_a_COBRANDO_Buffer};
 
 
 	// Comando COBRANDO
@@ -185,14 +189,18 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
     typeTxCMD   CMD_Pase_a_FUERA_SERVICIO={0,CMD_RELOJ_Pase_a_FUERA_SERVICIO,0,timeReint_rapido,N_Pase_a_FUERA_SERVICIO,Pase_a_FUERA_SERVICIO_Buffer};
 
 // Tabla de Punteros a Comandos de Reloj
-	typeTxCMD* const Tabla_CMD_Reloj[7]={
+	typeTxCMD* const Tabla_CMD_Reloj[dim_Tabla_CMD_Reloj]={
 		&CMD_Pase_a_LIBRE,
 		&CMD_Pase_a_OCUPADO,
 		&CMD_Pase_a_OCUPADO_SA,
 		&CMD_Pase_a_OCUPADO_BANDERA,
 		&CMD_Pase_a_OCUPADO_APP,
 		&CMD_Pase_a_COBRANDO,
-		&CMD_Pase_a_FUERA_SERVICIO
+		&CMD_Pase_a_FUERA_SERVICIO,
+		&CMD_Pase_a_LIBRE_SC,
+		&CMD_Pase_a_OCUPADO_SA_SC,
+		&CMD_Pase_a_OCUPADO_APP_SC,
+		&CMD_Pase_a_COBRANDO_SC
 	};
 
 	static byte timer_tarifaTiempo_cnt;            	//Timer para le parpadeo de la tarifacion por tiempo
@@ -203,10 +211,10 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 	 //   typeTxCMD   CMD_OCUPADO;
 
 
-	    uint16_t kmRecorridos, kmRecorridos_LIBRE, kmRecorridos_OCUPADO;			//KM Recorridos
-	    byte velMax, velMax_LIBRE, velMax_OCUPADO ;								//Velocidad Máxima
-	    uint16_t timerMarcha_cnt, timerMarcha_cnt_LIBRE, timerMarcha_cnt_OCUPADO;	//Tiempo de marcha
-	    uint16_t timerParado_cnt, timerParado_cnt_LIBRE, timerParado_cnt_OCUPADO;	//Tiempo de PARDO
+	    uint16_t kmRecorridos; uint16_t kmRecorridos_LIBRE; uint16_t kmRecorridos_OCUPADO;			//KM Recorridos
+	    uint8_t velMax; uint8_t velMax_LIBRE; uint8_t velMax_OCUPADO;								//Velocidad Máxima
+	    uint16_t timerMarcha_cnt; uint16_t timerMarcha_cnt_LIBRE; uint16_t timerMarcha_cnt_OCUPADO;	//Tiempo de marcha
+	    uint16_t timerParado_cnt; uint16_t timerParado_cnt_LIBRE; uint16_t timerParado_cnt_OCUPADO;	//Tiempo de PARDO
 	    uint8_t nroCorrelativo_INTERNO;          											//Nro Correlativo de Viaje
 	    uint8_t minutosEspera;           											//Minutos de Espera
 	    uint8_t nroChofer;															//nro de CHOFER
@@ -234,6 +242,9 @@ void Pase_a_LIBRE (void){
 	timerA_PAGAR_to_LIBRE_cnt = 0;
 	#endif
 
+	if(tipo_de_equipo == METRO_LITE){
+		timerA_PAGAR_to_LIBRE_cnt = 0;
+	}
 	if(timerA_PAGAR_to_LIBRE_cnt == 0){
 		anularReTx_RELOJ();
 		CMD_a_RESP = 0x03;
@@ -251,7 +262,7 @@ void Pase_a_LIBRE (void){
 			}
 
 			//envio pase a libre al celular
-			Tx_Pase_a_LIBRE();
+			Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 
 			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
 			VELOCIDAD_MAX = 0;
@@ -321,7 +332,7 @@ void Pase_a_OCUPADO (void){
 		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();        // Nro Correlativo de Viaje
 #ifdef VISOR_REPORTES
 		if (REPORTES_HABILITADOS){
-		  (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento);
+		  (void)REPORTE_queueLibre (libreDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_LIBRE, velMax_LIBRE, timerParado_cnt, timerMarcha_cnt, sensorAsiento);
 		}
 #endif
 
@@ -353,7 +364,7 @@ void Pase_a_OCUPADO (void){
 	//write_backup_rtc();
 	//}
 	//envio pase a ocupado al celular
-	Tx_Pase_a_OCUPADO();
+	Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 	resetVELOCIDAD_MAX;
 	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
@@ -404,7 +415,7 @@ void Pase_a_COBRANDO (void){
 		// Guardo reporte -> datos de OCUPADO
 		#ifdef VISOR_REPORTES
 		if (REPORTES_HABILITADOS){
-		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt);
+		 (void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt);
 
 		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
 		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
@@ -449,7 +460,7 @@ void Pase_a_COBRANDO (void){
      #endif
 
 		//envio pase a corando al celular
-		Tx_Pase_a_COBRANDO();
+		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 		cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 		//resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
 		RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
@@ -460,35 +471,47 @@ void Pase_a_COBRANDO (void){
 
 
 
+static void fuera_de_servicio(void);
+
 void Pase_a_FUERA_SERVICIO (void){
-	if(ESTADO_RELOJ==LIBRE){
-
-
-		fueraServicioDATE = getDate();
-		RELOJ_dateCambio = fueraServicioDATE;
-		if(VELOCIDAD_MAX < 255){
-			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-		}else{
-			velMax_INTERNO = (uint8_t)255;
+	if(EQUIPO_METRO_BLUE){
+		if(ESTADO_RELOJ==LIBRE){
+			fuera_de_servicio();
 		}
-		 kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
-		 nroCorrelativo_INTERNO = EEPROM_NRO_CORRELATIVO;        // Nro Correlativo de Viaje
-
-		 // Guardo reporte -> datos de LIBRE
-		 #ifdef VISOR_REPORTES
-		   if (REPORTES_HABILITADOS){
-			 (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0);
-			 // EDIT 04/04/2013
-			 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
-			 // no inhibir las IRQs
-			 //REPORTES_delayEEPROM_update_timer;                       // Demoro grabacion de REPORTES en FLASH
-		   }
-		 #endif
-
-		 paseFUERA_SERVICIO_interno;        // Paso a FUERA DE SERVICIO
-		 RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
-   }
+	}else{
+		if(ESTADO_RELOJ!=FUERA_SERVICIO){
+			fuera_de_servicio();
+		}
+	}
 }
+
+static void fuera_de_servicio(void){
+	fueraServicioDATE = getDate();
+	RELOJ_dateCambio = fueraServicioDATE;
+	if(VELOCIDAD_MAX < 255){
+		velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
+	}else{
+		velMax_INTERNO = (uint8_t)255;
+	}
+	 kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
+//	 nroCorrelativo_INTERNO = EEPROM_NRO_CORRELATIVO;        // Nro Correlativo de Viaje
+
+	 // Guardo reporte -> datos de LIBRE
+	 #ifdef VISOR_REPORTES
+	   if (REPORTES_HABILITADOS){
+		 (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0);
+		 // EDIT 04/04/2013
+		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
+		 // no inhibir las IRQs
+		 //REPORTES_delayEEPROM_update_timer;                       // Demoro grabacion de REPORTES en FLASH
+	   }
+	 #endif
+
+	 paseFUERA_SERVICIO_interno;        // Paso a FUERA DE SERVICIO
+	 RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
+}
+
+
 
 /* PASE A FUERA DE SERVICIO */
 /*--------------------------*/
@@ -500,8 +523,12 @@ void Pase_a_FUERA_SERVICIO (void){
 	off_display();
     ESTADO_RELOJ = FUERA_SERVICIO;                  // Actualizo Estado de Reloj
     resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
-	Tx_Pase_a_FUERA_SERVICIO();
-	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+
+    if(EQUIPO_METRO_BLUE){
+    	Tx_Pase_a_FUERA_SERVICIO();
+    }
+
+    cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 
     #ifdef VISOR_REPORTE_ACUMULATIVO
       if (KM_ptr != NULL){
@@ -513,23 +540,242 @@ void Pase_a_FUERA_SERVICIO (void){
       }
     #endif
   }
-/*
-  void Pase_a_FUERA_SERVICIO (void){
-  	if(ESTADO_RELOJ==LIBRE){
-  		//apago bandera
+
+
+  void Pase_a_LIBRE_SC (void){
+  	tFLASH_ERROR error;
+      byte nro_correlativo;
+  	uint32_t Address;
+
+  	#ifdef RELOJ_DEBUG
+  	timerA_PAGAR_to_LIBRE_cnt = 0;
+  	#endif
+
+  	if(timerA_PAGAR_to_LIBRE_cnt == 0){
   		anularReTx_RELOJ();
-  		BanderaOut_Off();
-  		off_display();
-  		ESTADO_RELOJ=FUERA_SERVICIO;
-  		//envio pase a libre al celular
-  		Tx_Pase_a_FUERA_SERVICIO();
-  		cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+  		CMD_a_RESP = 0x23;
+  		TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+
+  		//if(RELOJ_INTERNO){
+
+  		//	if((ESTADO_RELOJ==FUERA_SERVICIO) || (ESTADO_RELOJ==COBRANDO)&& NO_PRINTING && NO_TXING_PRINTER){
+
+  			if(ESTADO_RELOJ==FUERA_SERVICIO){
+  				PaseLibreFromFServ_INTERNO();
+  			}else{
+  		          (void)calcularDISTANCIA_entreEstados;   // Resetear contador de Distancia
+  		          paseLIBRE_interno_sinKM;          	  // Paso a LIBRE desde A PAGAR => no cuento KM
+  			}
+
+  			//envio pase a libre al celular
+  			Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
+
+  			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
+  			VELOCIDAD_MAX = 0;
+  			libreDATE = getDate();
+  			RELOJ_dateCambio = libreDATE;
+  			ESTADO_RELOJ=LIBRE;
+  			ESTADO_RELOJ_X_PULSADOR = LIBRE;
+  			off_display();
+  			on_display_tarifa();
+  			//mostrar_ini_dsplyIMPORTE=0;
+
+  			//enciendo bandera
+  			BanderaOut_On();
+  			cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+  		//}
+  	}else{
+  		TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_ESPERA);
+  		Tx_Comando_MENSAJE(ESPERA_DE_PASE_A_COBRANDO);
   	}
+
   }
-*/
+
+  void Pase_a_OCUPADO_SC (void){
+  	uint16_t km;
+
+  	//if(ESTADO_RELOJ==LIBRE ){
+
+  		//Reloj_iniTarifa(tarifa);
+
+  	    //RELOJ_setTarifa(TARIFA_AUTO_getNroTarifa());        // Seteo automatico de tarifa
+  	    //tarifa = TARIFA.numero;
+  		anularReTx_RELOJ();
+
+  		t_pulsos_anterior = 0;
+  		t_pulsos = 0;
+  		cntIC_anterior   = 0;
+  		__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
+
+  		RELOJ_setTarifa(tarifa_1_8);
+  		RELOJ_iniTarifacion();
+  	    RLJ_INI();
+  		guardar_tarifa_backup();
+
+  		BanderaOut_Off(); 					//apago bandera
+  		ocupadoDATE  = getDate();
+  		RELOJ_dateCambio = ocupadoDATE;
+
+  		ocupadoDATE_writeFLASH = 1;
+
+  		ESTADO_RELOJ = OCUPADO;
+  		ESTADO_RELOJ_X_PULSADOR = OCUPADO;
+  		update_valor_tarifa(tarifa_1_4);
+
+  		on_display_all();
+
+  		if(VELOCIDAD_MAX < 255){
+  			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
+  		}else{
+  			velMax_INTERNO = (uint8_t)255;
+  		}
+  		velMax_LIBRE = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
+  		DISTANCIAm_LIBRE = DISTANCIAm;
+  		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
+  		kmRecorridos_LIBRE = kmRecorridos_INTERNO;
+
+
+  		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();        // Nro Correlativo de Viaje
+  #ifdef VISOR_REPORTES
+  		if (REPORTES_HABILITADOS){
+  		  (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento);
+  		}
+  #endif
+
+
+  	#ifdef VISOR_REPORTE_ACUMULATIVO
+  		//REPORTES_delayFLASH_update();                       // Demoro grabacion de REPORTES en FLASH
+  		km = REPORTES_getDistanciaSinceLastViaje();         	//Calculo distancia desde el ultimo viaje
+  		kmRecorridos_INTERNO += km;                         	//Agrego KM anteriores
+  		if (kmRecorridos_INTERNO != NULL){
+  			// Al pasar a OCUPADO, solo cuento los km de cuando paso LIBRE -> OCUPADO
+  			// Si esta con reloj interno => solo puede pasar a OCUPADO desde LIBRE. En cambio
+  			// si esta con reloj con banderita, si esta LOGUEADO pasa desde LIBRE y si esta
+  			// deslogueado, pasa desde FUERA DE SERVICIO
+  			if (RELOJ_INTERNO){
+  			  //RELOJ_REPACUM_addKmLibre(kmRecorridos_INTERNO);             // Agrego km Libre a Reporte Acumulativo
+  			}else if (RELOJ_BANDERITA){
+  			  if (chkVISOR_logueado){
+  				RELOJ_REPACUM_addKmLibre(kmRecorridos_INTERNO);           // Agrego km Libre a Reporte Acumulativo
+  			  }else{
+  				RELOJ_REPACUM_addKmFueraServ(kmRecorridos_INTERNO);       // Agrego km Fuera Servicio a Reporte Acumulativo
+  			  }
+  		}
+  	}
+  	#endif
 
 
 
+
+  	//write_backup_rtc();
+  	//}
+  	//envio pase a ocupado al celular
+
+  	Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+  	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+  	resetVELOCIDAD_MAX;
+  	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
+
+  }
+
+  void Pase_a_COBRANDO_SC (void){
+
+  	byte nro;
+  	//if(ESTADO_RELOJ==OCUPADO){
+  		anularReTx_RELOJ();
+  		cobrandoDATE = getDate();
+  		RELOJ_dateCambio = cobrandoDATE;
+  		cobrandoDATE_writeFLASH = 1;
+  		ESTADO_RELOJ=COBRANDO;
+  		ESTADO_RELOJ_X_PULSADOR = COBRANDO;
+  		//display_set_toggle();
+  		off_display();
+  		toggle_display();
+  	 #ifdef RELOJ_HOMOLOGADO
+  		if(!RELOJ_BANDERITA){
+  			timerA_PAGAR_to_LIBRE_cnt = seg_A_PAGAR_to_LIBRE;
+  		}
+
+          #else
+          timerA_PAGAR_to_LIBRE_cnt = 0;  // Al no estar Homologado, no espero nada
+        #endif
+  		//Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
+  		if(VELOCIDAD_MAX < 255){
+  			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
+  		}else{
+  			velMax_INTERNO = (uint8_t)255;
+  		}
+  		velMax_OCUPADO = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
+  		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;		// Distancia Recorrida en OCUPADO (KM xxx.xx)
+  		kmRecorridos_OCUPADO = kmRecorridos_INTERNO;
+  		DISTANCIAm_OCUPADO = DISTANCIAm;
+  		write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
+  		DISTANCIA_iniCalculo_PULSE_ACCUM();
+  		minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
+  		importe_INTERNO = VALOR_VIAJE;                          	// Valor del Viaje
+  		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM;        		// Nro Correlativo de Viaje
+
+  		// Incremento y Grabo Nro Correlativo en EEPROM
+
+  		inc_nroCorrelativo();
+  		inc_nroTICKET();
+
+  		// Guardo reporte -> datos de OCUPADO
+  		#ifdef VISOR_REPORTES
+  		if (REPORTES_HABILITADOS){
+  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt);
+
+  		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
+  		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
+  		   // de abordaje, sino la hora de fin del viaje. Por lo tanto, debo verificar si es necesario
+  		   // actualizar la tarifa.
+
+  		   //nro = updateTarifa(getDate(), TARIFA.numero)->numero;
+  		   //RELOJ_setTarifa(nro);            // Seteo automatico de tarifa
+
+  		 //RELOJ_setTarifa(TARIFA.numero);            // Seteo automatico de tarifa
+  		 #endif
+
+  		 // Guardo reporte -> datos de A PAGAR
+  		 RELOJ_INTERNO_addAPagarReportes();
+
+  		 // EDIT 04/04/2013
+  		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
+  		 // no inhibir las IRQs
+  		 //REPORTES_delayFLASH_update();                       // Demoro grabacion de REPORTES en FLASH
+  		}
+  		#endif
+
+  	#ifdef VISOR_REPORTE_ACUMULATIVO
+           RELOJ_REPACUM_addViaje();                     // Agrego VIAJE a reporte Acumulativo
+           if (KM_ptr != NULL){
+             // Al pasar a A PAGAR, solo cuento los km de cuando paso OCUPADO -> A PAGAR
+             km = *KM_ptr++;                             // KM en OCUPADO (MSB)
+             km <<= 8;                                   // KM en OCUPADO (LSB)
+             km |= *KM_ptr++;
+             RELOJ_REPACUM_addKmOcupado(km);             // Agrego km Ocupado a Reporte Acumulativo
+           }
+
+           if (importe_ptr != NULL){
+             // Son 3bytes de importe
+             importe = *importe_ptr++;
+             importe <<= 8;
+             importe |= *importe_ptr++;
+             importe <<= 8;
+             importe |= *importe_ptr++;
+             RELOJ_REPACUM_addImporte(importe);          // Agrego Importe a Reporte Acumulativo
+           }
+       #endif
+
+  		//envio pase a corando al celular
+  		Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+  		cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+  		//resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
+  		RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
+  		RELOJ_clearMOTIVO_paseOCUPADO();
+  		 sensorAsiento = 0;                  // Borro Indicacion
+  	//}
+  }
 
 
 	void Send_Tx_Valor_VIAJE (void){
@@ -557,468 +803,6 @@ void RLJ_INI (void){
    RELOJ_reset();
    RELOJ_resetReintentos();
 }
-
-/*
-void Reloj_iniTarifa(byte tarifa){
-     byte* addressTARIFA;
-     uint16_t* addressFLASH_PROG_relojTARIFA;
-     uint8_t auxBUFFER[30];
-     uint8_t* ptrAUX;
-     uint8_t* address_PULSOS_x_KM;
-     uint8_t* addressFLASH_PULSOS_x_KM;
-
-    //EQUIV. EN PESOS diurna
-	EqPesosDiurno.eqPesos.bajadaBanderaHI     = 0x97;  //38910 = 0x97FE
-	EqPesosDiurno.eqPesos.bajadaBanderaLO     = 0xFE;
-	EqPesosDiurno.eqPesos.valorFichaHI	      = 0x08;	//2260 = = 0x08D4
-	EqPesosDiurno.eqPesos.valorFichaLO	      = 0xD4;
-	EqPesosDiurno.eqPesos.valorFichaTiempoHI  = 0x08;	//2260 = = 0x08D4
-	EqPesosDiurno.eqPesos.valorFichaTiempoLO  = 0xD4;
-	EqPesosDiurno.eqPesos.puntoDecimal	  	  = 3;
-
-	//EQUIV. EN PESOS nocturna
-	EqPesosNocturno.eqPesos.bajadaBanderaHI     = 0xB6;  //	46692 = 0xB664
-	EqPesosNocturno.eqPesos.bajadaBanderaLO     = 0x64;
-	EqPesosNocturno.eqPesos.valorFichaHI	    = 0x0A;  //	2712  = 0x0A98
-	EqPesosNocturno.eqPesos.valorFichaLO	    = 0x98;
-	EqPesosNocturno.eqPesos.valorFichaTiempoHI  = 0x0A;  //	2712  = 0x0A98
-	EqPesosNocturno.eqPesos.valorFichaTiempoLO  = 0x98;
-	EqPesosNocturno.eqPesos.puntoDecimal	    = 3;
-	//PULSOS_x_KM 	= 6150;									//uint16_t
-	//tomo datos eeprom externa
-	EEPROM_ReadBuffer(&auxBUFFER,ADDRESS_PROG_relojCOMUN,2);
-	ptrAUX = &PULSOS_x_KM;
-	*(ptrAUX+1) = auxBUFFER[0];
-	*(ptrAUX+0) = auxBUFFER[1];
-
-	//tomo datos de de flash
-	//addressFLASH_PULSOS_x_KM = &FLASH_PULSOS_x_KM;
-	//address_PULSOS_x_KM = &PULSOS_x_KM;
-
-	//PULSOS_x_KM = *addressFLASH_PULSOS_x_KM;
-	//*(address_PULSOS_x_KM+0) = *(addressFLASH_PULSOS_x_KM+0);
-	//*(address_PULSOS_x_KM+1) = *(addressFLASH_PULSOS_x_KM+1);
-
-	CARRERA_BANDERA = 10;								    //uint16_t
-    fichaPESOS	    = 2;									//byte 1:PESOS 2:FICHAS
-    puntoDECIMAL 	= 0;
-
-    //conversion de formato equiv en Pesos Diurno
-    EqPesosD.bajadaBandera = (uint16_t)EqPesosDiurno.eqPesos.bajadaBanderaHI;
-    EqPesosD.bajadaBandera = EqPesosD.bajadaBandera<<8;
-    EqPesosD.bajadaBandera |= EqPesosDiurno.eqPesos.bajadaBanderaLO;
-
-    EqPesosD.valorFicha = EqPesosDiurno.eqPesos.valorFichaHI;
-    EqPesosD.valorFicha = EqPesosD.valorFicha<<8;
-    EqPesosD.valorFicha |= EqPesosDiurno.eqPesos.valorFichaLO;
-
-    EqPesosD.valorFichaTiempo = EqPesosDiurno.eqPesos.valorFichaTiempoHI;
-    EqPesosD.valorFichaTiempo = EqPesosD.valorFichaTiempo<<8;
-    EqPesosD.valorFichaTiempo |= EqPesosDiurno.eqPesos.valorFichaTiempoLO;
-    //EqPesosD.puntoDecimal = EqPesosDiurno.eqPesos.puntoDecimal;
-
-    //conversion de formato equiv. en Pesos Nocturno
-    EqPesosN.bajadaBandera = (uint16_t)EqPesosNocturno.eqPesos.bajadaBanderaHI;
-    EqPesosN.bajadaBandera = EqPesosN.bajadaBandera<<8;
-    EqPesosN.bajadaBandera |= EqPesosNocturno.eqPesos.bajadaBanderaLO;
-
-    EqPesosN.valorFicha = EqPesosNocturno.eqPesos.valorFichaHI;
-    EqPesosN.valorFicha = EqPesosN.valorFicha<<8;
-    EqPesosN.valorFicha |= EqPesosNocturno.eqPesos.valorFichaLO;
-
-    EqPesosN.valorFichaTiempo = EqPesosNocturno.eqPesos.valorFichaTiempoHI;
-    EqPesosN.valorFichaTiempo = EqPesosN.valorFichaTiempo<<8;
-    EqPesosN.valorFichaTiempo |= EqPesosNocturno.eqPesos.valorFichaTiempoLO;
-
-    //EqPesosN.puntoDecimal = EqPesosNocturno.eqPesos.puntoDecimal;
-*/
-
- /*
-    //EQUIV. EN PESOS diurna
-	EqPesosDiurno.eqPesos.bajadaBanderaHI     = 1;
-	EqPesosDiurno.eqPesos.bajadaBanderaLO     = 2;
-	EqPesosDiurno.eqPesos.valorFichaHI	      = 3;
-	EqPesosDiurno.eqPesos.valorFichaLO	      = 4;
-	EqPesosDiurno.eqPesos.valorFichaTiempoHI  = 5;
-	EqPesosDiurno.eqPesos.valorFichaTiempoLO  = 6;
-	EqPesosDiurno.eqPesos.puntoDecimal	  	  = 7;
-	//EQUIV. EN PESOS nocturna
-	EqPesosNocturno.eqPesos.bajadaBanderaHI     = 8;
-	EqPesosNocturno.eqPesos.bajadaBanderaLO     = 9;
-	EqPesosNocturno.eqPesos.valorFichaHI	    = 10;
-	EqPesosNocturno.eqPesos.valorFichaLO	    = 11;
-	EqPesosNocturno.eqPesos.valorFichaTiempoHI  = 12;
-	EqPesosNocturno.eqPesos.valorFichaTiempoLO  = 13;
-	EqPesosNocturno.eqPesos.puntoDecimal	    = 14;
-	PULSOS_x_KM 	= 0x0F10;								    //uint16_t
-	CARRERA_BANDERA = 0x1112;									//uint16_t
-    fichaPESOS	    = 0x13;									//byte
-    puntoDECIMAL 	= 0x14;									//byte
-*/
-
-/*
- addressTARIFA = (byte*)&TARIFA;
-    if(tarifa==0 || tarifa==2 ){
-		//tarifa diurna
-    	Reloj_iniTarifa1();
-		addressFLASH_PROG_relojTARIFA =(uint16_t*) &FLASH_PROG_relojT1D;
-    }else if(tarifa==1 || tarifa==3 ){
-    	//tarifa Nocturna
-    	Reloj_iniTarifa2();
-		addressFLASH_PROG_relojTARIFA =(uint16_t*) &FLASH_PROG_relojT1N;
-    }else{
-		//tarifa diurna
-    	Reloj_iniTarifa1();
-		addressFLASH_PROG_relojTARIFA =(uint16_t*) &FLASH_PROG_relojT1D;
-    }
-
-	//tPARAM_RELOJ_TARIFA FLASH_PROG_relojT1D;
-
-	if( FLASH_updateSector(addressFLASH_PROG_relojTARIFA, addressTARIFA, (uint16_t) sizeof(tTARIFA))!= FLASH_ERR_NONE){
-		MANEJO_DE_ERRORES();
-	}
-
-}
-*/
-/*
-void Reloj_iniTarifa1(void){
-	tTARIFA* ptrTarifa;
-	ttTARIFA* ptrTarifa1;
-
-	TARIFA1.TARIFA.numero			  = 1;			//tarifa 1
-	TARIFA1.TARIFA.diaNoche			  = 0;			//tarifa diurna
-	TARIFA1.TARIFA.tiempoGraciaHI     = 0;			//tiempo de gracia 0
-	TARIFA1.TARIFA.tiempoGraciaLO     = 0;
-	TARIFA1.TARIFA.bajadaBanderaHI    = 0x00;		//Bajada 0
-	TARIFA1.TARIFA.bajadaBanderaLO    = 0x00;
-	TARIFA1.TARIFA.distInicialHI	  = 0x00;		//dist inical 100
-	TARIFA1.TARIFA.distInicialLO	  = 0x64;
-	TARIFA1.TARIFA.distFichaHI        = 0x00;		//dist ficha 100
-	TARIFA1.TARIFA.distFichaLO		  = 0x64;
-	TARIFA1.TARIFA.valorFichaHI		  = 0x00;		//valor fichaD 1
-	TARIFA1.TARIFA.valorFichaLO		  =	0x01;
-	TARIFA1.TARIFA.tiempoFichaHI 	  = 0x00;		//tiempo de ficha 18
-	TARIFA1.TARIFA.tiempoFichaLO	  = 0x12;
-	TARIFA1.TARIFA.valorFichaTiempoHI = 0x00;		//valor fichaT 1
-	TARIFA1.TARIFA.valorFichaTiempoLO = 0x01;
-	TARIFA1.TARIFA.horaInicioHI		  = 0x06;		//hora inicio 06:00
-	TARIFA1.TARIFA.horaInicioLO		  = 0x00;
-	TARIFA1.TARIFA.vigencia.Byte	  = 0x7F;		//vigencia lunes a sabado
-
-    //SET TARIFA
-	TARIFA.numero = TARIFA1.TARIFA.numero;
-	TARIFA.diaNoche = TARIFA1.TARIFA.diaNoche;
-
-	TARIFA.tiempoGracia = TARIFA1.TARIFA.tiempoGraciaHI;
-	TARIFA.tiempoGracia = TARIFA.tiempoGracia<<8;
-	TARIFA.tiempoGracia |= TARIFA1.TARIFA.tiempoGraciaLO;
-
-	TARIFA.bajadaBandera = TARIFA1.TARIFA.bajadaBanderaHI;
-	TARIFA.bajadaBandera = TARIFA.bajadaBandera<<8;
-	TARIFA.bajadaBandera |= TARIFA1.TARIFA.bajadaBanderaLO;
-
-	TARIFA.distInicial = TARIFA1.TARIFA.distInicialHI;
-	TARIFA.distInicial = TARIFA.distInicial<<8;
-	TARIFA.distInicial = TARIFA1.TARIFA.distInicialLO;
-
-	TARIFA.distFicha = TARIFA1.TARIFA.distFichaHI;
-	TARIFA.distFicha = TARIFA.distFicha<<8;
-	TARIFA.distFicha = TARIFA1.TARIFA.distFichaLO;
-
-	TARIFA.valorFicha = TARIFA1.TARIFA.valorFichaHI;
-	TARIFA.valorFicha = TARIFA.valorFicha<<8;
-	TARIFA.valorFicha = TARIFA1.TARIFA.valorFichaLO;
-
-	TARIFA.tiempoFicha = TARIFA1.TARIFA.tiempoFichaHI;
-	TARIFA.tiempoFicha = TARIFA.tiempoFicha<<8;
-	TARIFA.tiempoFicha = TARIFA1.TARIFA.tiempoFichaLO;
-
-	TARIFA.valorFichaTiempo = TARIFA1.TARIFA.valorFichaTiempoHI;
-	TARIFA.valorFichaTiempo = TARIFA.valorFichaTiempo<<8;
-	TARIFA.valorFichaTiempo = TARIFA1.TARIFA.valorFichaTiempoLO;
-
-	TARIFA.horaInicio = TARIFA1.TARIFA.horaInicioHI;
-	TARIFA.horaInicio = TARIFA.horaInicio<<8;
-	TARIFA.horaInicio = TARIFA1.TARIFA.horaInicioLO;
-
-	TARIFA.vigencia.Byte = TARIFA1.TARIFA.vigencia.Byte;
-*/
-/*
-	TARIFA1.TARIFA.numero			  = 1;
-	TARIFA1.TARIFA.diaNoche			  = 2;
-	TARIFA1.TARIFA.tiempoGraciaHI     = 3;
-	TARIFA1.TARIFA.tiempoGraciaLO     = 4;
-	TARIFA1.TARIFA.bajadaBanderaHI    = 5;
-	TARIFA1.TARIFA.bajadaBanderaLO    = 6;
-	TARIFA1.TARIFA.distInicialHI	  = 7;
-	TARIFA1.TARIFA.distInicialLO	  = 8;
-	TARIFA1.TARIFA.distFichaHI        = 9;
-	TARIFA1.TARIFA.distFichaLO		  = 10;
-	TARIFA1.TARIFA.valorFichaHI		  = 11;
-	TARIFA1.TARIFA.valorFichaLO		  =	12;
-	TARIFA1.TARIFA.tiempoFichaHI 	  = 13;
-	TARIFA1.TARIFA.tiempoFichaLO	  = 14;
-	TARIFA1.TARIFA.valorFichaTiempoHI = 15;
-	TARIFA1.TARIFA.valorFichaTiempoLO = 16;
-	TARIFA1.TARIFA.horaInicioHI		  = 17;
-	TARIFA1.TARIFA.horaInicioLO		  = 18;
-	TARIFA1.TARIFA.vigencia.Byte	  = 19;
-*/
-//}
-
-/*
-void Reloj_iniTarifa2(void){
-
-	TARIFA2.TARIFA.numero			  = 2;			//tarifa 2
-	TARIFA2.TARIFA.diaNoche			  = 1;			//tarifa Nocturno
-	TARIFA2.TARIFA.tiempoGraciaHI     = 0;			//tiempo de gracia 0
-	TARIFA2.TARIFA.tiempoGraciaLO     = 0;
-	TARIFA2.TARIFA.bajadaBanderaHI    = 0x00;		//Bajada 0
-	TARIFA2.TARIFA.bajadaBanderaLO    = 0x00;
-	TARIFA2.TARIFA.distInicialHI	  = 0x00;		//dist inical 100
-	TARIFA2.TARIFA.distInicialLO	  = 0x64;
-	TARIFA2.TARIFA.distFichaHI        = 0x00;		//dist ficha 100
-	TARIFA2.TARIFA.distFichaLO		  = 0x64;
-	TARIFA2.TARIFA.valorFichaHI		  = 0x00;		//valor fichaD 1
-	TARIFA2.TARIFA.valorFichaLO		  =	0x01;
-	TARIFA2.TARIFA.tiempoFichaHI 	  = 0x00;		//tiempo de ficha 18
-	TARIFA2.TARIFA.tiempoFichaLO	  = 0x12;
-	TARIFA2.TARIFA.valorFichaTiempoHI = 0x00;		//valor fichaT 1
-	TARIFA2.TARIFA.valorFichaTiempoLO = 0x01;
-	TARIFA2.TARIFA.horaInicioHI		  = 0x22;		//hora inicio 22:00
-	TARIFA2.TARIFA.horaInicioLO		  = 0x00;
-	TARIFA2.TARIFA.vigencia.Byte	  = 0x7F;		//vigencia lunes a sabado
-    //SET TARIFA
-	TARIFA.numero = TARIFA2.TARIFA.numero;
-	TARIFA.diaNoche = TARIFA2.TARIFA.diaNoche;
-
-	TARIFA.tiempoGracia = TARIFA2.TARIFA.tiempoGraciaHI;
-	TARIFA.tiempoGracia = TARIFA.tiempoGracia<<8;
-	TARIFA.tiempoGracia |= TARIFA2.TARIFA.tiempoGraciaLO;
-
-	TARIFA.bajadaBandera = TARIFA2.TARIFA.bajadaBanderaHI;
-	TARIFA.bajadaBandera = TARIFA.bajadaBandera<<8;
-	TARIFA.bajadaBandera |= TARIFA2.TARIFA.bajadaBanderaLO;
-
-	TARIFA.distInicial = TARIFA2.TARIFA.distInicialHI;
-	TARIFA.distInicial = TARIFA.distInicial<<8;
-	TARIFA.distInicial = TARIFA2.TARIFA.distInicialLO;
-
-	TARIFA.distFicha = TARIFA2.TARIFA.distFichaHI;
-	TARIFA.distFicha = TARIFA.distFicha<<8;
-	TARIFA.distFicha = TARIFA2.TARIFA.distFichaLO;
-
-	TARIFA.valorFicha = TARIFA2.TARIFA.valorFichaHI;
-	TARIFA.valorFicha = TARIFA.valorFicha<<8;
-	TARIFA.valorFicha = TARIFA2.TARIFA.valorFichaLO;
-
-	TARIFA.tiempoFicha = TARIFA2.TARIFA.tiempoFichaHI;
-	TARIFA.tiempoFicha = TARIFA.tiempoFicha<<8;
-	TARIFA.tiempoFicha = TARIFA2.TARIFA.tiempoFichaLO;
-
-	TARIFA.valorFichaTiempo = TARIFA2.TARIFA.valorFichaTiempoHI;
-	TARIFA.valorFichaTiempo = TARIFA.valorFichaTiempo<<8;
-	TARIFA.valorFichaTiempo = TARIFA2.TARIFA.valorFichaTiempoLO;
-
-	TARIFA.horaInicio = TARIFA2.TARIFA.horaInicioHI;
-	TARIFA.horaInicio = TARIFA.horaInicio<<8;
-	TARIFA.horaInicio = TARIFA2.TARIFA.horaInicioLO;
-
-	TARIFA.vigencia.Byte = TARIFA2.TARIFA.vigencia.Byte;
-
-	/*
-	TARIFA2.TARIFA.numero			  = 1;
-	TARIFA2.TARIFA.diaNoche			  = 2;
-	TARIFA2.TARIFA.tiempoGraciaHI     = 3;
-	TARIFA2.TARIFA.tiempoGraciaLO     = 4;
-	TARIFA2.TARIFA.bajadaBanderaHI    = 5;
-	TARIFA2.TARIFA.bajadaBanderaLO    = 6;
-	TARIFA2.TARIFA.distInicialHI	  = 7;
-	TARIFA2.TARIFA.distInicialLO	  = 8;
-	TARIFA2.TARIFA.distFichaHI        = 9;
-	TARIFA2.TARIFA.distFichaLO		  = 10;
-	TARIFA2.TARIFA.valorFichaHI		  = 11;
-	TARIFA2.TARIFA.valorFichaLO		  =	12;
-	TARIFA2.TARIFA.tiempoFichaHI 	  = 13;
-	TARIFA2.TARIFA.tiempoFichaLO	  = 14;
-	TARIFA2.TARIFA.valorFichaTiempoHI = 15;
-	TARIFA2.TARIFA.valorFichaTiempoLO = 16;
-	TARIFA2.TARIFA.horaInicioHI		  = 17;
-	TARIFA2.TARIFA.horaInicioLO		  = 18;
-	TARIFA2.TARIFA.vigencia.Byte	  = 19;
-*/
-//}
-
-
-/*
-void Reloj_iniTarifa3(void){
-
-	TARIFA3.TARIFA.numero			  = 3;			//tarifa 1
-	TARIFA3.TARIFA.diaNoche			  = 0;			//tarifa diurna
-	TARIFA3.TARIFA.tiempoGraciaHI     = 0;			//tiempo de gracia 0
-	TARIFA3.TARIFA.tiempoGraciaLO     = 0;
-	TARIFA3.TARIFA.bajadaBanderaHI    = 0x00;		//Bajada 0
-	TARIFA3.TARIFA.bajadaBanderaLO    = 0x00;
-	TARIFA3.TARIFA.distInicialHI	  = 0x00;		//dist inical 100
-	TARIFA3.TARIFA.distInicialLO	  = 0x64;
-	TARIFA3.TARIFA.distFichaHI        = 0x00;		//dist ficha 100
-	TARIFA3.TARIFA.distFichaLO		  = 0x64;
-	TARIFA3.TARIFA.valorFichaHI		  = 0x00;		//valor fichaD 1
-	TARIFA3.TARIFA.valorFichaLO		  =	0x01;
-	TARIFA3.TARIFA.tiempoFichaHI 	  = 0x00;		//tiempo de ficha 18
-	TARIFA3.TARIFA.tiempoFichaLO	  = 0x12;
-	TARIFA3.TARIFA.valorFichaTiempoHI = 0x00;		//valor fichaT 1
-	TARIFA3.TARIFA.valorFichaTiempoLO = 0x01;
-	TARIFA3.TARIFA.horaInicioHI		  = 0x06;		//hora inicio 06:00
-	TARIFA3.TARIFA.horaInicioLO		  = 0x00;
-	TARIFA3.TARIFA.vigencia.Byte	  = 0x7F;		//vigencia lunes a sabado
-    //SET TARIFA
-	TARIFA.numero = TARIFA3.TARIFA.numero;
-	TARIFA.diaNoche = TARIFA3.TARIFA.diaNoche;
-
-	TARIFA.tiempoGracia = TARIFA3.TARIFA.tiempoGraciaHI;
-	TARIFA.tiempoGracia = TARIFA.tiempoGracia<<8;
-	TARIFA.tiempoGracia |= TARIFA3.TARIFA.tiempoGraciaLO;
-
-	TARIFA.bajadaBandera = TARIFA3.TARIFA.bajadaBanderaHI;
-	TARIFA.bajadaBandera = TARIFA.bajadaBandera<<8;
-	TARIFA.bajadaBandera |= TARIFA3.TARIFA.bajadaBanderaLO;
-
-	TARIFA.distInicial = TARIFA3.TARIFA.distInicialHI;
-	TARIFA.distInicial = TARIFA.distInicial<<8;
-	TARIFA.distInicial = TARIFA3.TARIFA.distInicialLO;
-
-	TARIFA.distFicha = TARIFA3.TARIFA.distFichaHI;
-	TARIFA.distFicha = TARIFA.distFicha<<8;
-	TARIFA.distFicha = TARIFA3.TARIFA.distFichaLO;
-
-	TARIFA.valorFicha = TARIFA3.TARIFA.valorFichaHI;
-	TARIFA.valorFicha = TARIFA.valorFicha<<8;
-	TARIFA.valorFicha = TARIFA3.TARIFA.valorFichaLO;
-
-	TARIFA.tiempoFicha = TARIFA3.TARIFA.tiempoFichaHI;
-	TARIFA.tiempoFicha = TARIFA.tiempoFicha<<8;
-	TARIFA.tiempoFicha = TARIFA3.TARIFA.tiempoFichaLO;
-
-	TARIFA.valorFichaTiempo = TARIFA3.TARIFA.valorFichaTiempoHI;
-	TARIFA.valorFichaTiempo = TARIFA.valorFichaTiempo<<8;
-	TARIFA.valorFichaTiempo = TARIFA3.TARIFA.valorFichaTiempoLO;
-
-	TARIFA.horaInicio = TARIFA3.TARIFA.horaInicioHI;
-	TARIFA.horaInicio = TARIFA.horaInicio<<8;
-	TARIFA.horaInicio = TARIFA3.TARIFA.horaInicioLO;
-
-	TARIFA.vigencia.Byte = TARIFA3.TARIFA.vigencia.Byte;
-
-	/*
-	TARIFA3.TARIFA.numero			  = 1;
-	TARIFA3.TARIFA.diaNoche			  = 2;
-	TARIFA3.TARIFA.tiempoGraciaHI     = 3;
-	TARIFA3.TARIFA.tiempoGraciaLO     = 4;
-	TARIFA3.TARIFA.bajadaBanderaHI    = 5;
-	TARIFA3.TARIFA.bajadaBanderaLO    = 6;
-	TARIFA3.TARIFA.distInicialHI	  = 7;
-	TARIFA3.TARIFA.distInicialLO	  = 8;
-	TARIFA3.TARIFA.distFichaHI        = 9;
-	TARIFA3.TARIFA.distFichaLO		  = 10;
-	TARIFA3.TARIFA.valorFichaHI		  = 11;
-	TARIFA3.TARIFA.valorFichaLO		  =	12;
-	TARIFA3.TARIFA.tiempoFichaHI 	  = 13;
-	TARIFA3.TARIFA.tiempoFichaLO	  = 14;
-	TARIFA3.TARIFA.valorFichaTiempoHI = 15;
-	TARIFA3.TARIFA.valorFichaTiempoLO = 16;
-	TARIFA3.TARIFA.horaInicioHI		  = 17;
-	TARIFA3.TARIFA.horaInicioLO		  = 18;
-	TARIFA3.TARIFA.vigencia.Byte	  = 19;
-*/
-/*
-}
-
-void Reloj_iniTarifa4(void){
-
-	TARIFA4.TARIFA.numero			  = 4;			//tarifa 2
-	TARIFA4.TARIFA.diaNoche			  = 1;			//tarifa Nocturno
-	TARIFA4.TARIFA.tiempoGraciaHI     = 0;			//tiempo de gracia 0
-	TARIFA4.TARIFA.tiempoGraciaLO     = 0;
-	TARIFA4.TARIFA.bajadaBanderaHI    = 0x00;		//Bajada 0
-	TARIFA4.TARIFA.bajadaBanderaLO    = 0x00;
-	TARIFA4.TARIFA.distInicialHI	  = 0x00;		//dist inical 100
-	TARIFA4.TARIFA.distInicialLO	  = 0x64;
-	TARIFA4.TARIFA.distFichaHI        = 0x00;		//dist ficha 100
-	TARIFA4.TARIFA.distFichaLO		  = 0x64;
-	TARIFA4.TARIFA.valorFichaHI		  = 0x00;		//valor fichaD 1
-	TARIFA4.TARIFA.valorFichaLO		  =	0x01;
-	TARIFA4.TARIFA.tiempoFichaHI 	  = 0x00;		//tiempo de ficha 18
-	TARIFA4.TARIFA.tiempoFichaLO	  = 0x12;
-	TARIFA4.TARIFA.valorFichaTiempoHI = 0x00;		//valor fichaT 1
-	TARIFA4.TARIFA.valorFichaTiempoLO = 0x01;
-	TARIFA4.TARIFA.horaInicioHI		  = 0x22;		//hora inicio 22:00
-	TARIFA4.TARIFA.horaInicioLO		  = 0x00;
-	TARIFA4.TARIFA.vigencia.Byte	  = 0x7F;		//vigencia lunes a sabado
-
-	TARIFA.numero = TARIFA4.TARIFA.numero;
-	TARIFA.diaNoche = TARIFA4.TARIFA.diaNoche;
-
-	TARIFA.tiempoGracia = TARIFA4.TARIFA.tiempoGraciaHI;
-	TARIFA.tiempoGracia = TARIFA.tiempoGracia<<8;
-	TARIFA.tiempoGracia |= TARIFA4.TARIFA.tiempoGraciaLO;
-
-	TARIFA.bajadaBandera = TARIFA4.TARIFA.bajadaBanderaHI;
-	TARIFA.bajadaBandera = TARIFA.bajadaBandera<<8;
-	TARIFA.bajadaBandera |= TARIFA4.TARIFA.bajadaBanderaLO;
-
-	TARIFA.distInicial = TARIFA4.TARIFA.distInicialHI;
-	TARIFA.distInicial = TARIFA.distInicial<<8;
-	TARIFA.distInicial = TARIFA4.TARIFA.distInicialLO;
-
-	TARIFA.distFicha = TARIFA4.TARIFA.distFichaHI;
-	TARIFA.distFicha = TARIFA.distFicha<<8;
-	TARIFA.distFicha = TARIFA4.TARIFA.distFichaLO;
-
-	TARIFA.valorFicha = TARIFA4.TARIFA.valorFichaHI;
-	TARIFA.valorFicha = TARIFA.valorFicha<<8;
-	TARIFA.valorFicha = TARIFA4.TARIFA.valorFichaLO;
-
-	TARIFA.tiempoFicha = TARIFA4.TARIFA.tiempoFichaHI;
-	TARIFA.tiempoFicha = TARIFA.tiempoFicha<<8;
-	TARIFA.tiempoFicha = TARIFA4.TARIFA.tiempoFichaLO;
-
-	TARIFA.valorFichaTiempo = TARIFA4.TARIFA.valorFichaTiempoHI;
-	TARIFA.valorFichaTiempo = TARIFA.valorFichaTiempo<<8;
-	TARIFA.valorFichaTiempo = TARIFA4.TARIFA.valorFichaTiempoLO;
-
-	TARIFA.horaInicio = TARIFA4.TARIFA.horaInicioHI;
-	TARIFA.horaInicio = TARIFA.horaInicio<<8;
-	TARIFA.horaInicio = TARIFA4.TARIFA.horaInicioLO;
-
-	TARIFA.vigencia.Byte = TARIFA4.TARIFA.vigencia.Byte;
-
-*/
-/*
-	TARIFA4.TARIFA.numero			  = 1;
-	TARIFA4.TARIFA.diaNoche			  = 2;
-	TARIFA4.TARIFA.tiempoGraciaHI     = 3;
-	TARIFA4.TARIFA.tiempoGraciaLO     = 4;
-	TARIFA4.TARIFA.bajadaBanderaHI    = 5;
-	TARIFA4.TARIFA.bajadaBanderaLO    = 6;
-	TARIFA4.TARIFA.distInicialHI	  = 7;
-	TARIFA4.TARIFA.distInicialLO	  = 8;
-	TARIFA4.TARIFA.distFichaHI        = 9;
-	TARIFA4.TARIFA.distFichaLO		  = 10;
-	TARIFA4.TARIFA.valorFichaHI		  = 11;
-	TARIFA4.TARIFA.valorFichaLO		  =	12;
-	TARIFA4.TARIFA.tiempoFichaHI 	  = 13;
-	TARIFA4.TARIFA.tiempoFichaLO	  = 14;
-	TARIFA4.TARIFA.valorFichaTiempoHI = 15;
-	TARIFA4.TARIFA.valorFichaTiempoLO = 16;
-	TARIFA4.TARIFA.horaInicioHI		  = 17;
-	TARIFA4.TARIFA.horaInicioLO		  = 18;
-	TARIFA4.TARIFA.vigencia.Byte	  = 19;
-	*/
-/*
-}
-*/
-
 
 
 /* TRANSMITIR BUFFER DE RELOJ */
@@ -1083,6 +867,17 @@ void RELOJ_Tx (void){
 			if (Tabla_CMD_Reloj[i]->Reintentos > 0){
 			  transmitiendo = 1;
 			  break;
+			}
+		}
+		if(!transmitiendo){
+			if (CMD_Pase_a_LIBRE_SC.Reintentos > 0){
+				transmitiendo = 1;
+			}else if(CMD_Pase_a_OCUPADO_APP_SC.Reintentos > 0){
+				transmitiendo = 1;
+			}else if(CMD_Pase_a_OCUPADO_SA_SC.Reintentos > 0){
+				transmitiendo = 1;
+			}else if(CMD_Pase_a_COBRANDO_SC.Reintentos > 0){
+				transmitiendo = 1;
 			}
 		}
 
@@ -1198,71 +993,6 @@ static void RELOJ_resetReintentos (void){
 }
 
 
-
-/* RECIBI RESPUESTA A LIBRE */
-/****************************/
-  void Libre_RxRTA (byte* Rx_data_ptr){
-    (void)RELOJ_procesarRTA(LIBRE);
-  }
-
-/* RECIBI RESPUESTA A OCUPADO */
-/******************************/
-  void Ocupado_RxRTA (byte* Rx_data_ptr){
-    (void)RELOJ_procesarRTA(OCUPADO);
-  }
-
-  /* RECIBI RESPUESTA A COBRANDO */
-  /*******************************/
-  void Cobrando_RxRTA (byte* Rx_data_ptr){
-      (void)RELOJ_procesarRTA(OCUPADO);
-    }
-
-
-  /* PROCESAR RESPUESTA A COMANDO DE RELOJ */
-  /*****************************************/
-      static byte RELOJ_procesarRTA (tRELOJ estadoReloj_Rx){
-        // Al recibir la respuesta a un comando de reloj lo que tengo que hacer
-        // es verificar que el comando recibido sea igual al comando transmitido; es
-        // decir que sea la respuesta al comando enviado. Si esto no es así, no le
-        // doy bola a la respuesta, la ignoro.
-        // Luego, en caso de que coincidan los comandos, y haya comandos encolados,
-        // decremento el contador de comandos encolados.
-        //
-        // EDIT 18/10/12
-        //  Si tengo la definicion KEEP_ZONA, no salgo de zona, al realizar el cambio
-        // de reloj
-        byte rta_ok;
-        tRELOJ_ERROR error;
-
-        rta_ok = 0;                                 // Asumo que no coinciden el comando enviado/recibido
-        if (Tabla_CMD_Reloj[estadoReloj_Rx]->cmd == *RELOJ_TxGET){
-          // Coincide el comando con la respuesta => Es valido
-          rta_ok = 1;                               // Coinciden los comandos enviado/recibido
-          // Transmision de comandos de reloj pendientes.
-          if (HAY_CMDS_RELOJ_ENCOLADOS){
-            CMD_RELOJ_TRANSMITIDO;
-
-            error = RELOJ_incGETptr_endDATA();      // Avanzo puntero GET hasta el proximo fin de datos (end DATA)
-            RELOJ_requestBKP_enFLASH();             // Solcita grabacion de BackUp de Buffer de Reloj en Flash
-
-            if (error == RLJ_OK){
-              // Si no hubo error, chequeo si hay datos de reloj encolados, de modo de transmitirlos
-              // en caso de haberlos, y asi liberar el buffer circular lo mas rapido posible
-              RELOJ_Tx();                         // Transmitir datos de reloj, si los hay
-
-            }else{
-              // En caso de cualquier error a la hora de avanzar el puntero a fin de datos
-              // reseteo el reloj. Lo re-inicializo
-              RELOJ_reset();                      // Reset de Reloj
-            }
-          }
-          // Lo tengo que hacer FUERA del IF anterior, xq en ese decrementa el contador dentro del IF
-          if(!HAY_CMDS_RELOJ_ENCOLADOS){
-            RELOJ_lastCMDencolado = 0;      // Ya no tengo comandos encolados
-          }
-        }
-        return(rta_ok);
-      }
 
 
       /* AVANZAR PUNTERO GET AL FIN DE DATOS */
@@ -1485,7 +1215,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
 	   error_t error;
 
 		if (nroCorrelativo_INTERNO == 0xFF){
-			nroCorrelativo_INTERNO = 0;
+			nroCorrelativo_INTERNO = 1;
 		}else{
 			nroCorrelativo_INTERNO++;
 		}
@@ -1564,7 +1294,6 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
    /******************************/
      void RELOJ_INTERNO_addAPagarReportes (void){
        // Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
-       tDATE dateAPagar;
        uint32_t importe;
 
        importe_INTERNO = VALOR_VIAJE;                          // Valor del Viaje
@@ -1583,8 +1312,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
            // sino la equivalencia en PESOS
            // En TARIFACION NORMAL, el importe lo calculo, para que en caso de que sea FICHAS, sea la equivalencia
            importe = RELOJ_calcularImporte(TARIFACION_getFichasT(), TARIFACION_getFichasD(), 1, TARIFA.numero, NULL);
-           dateAPagar = getDate();
-           (void)REPORTE_queueAPagar (dateAPagar, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero, TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera);
+           (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero, TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, minutosEspera);
 
            // EDIT 04/04/2013
            //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -2057,7 +1785,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
 		ini_tecla1();
 	}
 
- void Tx_Pase_a_LIBRE  (void){
+ void Tx_Pase_a_LIBRE  (byte tipo){
 	    /*
 	    LIBRE
 	    ******
@@ -2106,10 +1834,17 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		ptrVALOR_VIAJE = &VALOR_VIAJE;
  		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;
 
+		if(tipo == CON_CONEXION_CENTRAL){
+			//BANDERA DE TRANSMISION
+			CMD_Pase_a_LIBRE.Tx_F = 1;                      // Levanto Bandera de Tx
+			CMD_Pase_a_LIBRE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		}else{
+			//BANDERA DE TRANSMISION
+			CMD_Pase_a_LIBRE_SC.Tx_F = 1;                      // Levanto Bandera de Tx
+			CMD_Pase_a_LIBRE_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		}
 
-		//BANDERA DE TRANSMISION
-		CMD_Pase_a_LIBRE.Tx_F = 1;                      // Levanto Bandera de Tx
-		CMD_Pase_a_LIBRE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+
 		getDate();
 
 		//fuente de hora
@@ -2188,7 +1923,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
 }
 
 
- void Tx_Pase_a_OCUPADO (void){
+ void Tx_Pase_a_OCUPADO (uint8_t tipo){
 
  		byte* ptrVALOR_VIAJE;
  		byte* ptrVALOR_VIAJE_mostrar;
@@ -2204,13 +1939,24 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		uint16_t BajadaBandera;
 		uint8_t tarifa_mostrar;
 
-
+		//tipo = SIN_CONEXION_CENTRAL;
 		if(paseOCUPADO_APP){
-	 	    CMD_Pase_a_OCUPADO_APP.Tx_F = 1;                      // Levanto Bandera de Tx
-	 		CMD_Pase_a_OCUPADO_APP.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			if(tipo ==CON_CONEXION_CENTRAL){
+		 	    CMD_Pase_a_OCUPADO_APP.Tx_F = 1;                      // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_APP.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			}else{
+		 	    CMD_Pase_a_OCUPADO_APP_SC.Tx_F = 1;                      // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_APP_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			}
 		}else if(paseOCUPADO_SENSOR_ASIENTO){
-	 	    CMD_Pase_a_OCUPADO_SA.Tx_F = 1;                      // Levanto Bandera de Tx
-	 		CMD_Pase_a_OCUPADO_SA.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			if(tipo ==CON_CONEXION_CENTRAL){
+		 	    CMD_Pase_a_OCUPADO_SA.Tx_F = 1;                      // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_SA.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			}else{
+		 	    CMD_Pase_a_OCUPADO_SA_SC.Tx_F = 1;                      // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_SA_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+			}
+
 		}else if(paseOCUPADO_BANDERITA){
 	 	    CMD_Pase_a_OCUPADO_BANDERA.Tx_F = 1;                      // Levanto Bandera de Tx
 	 		CMD_Pase_a_OCUPADO_BANDERA.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
@@ -2228,12 +1974,9 @@ void cambio_de_reloj_x_sensor_asiento(void){
 		ptrBajadaBandera = &BajadaBandera;
 		ptrFichasDistancia = &FichasDistancia;
 		ptrFichasTiempo = &FichasTiempo;
-		//BajadaBandera = TARIFA.bajadaBandera;
 		FichasDistancia = TARIFACION_getFichasD();
  		FichasTiempo =	TARIFACION_getFichasT();
-
  		BajadaBandera = TARIFA.bajadaBandera;                             // Bajada Bandera
-
 
 		if(TARIFA.diaNoche == 0){
 					//DIURNA
@@ -2266,7 +2009,6 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_OCUPADO_Buffer[7]  = tarifa_mostrar;  			  //numero de tarifa
  		Pase_a_OCUPADO_Buffer[8]  = fichaPESOS;  				  //ficha o pesos
 
-
 		if(TARIFA_PESOS){
 		//valor en pesos
 			Pase_a_OCUPADO_Buffer[9] = PUNTO_DECIMAL;  				  //ficha o pesos
@@ -2274,7 +2016,6 @@ void cambio_de_reloj_x_sensor_asiento(void){
 			Pase_a_OCUPADO_Buffer[11] = *(ptrVALOR_VIAJE+2);             //
 			Pase_a_OCUPADO_Buffer[12] = *(ptrVALOR_VIAJE+1);             //
 			Pase_a_OCUPADO_Buffer[13] = *(ptrVALOR_VIAJE+0);             //
-
 		}else{
 			//valor en fichas
 			if(EqPESOS_hab){
@@ -2294,7 +2035,6 @@ void cambio_de_reloj_x_sensor_asiento(void){
 				Pase_a_OCUPADO_Buffer[13] = *(ptrVALOR_VIAJE+0);             //
 			}
 		}
-
 
 		Pase_a_OCUPADO_Buffer[14] = *(ptrDISTAMNCIAm+3);             //
  		Pase_a_OCUPADO_Buffer[15] = *(ptrDISTAMNCIAm+2);             //
@@ -2327,7 +2067,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
     }
 
 
- void Tx_Pase_a_COBRANDO (void){
+ void Tx_Pase_a_COBRANDO (uint8_t tipo){
 
   		byte* ptrVALOR_VIAJE;
   		byte* ptrVALOR_VIAJE_mostrar;
@@ -2343,9 +2083,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
   		uint16_t BajadaBandera;
   		uint8_t tarifa_mostrar;
 
-
-  	    CMD_Pase_a_COBRANDO.Tx_F = 1;                      // Levanto Bandera de Tx
-  		CMD_Pase_a_COBRANDO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		if(CON_CONEXION_CENTRAL){
+	  	    CMD_Pase_a_COBRANDO.Tx_F = 1;                      // Levanto Bandera de Tx
+	  		CMD_Pase_a_COBRANDO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		}else{
+	  	    CMD_Pase_a_COBRANDO_SC.Tx_F = 1;                      // Levanto Bandera de Tx
+	  		CMD_Pase_a_COBRANDO_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		}
 
   		ptrVALOR_VIAJE = &VALOR_VIAJE;
   		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;

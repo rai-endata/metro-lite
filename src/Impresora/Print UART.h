@@ -10,6 +10,11 @@
 #include "main.h"
 #include "- PRINT Config -.h"
 
+  extern uint16_t PRINT_N_Tx;
+
+  //extern uint8_t timeout_PRINT_send;
+  //extern uint16_t PRINT_pendingCNT;					// Contador de bytes pendientes de procesamiento
+
 
   //extern void USART1_Ini (void);
   extern void PRINT_SCI_TxISR (UART_HandleTypeDef *huart);
@@ -26,7 +31,8 @@
 	/* VARIABLES */
   /*************/
 
-  extern uint16_t PRINT_N_Tx;
+	extern uint16_t PRINT_pendingCNT;					// Contador de bytes pendientes de procesamiento
+	extern byte timeout_PRINT_send;
 
 
   #define AT_END_H				0x0D
@@ -34,11 +40,10 @@
 
 #define NO_TXING_PRINTER  (PRINT_N_Tx == 0)
 #define NO_RXING_PRINTER  (PRINT_pendingCNT == 0)
-#define exit_PRINT_send      (timeout_PRINT_send > 3)
+#define exit_PRINT_send   (timeout_PRINT_send > 3)
 
 
 	
-
 
   /* RUTINAS */
   /***********/

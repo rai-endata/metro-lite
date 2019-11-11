@@ -74,6 +74,8 @@
    byte buff_ECHO_CONTROL[2];
  #endif
 
+  tBAX_AUX _baxAUX;
+
 /**************************************************************************************************/
 /* RUTINAS */
 /***********/
@@ -138,11 +140,11 @@
       if (availableSpace >= (N + 2)){
         // Hay lugar => puedo transmitir los nuevos datos
         error = 0;
-        BAX_SCI_ptr->TxFull = 0;                  //agregado por rai 06/08/2014
+        BAX_SCI_ptr->TxFull = 0;                  		//agregado por rai 06/08/2014
       }else{
         // No hay lugar => Descarto la transmision
         error = 1;
-        BAX_SCI_ptr->TxFull = 1;                    // Buffer de Tx lleno
+        BAX_SCI_ptr->TxFull = 1;                    	//Buffer de Tx lleno
         ENDATA_TxOutOfSpace_cnt++;
       }
       
@@ -203,6 +205,113 @@
       
       return(error);
     }
+
+
+    byte BAX_Tx_data_2byteN (uint16_t N, byte* DATA_buffer, tBAX_SCI* BAX_SCI_ptr){
+          // Rutina que FORMATEA LOS datos A TRANSMITIR por SCI con protocolo BAX.
+          // Los datos a transmitir deben terminar con DF0A.
+          // Se pasa el buffer de datos a transmitir y el tipo BAX_SCI asociado
+          //
+          // EDIT 30/11/11
+          //  Se agrego control de N junto con DF0A. Ahora el N es un argumento
+          //
+          // EDIT 05/09/12
+          //  Ya no se trabaja mas en forma LINEAL, sino que se hace en forma CIRCULAR
+          // => No inicializo puntero al ingresar en la rutina, y en lugar de eso, guardo
+          // un BKP del puntero PUT para reestablecerlo en caso de error.
+          // Ademas, si se logra encolar con exito, incrementa el contador de transmisiones
+          // pendientes.
+          //
+          // IMPORTANTE: DATA_buffer SI debe ser lineal
+          //
+          // EDIT 28/09/12
+          //  Antes de agregar nuevos datos a ser transmitidos, debo verificar que en el buffer
+          // haya lugar para los mismos y no pisar transmisiones previas. Esto es, que el PUT no
+          // pise al GET
+          byte TO_F, chk, exit, error;
+          byte* PUTptr_bkp;
+          byte* N_ptr;
+          byte* CHK_ptr;
+
+          volatile uint16_t availableSpace;
+
+          N_ptr = (byte*)&N;
+
+          PUTptr_bkp = BAX_SCI_ptr->TxPUT;              // Hago backup de datos, por si hay error
+
+          availableSpace = chkSpace_onBAX_TxBuffer(BAX_SCI_ptr);
+
+          // Al hacer la comparacion de si hay lugar o no, al N a encolar le tengo q sumar 2 btyes
+          // mas, ya que incluye a los 2 bytes de fin de SCI
+          if (availableSpace >= (N + 2)){
+            // Hay lugar => puedo transmitir los nuevos datos
+            error = 0;
+            BAX_SCI_ptr->TxFull = 0;                  //agregado por rai 06/08/2014
+          }else{
+            // No hay lugar => Descarto la transmision
+            error = 1;
+            BAX_SCI_ptr->TxFull = 1;                    // Buffer de Tx lleno
+            ENDATA_TxOutOfSpace_cnt++;
+          }
+
+          if (!error){
+        	//Agrego START
+            put_byte(&BAX_SCI_ptr->TxPUT, BAX_SCI_ptr->start, BAX_SCI_ptr->TxBuffer, dim_BAX);
+
+            //Agrego N
+            N=N+1; 					//le sumo 1 x el chksum
+        	//parte alta
+            put_byte(&BAX_SCI_ptr->TxPUT, *N_ptr++, BAX_SCI_ptr->TxBuffer, dim_BAX);
+            //parte baja
+            put_byte(&BAX_SCI_ptr->TxPUT, *N_ptr, BAX_SCI_ptr->TxBuffer, dim_BAX);
+
+            CHK_ptr = BAX_SCI_ptr->TxPUT;               // Dejo lugar el CheckSum
+            chk = 0;
+
+            // Solo agrego datos si hay lugar (no error) ya si no hay lugar puede que no
+            // entre ni un byte mas, y de ser ese el caso, pierdo lo que estaba transmitiendo
+            TO_F = 0;                                   // Limpio Bandera
+            exit = 0;                                   // Reseteo variable
+            dispararTO_lazo();                          // Disparo TimeOut Lazo
+            while (!exit && !TO_F){
+              TO_F = chkTO_lazo_F();                    // Chequeo bandera de time out de lazo
+              chk ^= *DATA_buffer;                      // Voy calculando CheckSum
+              put_byte(&BAX_SCI_ptr->TxPUT, *DATA_buffer++, BAX_SCI_ptr->TxBuffer, dim_BAX);  // Agrego datos
+              if (N>0){
+                N--;                                    // Voy decrementando N
+              }else{
+                exit = 1;                               // Salgo por error
+                error = 1;
+              }
+
+              if ((*DATA_buffer == finSCI_H) && (*(DATA_buffer+1) == finSCI_L)){
+                // Encontre un DF0A => Si N=0 termine de extraer los datos. Sino
+                // continuo justamente xq el DF0A son datos y no fin
+                if (N == 0){
+                  exit = 1;                             // Salgo por fin
+                }
+              }
+            }
+            detenerTO_lazo();                           // Detener TimeOut Lazo
+          }
+
+          if (!error){
+            put_byte(&BAX_SCI_ptr->TxPUT, BAX_stop, BAX_SCI_ptr->TxBuffer, dim_BAX);  // Agrego STOP
+       	    put_byte(&BAX_SCI_ptr->TxPUT, finSCI_H, BAX_SCI_ptr->TxBuffer, dim_BAX);  // Agrego fin H
+            put_byte(&BAX_SCI_ptr->TxPUT, finSCI_L, BAX_SCI_ptr->TxBuffer, dim_BAX);  // Agrego fin L
+
+            BAX_SCI_ptr->Tx_cnt++;                      // Nueva transmision pendiente
+            *CHK_ptr = chk;                             // Agrego CheckSum en espacio reservado
+
+          }else{
+            // Reestablezco el puntero PUT, y hago como que no paso nada
+            BAX_SCI_ptr->TxPUT = PUTptr_bkp;            // Reestablezo puntero
+          }
+
+          return(error);
+        }
+
+
  #else
 
   /* Protocolo: comandos AT skypatrol */
@@ -303,6 +412,11 @@
  
  
  #endif
+
+
+
+
+
 
   /* DETERMINAR ESPACIO DISPONIBLE EN BUFFER DE Rx */
   /*************************************************/

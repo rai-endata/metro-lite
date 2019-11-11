@@ -164,7 +164,7 @@ e	|         				e	|        | c 		        | c 	e	|
 
 static const byte tabDIG_ESPECIAL[] = {
 	// abcdefg
-	0b00001110,					//L
+	0b00001110,					//L grande
 	0b01100111,					//P
 	0b00000101,					//r chica
 	0b01000010,					//r alta subida
@@ -180,10 +180,20 @@ static const byte tabDIG_ESPECIAL[] = {
 	0b00010000,					//i
 	0b01000111,					//F
 	0b00001111,					//t
-	0b00011100					//u
+	0b00011100,					//u
+	0b00001100					//l chica
 //     abcdefg
 };
 
+
+static const byte tabCLEAR[] = {
+	// abcdefg
+	0b00001101,					//c
+	0b00001100,					//l chica
+	0b00000101,					//r chica
+	0b10000000,					//bit 7 en 1 -> va un numero
+	0b10000000					//bit 7 en 1 -> va un numero
+};
 
 static const byte tabPROG[] = {
 	// abcdefg
@@ -255,8 +265,18 @@ static const uint32_t tabDIR_mostrarTEXTO[] = {
 	&tabCONF,
 	&tabINI,
 	&tabFIN,
-	&tabTURN
+	&tabTURN,
+	&tabCLEAR
 };
+
+
+#define	MOSTRAR_PROG	0
+#define	MOSTRAR_ERR		1
+#define	MOSTRAR_CONF	2
+#define	MOSTRAR_INI		3
+#define	MOSTRAR_FIN		4
+#define	MOSTRAR_TURN	5
+#define	MOSTRAR_CLEAR	6
 
 #define  Numero_0		tabDIGITOS[0];
 #define  Numero_1		tabDIGITOS[1];
@@ -355,20 +375,29 @@ void print_display (void){
 
 		if(mostrar_ini_dsplyIMPORTE){
 			exit = 1;
-			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[3]);
+			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[MOSTRAR_INI]);
 			//apaga punto logica invertida igual que segmentos
 			HAL_GPIO_WritePin(PUERTO_SEGMENTO_PUNTO, PIN_SEGMENTO_PUNTO, GPIO_PIN_SET);
 		}
+		if(mostrar_clear_dsplyEEPROM){
+			exit = 1;
+			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[MOSTRAR_CLEAR]);
+			//apaga punto logica invertida igual que segmentos
+			HAL_GPIO_WritePin(PUERTO_SEGMENTO_PUNTO, PIN_SEGMENTO_PUNTO, GPIO_PIN_SET);
+		}
+
+
+
 		if(mostrar_conF_dsplyIMPORTE){
 			exit = 1;
-			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[2]);
+			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[MOSTRAR_CONF]);
 			//apaga punto logica invertida igual que segmentos
 			HAL_GPIO_WritePin(PUERTO_SEGMENTO_PUNTO, PIN_SEGMENTO_PUNTO, GPIO_PIN_SET);
 		}
 
 		if(mostrar_turn_dsplyIMPORTE){
 			exit = 1;
-			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[5]);
+			mostrarTEXTO((byte*)tabDIR_mostrarTEXTO[MOSTRAR_TURN]);
 			//apaga punto logica invertida igual que segmentos
 			HAL_GPIO_WritePin(PUERTO_SEGMENTO_PUNTO, PIN_SEGMENTO_PUNTO, GPIO_PIN_SET);
 		}
@@ -1087,6 +1116,42 @@ Letra_g_chica
 }
 
 
+
+void mostrar_ini(void){
+
+	byte printDISPLAY;
+/*
+Letra_P
+Letra_r_alta
+Letra_r_chica
+Letra_r_subida
+Letra_O_grande
+Letra_o_chica
+Letra_o_subida
+Letra_G_grande
+Letra_g_chica
+*/
+	switch(digito_encendido){
+		case  0:
+			//printDISPLAY = tabDIGITOS[DG4_7SEG];
+			printDISPLAY = Letra_i;
+			print_digito (printDISPLAY, digito_encendido, ON_DIGITO);
+			break;
+		case  1 :
+				printDISPLAY = Letra_n;
+				print_digito (printDISPLAY, digito_encendido, ON_DIGITO);
+			break;
+		case 2 :
+				printDISPLAY = Letra_i;
+				print_digito (printDISPLAY, digito_encendido, ON_DIGITO);
+			break;
+
+		default:
+			break;
+	}
+}
+
+
 static void mostrarTEXTO(byte* ptr_textDISPLAY){
 
 	byte printDISPLAY;
@@ -1116,7 +1181,6 @@ static void mostrarTEXTO(byte* ptr_textDISPLAY){
 				print_digito (printDISPLAY, digito_encendido, ON_DIGITO);
 		   }
 
-
 	  }
 	}
     if(!exit){
@@ -1131,6 +1195,14 @@ static void mostrarTEXTO(byte* ptr_textDISPLAY){
     			printDISPLAY = ptr_textDISPLAY[digito_encendido];
     			print_digito (printDISPLAY, digito_encendido, ON_DIGITO);
     		}else{
+    			if(mostrar_clear_dsplyEEPROM){
+    				byte DIGITOS[10];
+    				uint32_t_HEX_a_BCD(indexMenu_IniTurno,&DIGITOS);
+    				digito4 = DIGITOS[9];
+    			    digito3 = DIGITOS[8];
+    			}
+
+
     			//numero
     			switch(digito_encendido){
     					case  0:

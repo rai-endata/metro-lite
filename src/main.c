@@ -57,6 +57,7 @@
 #include "inicio.h"
 #include "Bluetooth.h"
 #include "Panico.h"
+//#include "file aux1.h"
 
 /* Private function prototypes -----------------------------------------------*/
 //static void SystemClockEX_Config(void);
@@ -127,6 +128,8 @@ int main(void)
 		EPROM_CS_Init();
 		Ini_portBANDERITA();
 		MX_GPIO_Init();
+
+		//set_choice_device_uart1();
 		choice_device_uart1 = PROG_DEVICE;
 		USART1_Ini();
 
@@ -227,7 +230,6 @@ int main(void)
 		  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
 		#endif
 		check_relojBANDERITA();
-		//check_pressBLUETOOTH();
 		check_pressPANICO();
 		check_pressTECLA();
 		//rtc__actDATE();
@@ -267,7 +269,8 @@ int main(void)
 #endif
 
 			//******* PRUEBAS **************************
-				if(auxCNT==1){Tx_Encendido_EQUIPO();}
+		/*
+	    if(auxCNT==1){Tx_Encendido_EQUIPO();}
 				if(auxCNT==2){Tx_Boton_EMERGENCIA();}
 				if(auxCNT==3){Tx_Valor_VIAJE();}
 				if(auxCNT==4){Tx_Resumen_VIAJE();}
@@ -280,6 +283,7 @@ int main(void)
 				if(auxCNT==11){Tx_Comando_MENSAJE();}
 				if(auxCNT==12){Tx_Comando_TRANSPARENTE();}
 				auxCNT=0;
+		*/
 			//******************************************
 
 	}
@@ -659,7 +663,8 @@ void set_TIMEandDATE (void){
 		}else if(GPIO_Pin == GPIO_PIN_3){//la interrupcion se debe al pin 3 ?
 			//CONEXION BLUETOOTH
 			//check_pressBLUETOOTH();
-			Bluetooth_to_cnt = BLUETOOTH_TIMEOUT;
+			setTO_Bluetooth(TO_BLUETOOTH_1);
+			//Bluetooth_to_cnt = BLUETOOTH_TIMEOUT;
 			/*
 			if(bluetoothCONECTADO){
 				//Tx_Status_RELOJ();

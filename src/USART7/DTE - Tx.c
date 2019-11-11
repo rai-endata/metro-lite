@@ -8,6 +8,7 @@
 #include "DA Tx.h"
 #include "DA Tx.h"
 #include "Lista Comandos.h"
+#include "DA Define Commands.h"
 //#include "Air Tx.h"
 
 
@@ -26,11 +27,32 @@ byte TxBufferDA_cntCMD;        // Contador de cantidad de COMANDOS copiados al b
  * 					FUNCIONES
  ***************************************************/
 
+/* DA_Tx: Toma los datos del buffer DA_TxBuffer donde se acumulan los comandos a enviar  y los pone en el buffer de salida de la sci para enviarlos
+ * al dispositivo android.
+ *
+ * DA_TxBuffer -> va_txDATA_buffer
+
+		va_txDATA_buffer
+
+		+-------+					-
+		|       | <- va_txGETptr	|
+		+-------+					|
+		|       | <- va_txPUTptr  	|
+		+-------+					| <- dim_va_txDATA
+		|       |					|
+		+-------+					|
+		|       |					|
+		+-------+					-
+
+		va_tx_cntDATOS : Cantidadd de comandos en DA_TxBuffer
+		va_tx_cntBYTE:   cantidad de bytes en el buffer
+
+  * */
 
 void DA_Tx (void){
 
-	byte tempTxBuffer[270];
-	byte linealAirTx[270];
+	byte tempTxBuffer[dimMAX+10];
+	byte linealAirTx[dimMAX+10];
 	byte error;
 	byte N,data,i;
 	uint16_t availableSpace;
@@ -42,12 +64,17 @@ void DA_Tx (void){
 	DA_TxGET = DA_TxBuffer_getGETptr();
 	DA_TxPUT = DA_TxBuffer_getPUTptr();
 
-	if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (DA_TxGET != DA_TxPUT) && (TxBufferDA_cntCMD>0 ) ){
+	//if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (DA_TxGET != DA_TxPUT) && (TxBufferDA_cntCMD>0 ) ){
+	if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ) ){
+	//if ((!pauseTx || (CMD_a_Tx == 128)) && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ) ){
+
 		//copia datos de DA_TxBuffer a un buffer lineal
 		DA_TxGETBackup = DA_TxBuffer_getGETptr();
 		copyDA_TxBuffer_to_LinealBuff(linealAirTx);
+
 		//verifico si en buffer de salida hay espacio disponible
 		N = *linealAirTx;
+
 		//availableSpace = chkSpace_onSCI_TxBuffer();
 		availableSpace = chkSpace_BuffCIR(&va_txDATA);
 		if (availableSpace >= (N+3)){
@@ -148,6 +175,8 @@ void DA_Tx (void){
     		__HAL_UART_DISABLE_IT(huart, UART_IT_TC);
     		huart->State = HAL_UART_STATE_BUSY_RX;
     		huart->Tx_TO_cnt = 0;
+
+    		//printPRUEBA(1);
 
     		//analizo que dispositivo serie finalizo la transmisión
     		if(huart == &huart7){

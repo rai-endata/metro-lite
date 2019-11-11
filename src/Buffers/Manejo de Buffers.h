@@ -58,9 +58,11 @@
     
     extern void string_copy (byte* dest_ptr, byte* orig_ptr);
     extern void string_copy_incDest (byte** dest_ptr, byte* orig_ptr);
-    extern uint16_t string_copy_reurnN (byte* dest_ptr, byte* orig_ptr);
+    extern uint16_t string_copy_returnN (byte* dest_ptr, byte* orig_ptr);
     extern void string_N_copy (byte* dest_ptr, byte* orig_ptr, byte N);
     extern void stringCopyN (byte* dest_ptr, byte* orig_ptr, uint16_t N);
+    extern void bufferNcopy (byte* dest_ptr, byte* orig_ptr, byte N);
+    extern void bufferNcopy_incDst (byte** dest_ptr, byte* orig_ptr, byte N);
     extern void string_concat (byte* dest_ptr, byte* orig_ptr);
     extern void string_N_concat (byte* dest_ptr, byte* orig_ptr, byte N);
     extern uint16_t string_length (byte* orig_ptr);

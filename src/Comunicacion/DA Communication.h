@@ -15,6 +15,7 @@
     // Reintentos
 	#define reintINFINITOS      0xFF
 	#define reint_3      		0x03
+	#define reint_0      		0x00
 
   	#define OFFSET_RTA          0x80    // Offset en Tabla_ComandosTx
   // Longitudes de comandos estándar
@@ -36,9 +37,10 @@
   #define MENSAJE4		0x04		//tarifa invalida
   #define MENSAJE5		0x05		//tarifa no programada
   #define MENSAJE6		0x06		//comando transparente
-  #define MENSAJE7		0X07		//Recaudacion Parcial
-
-
+  #define MENSAJE7		0x07		//Recaudacion Parcial
+  #define MENSAJE8		0x08		//Aun no tiene viajes en el turno empezado
+  #define MENSAJE9		0x09		//SESION CERRADA EXITOSAMENTE
+  #define MENSAJE10		0x0A		//cambio a cobrando no permitido
 
   /* ESTRUCTURAS */
   /***************/  

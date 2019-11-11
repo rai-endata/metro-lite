@@ -10,6 +10,8 @@
 
 #define okFIN		0
 #define noFIN		1
+#define		dim_comandoTRANSPARENTE_Buffer 		600
+#define		dimMAX   							dim_comandoTRANSPARENTE_Buffer
 
 	// Estructura de Puntero a Funciones de Transmisión
 	typedef void (*typeTABLA_Tx)(void);
@@ -51,7 +53,7 @@
 
 
 	//extern void Tx_Comando_TRANSPARENTE (void);
-	void Tx_Comando_TRANSPARENTE(byte N, byte* buffer);
+	void Tx_cmdTRANSPARENTE(byte N, byte* buffer);
 	void Tx_Comando_TRANSPARENTE_prueba(void);
 	void TxRta_conDATOS (byte dato);
 

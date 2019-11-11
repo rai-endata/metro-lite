@@ -138,6 +138,7 @@
     extern void correccionHoraria (byte* fecha, byte* hora, byte uso, byte signo);
     extern byte chkBiciesto (byte anio);
     extern void seconds_to_HMS (byte* HMS_ptr, uint32_t seg);
+    extern void seconds_to_HMS_HEX (byte* HMS_buffer, uint32_t seg);
     extern uint32_t restaHoraria (byte* minuendo, byte* sustraendo);
     extern byte diferenciaHoraria (byte* minuendo, byte* sustraendo,uint16_t dif_pedida);
     extern uint32_t restaDate (tDATE date2, tDATE date1);

@@ -50,6 +50,20 @@
     typedef tBAX (*BAXptr_type)(byte stage, tBAX_SCI* bax_ptr);
 
 
+    typedef union {
+	  uint8_t Byte;
+	  struct{
+		  uint8_t dosByteN		    :1;     // Indica que que al transmitir con protocolo bax no se tenega en cuen el N
+		  uint8_t aux1    			:1;     // Bandera auxiliar 1
+		  uint8_t aux_2            	:1;		// Bandera auxiliar 2
+		  uint8_t aux_3            	:1;		// Bandera auxiliar 3
+		  uint8_t aux_4            	:1;		// Bandera auxiliar 4
+		  uint8_t aux_5            	:1;		// Bandera auxiliar 5
+		  uint8_t aux_6            	:1;		// Bandera auxiliar 6
+		  uint8_t aux_7            	:1;     // Bandera auxiliar 7
+	  }Bits;
+    }tBAX_AUX;
+
   /* VARIABLES */
   /*************/
     #define BAX_start       0x01      // Start de cadena BAX NORMAL
@@ -57,6 +71,12 @@
     
     #define finSCI_H        0xDF
     #define finSCI_L        0x0A
+
+
+    extern tBAX_AUX _baxAUX;
+
+	#define   baxAUX	_baxAUX.Byte;
+    #define   dosBYTE_N   _baxAUX.Bits.dosByteN;
 
 
   /* RUTINAS */

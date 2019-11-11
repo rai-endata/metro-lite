@@ -1,5 +1,5 @@
 /*
- * Ticket Common.h
+ * Common Ticket.h
  *
  *  Created on: 14/3/2018
  *      Author: Rai
@@ -17,6 +17,7 @@
 #include "Grabaciones en EEPROM.h"
 
 #include "Textos.h"
+#include "Reportes.h"
 
 /*
  Set the character print mode: 0x1b 0x21 n
@@ -31,11 +32,19 @@ n										0 			1
 7 underline 						  cancel 	setting		00:cancel	0x80: setting
  * */
 
+//#define max_turnosReporte           3        // Maximo de turnos a mostrar
+
+
+
 typedef enum{
 	NO_HAY_IMPRESION_EN_PROCESO,
 	IMPRESION_EN_PROCESO
 }tESTADO_IMPRESION;
 
+extern tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
+extern tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
+extern uint8_t print_buffer[2000];
+extern byte tarifasTurno;
 
 extern uint8_t to_print_cnt;
 extern tESTADO_IMPRESION statusPRINT;

@@ -49,7 +49,7 @@ void check_pressBLUETOOTH(void){
 
 	pinSTATE = HAL_GPIO_ReadPin(BLUETOOTH_STATUS_GPIO_PORT, BLUETOOTH_STATUS_PIN);
 	if(!pinSTATE){
-		//conexion bletooth (flanco descendente)
+		//conexion bluetooth (flanco descendente)
 		bluetoothCONECTADO = 1;
 	}else{
 		//desconexion bluetooth (flanco ascendente)
@@ -64,9 +64,10 @@ void Bluetooth_TimeOut (void){
      if (Bluetooth_to_cnt != 0){
     	 Bluetooth_to_cnt--;
        if (Bluetooth_to_cnt == 0){
+    	  // setTO_Bluetooth(TO_BLUETOOTH_2);
     	   check_pressBLUETOOTH();
 			if(bluetoothCONECTADO){
-				//Tx_Status_RELOJ();
+				Tx_Status_RELOJ();
 				if(ESTADO_RELOJ == OCUPADO || ESTADO_RELOJ== COBRANDO){
 					Tx_Valor_VIAJE();
 				}
@@ -76,6 +77,10 @@ void Bluetooth_TimeOut (void){
 }
 
 
+
+void setTO_Bluetooth(uint8_t time ){
+	Bluetooth_to_cnt = time;
+}
 
 /*
 GPIO_PinState Buetooth_Status_GetState(void)

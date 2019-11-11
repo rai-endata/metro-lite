@@ -20,32 +20,6 @@
 #include "eeprom_aux.h"
 #include "eeprom address.h"
 
-/*
-	typedef enum{
-		 EEPROM_OK,                        // No hay error
-		 EEPROM_ACCESS_ERROR,              // Error de Acceso
-		 EEPROM_PROTECTION_VIOLATION,      // Error de Violacion de Proteccion
-		 EEPROM_noMult4,                   // Error longitud a grabar no multiplo de 4
-		 EEPROM_ERROR_MASK                 // Error en la mascara de grabacion
-	}tEEPROM_ERROR;
-*
-  typedef union
-   {
-    	uint8_t 		page[EEPROM_PAGE_SIZE_BYTES][EEPROM_SIZE/EEPROM_PAGE_SIZE_BYTES];			//access by page
-    	uint8_t			byte[EEPROM_SIZE];			//access by byte
-    	uint16_t		word16[EEPROM_SIZE/2];		//access by word 16
-    	uint32_t		word32[EEPROM_SIZE/4];		//access by word 32
-    	backupEEPROM	dataBACKUP;				    //access by user struct
-    }eepromDATA;
-
-    typedef struct {
-    	backupEEPROM	dataBACKUP;
-    	tPROG			progEEPROM;
-       }tEEPROM;
-
-
-*/
-
 
 /************************ ADDRES SIZE PROG RELOJ *******************************************************/
 #define	ADDR_BASE_PROG_PART1				ADDR_EEPROM_PAGE_1
@@ -68,6 +42,9 @@
 
 #define	ADDR_EEPROM_PRIMER_ENCENDIDO		ADDR_BASE_VARIABLES + 0
 #define	SIZE_EEPROM_PRIMER_ENCENDIDO		sizeof(uint16_t)
+
+#define	ADDR_BASE_TABLA_REPORTE_30DIAS		ADDR_EEPROM_PAGE_256
+
 
 #define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
 #define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21

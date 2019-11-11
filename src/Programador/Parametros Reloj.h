@@ -170,17 +170,17 @@
 
     // TIPO DE DATOS TARIFA
     typedef struct{
-      uint8_t numero;                      // Numero de Tarifa
-      uint8_t diaNoche;                    // Horario de Tarifa: Diurna o Nocturna
+      uint8_t  numero;                       // Numero de Tarifa
+      uint8_t  diaNoche;                     // Horario de Tarifa: Diurna o Nocturna
       uint16_t tiempoGracia;                // [REMIS] Tiempo de Gracia -> Tiempo en que no se cuentan fichas por tiempo
-      uint16_t bajadaBandera;								// Bajada Bandera -> Valor en Pesos de la Bajada de Bandera
+      uint16_t bajadaBandera;				// Bajada Bandera -> Valor en Pesos de la Bajada de Bandera
       uint16_t distInicial;                 // Distancia Inicial -> Distancia de validez de la Bajada de Bandera
       uint16_t distFicha;                   // Distancia Ficha -> Distancia a Recorrer para que caiga una Ficha
       uint16_t valorFicha;                  // Valor de la Ficha -> Valor en Pesos de la Ficha
       uint16_t tiempoFicha;                 // Tiempo Ficha -> Tiempo a Esperar para que caiga una Ficha
       uint16_t valorFichaTiempo;            // Valor Ficha Tiempo -> Valor en Pesos de la Ficha que cae por Tiempo
       uint16_t horaInicio;                  // Hora de Inicio -> Hora a partir de la cual tiene vigencia la tarifa
-      tVIGENCIA vigencia;               // Vigencia -> Dias en los que la tarifa esta vigente, asi como tb indica si usa calendario o no
+      tVIGENCIA vigencia;                   // Vigencia -> Dias en los que la tarifa esta vigente, asi como tb indica si usa calendario o no
     }tTARIFA;
 
 
@@ -363,7 +363,7 @@
     }tPARAM_RELOJ_COMUNES;
 
     typedef struct{
-    	 uint8_t hab;                   	// Habilitacion
+    	 uint8_t hab;                   // Habilitacion
          tEQPESOS diurna;            	// Equivalencia Diurna
          tEQPESOS nocturna;          	// Equivalencia Nocturna
          uint16_t checksum;     		//

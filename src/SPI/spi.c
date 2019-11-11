@@ -121,7 +121,7 @@ static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferL
 }
 
 
-uint8_t SpiTxRxByte(uint8_t byte, uint8_t* status)
+uint8_t SpiTxRxByte(uint8_t byte, uint8_t* status_ptr)
 {
 	uint8_t aRxBuffer[1];
 	uint8_t aTxBuffer[1];
@@ -136,23 +136,27 @@ uint8_t SpiTxRxByte(uint8_t byte, uint8_t* status)
 		status_spi_transfer = TRANSFER_WAIT;
 		if(HAL_SPI_TransmitReceive_IT(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, sizeBUFF) == HAL_OK){
 			//espera finalizacion de transmision
-			status =errorNONE;
+			*status_ptr =errorNONE;
 			while(status_spi_transfer == TRANSFER_WAIT){
 				if(status_spi_transfer ==TRANSFER_ERROR){
-					status =errorFAIL;
+					*status_ptr =errorFAIL;
 					break;
 				}
 			};
 		}else{
-			status =errorFAIL;
+			*status_ptr =errorFAIL;
 		}
 
 	}else{
 		//TX BY POLLING
-		if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, sizeBUFF, 5000) == HAL_OK){
-				status =errorNONE;
+
+		//if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, sizeBUFF, 5000) == HAL_OK){
+		if(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)aTxBuffer, (uint8_t *)aRxBuffer, sizeBUFF, 40000) == HAL_OK){
+			*status_ptr =errorNONE;
+			//*status_ptr = 0;
 		}else{
-				status =errorFAIL;
+			*status_ptr =errorFAIL;
+			//*status_ptr = 9;
 		}
 	}
 	return(aRxBuffer[0]);

@@ -35,6 +35,8 @@
 
     extern tBAX_SCI BAX_SCI_PROG;         			// Datos de SCI segun protocolo BAX para RELOJ y PROG
 
+
+
   /* RUTINAS */
   /***********/
     extern void PRG_ini (void);

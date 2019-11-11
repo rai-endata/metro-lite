@@ -17,7 +17,7 @@
 	#include "Parametros Ticket.h"
 	#include "Reloj.h"
 	#include "Variables en flash.h"
-	#include "Ticket Common.h"
+	#include "Common Ticket.h"
 	#include "Tarifacion Reloj.h"
 	#include "Reportes.h"
 	#include <stdio.h>
@@ -27,17 +27,11 @@
 	uint32_t getFichasTiempo_tarifa(byte nroTarifa);
 
 
-	byte tarifasTurno;
-
-	uint8_t print_buffer[2000];
-
-	//static tREG_SESION iniTURNO;
+		//static tREG_SESION iniTURNO;
 	//static tREG_SESION finTURNO;
 	//static tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
 	//static tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 
-	static tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
-	static tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
 
 	void print_ticket_parcial(void){
 
@@ -228,7 +222,7 @@
 
 		if (SESION_ptr == ACTUAL_ptr){
 		  // Si se diera el caso de que el puntero de inicio de sesion es el mismo que
-		  // el actual, es porque (ya se dio al meno una vuelta) y el puntero PUT esta
+		  // el actual, es porque (ya se dio al menos una vuelta) y el puntero PUT esta
 		  // apuntando justamente al registro de sesion de muuuuucho tiempo atras, como
 		  // para pisarlo en una proxima escritura.
 		  // => Para extraer los datos necesito que estos punteros sean distintos, por

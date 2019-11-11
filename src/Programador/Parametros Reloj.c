@@ -156,118 +156,6 @@
 	}
 
     if (error == EEPROM_OK){
-    	/*
-    	//levanta desde eeprom datos de reloj comun
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojCOMUN,ADDRESS_PROG_relojCOMUN,sizeof(tPARAM_RELOJ_COMUNES));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojCOMUN.pulsosKm, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojCOMUN.carreraBandera, 2);
-
-    	 //levanta desde eeprom datos de tarifa 1 DIURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT1D,ADDRESS_PROG_relojT1D,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 2 DIURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT2D,ADDRESS_PROG_relojT2D,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 3 DIURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT3D,ADDRESS_PROG_relojT3D,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 4 DIURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT4D,ADDRESS_PROG_relojT4D,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.valorFichaTiempo, 2);
-
-    	 //levanta desde eeorm datos de tarifa 1 NOCTURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT1N,ADDRESS_PROG_relojT1N,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 2 NOCTURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT2N,ADDRESS_PROG_relojT2N,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 3 DIURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT3N,ADDRESS_PROG_relojT3N,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.valorFichaTiempo, 2);
-    	 //levanta desde eeorm datos de tarifa 4 NOCTURNA
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT4N,ADDRESS_PROG_relojT4N,sizeof(tPARAM_RELOJ_TARIFA));
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.distFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.distInicial, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.horaInicio, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.tiempoFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.tiempoGracia, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.valorFichaTiempo, 2);
-
-    	 //levanta desde eeprom datos de equivalencia en pesos
-    	 //EEPROM_ReadBuffer(&EEPROM_AUX,ADDRESS_PROG_relojEqPESOS,(sizeof(tPARAM_RELOJ_EQPESOS)));
-    	 //EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS,ADDRESS_PROG_relojEqPESOS,(sizeof(tPARAM_RELOJ_EQPESOS)));
-    	 //levanto de esta forma porque hacendolo como esta comentad arriba se corre un byte y guarda los datos en los elmentos de la estructura
-    	 //en forma errornea.
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.hab,ADDRESS_PROG_relojEqPESOS,1);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.bajadaBandera,ADDRESS_PROG_relojEqPESOS+1,2);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.valorFicha,ADDRESS_PROG_relojEqPESOS+3,2);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.valorFichaTiempo,ADDRESS_PROG_relojEqPESOS+5,2);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.bajadaBandera,ADDRESS_PROG_relojEqPESOS+7,2);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.valorFicha,ADDRESS_PROG_relojEqPESOS+9,2);
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.valorFichaTiempo,ADDRESS_PROG_relojEqPESOS+11,2);
-    	 //doy vuelta los bytes
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.valorFichaTiempo, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.bajadaBandera, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.valorFicha, 2);
-    	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.valorFichaTiempo, 2);
-
-    	 //levanta desde eeprom datos de CALENDARIO
-    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND,ADDRESS_PROG_relojCALEND,SIZE_PROG_relojCALEND);
-    	 EEPROM_ReadBuffer(&EEPROM_AUX,ADDRESS_PROG_relojCALEND,SIZE_PROG_relojCALEND);
-    	 */
     	levantar_progRELOJ();
 		//ini varios
 		if(TARIFA_PESOS){
@@ -356,7 +244,7 @@
       }
   	if (!prim) {
   				__enable_irq();
-  			}
+  	}
 
       return(error);
     }

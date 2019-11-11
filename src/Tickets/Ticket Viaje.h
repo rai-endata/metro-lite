@@ -1,7 +1,7 @@
 #ifndef __IMPRESORA__
  #define __IMPRESORA__
 
-#include "Ticket common.h"
+#include "Common Ticket.h"
 //#include "stm32f0xx_hal_gpio.h"
 //#include "stm32f091xc.h"
 
@@ -16,7 +16,7 @@
 */
 
 extern uint32_t nroTICKET;
-extern uint8_t print_buffer[1100];
+
 
 #define TO_PRINTING_VIAJE		3
 

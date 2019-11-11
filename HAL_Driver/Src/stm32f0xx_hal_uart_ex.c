@@ -409,9 +409,11 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
    // Call UART Error Call back function if need be --------------------------
   if(huart->ErrorCode != HAL_UART_ERROR_NONE)
   {
-    HAL_UART_ErrorCallback(huart);
+#ifndef DEBUG_UART
+	    HAL_UART_ErrorCallback(huart);
+	    errorIRQ = 0;
+#endif
 
-    errorIRQ = 0;
   }
 
 #if !defined(STM32F030x6) && !defined(STM32F030x8)&& !defined(STM32F070xB)&& !defined(STM32F070x6)&& !defined(STM32F030xC)

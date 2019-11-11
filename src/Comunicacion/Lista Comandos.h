@@ -26,7 +26,18 @@
 	#define CMD_RELOJ_Pase_a_OCUPADO_BANDERA    0x1D
 	#define CMD_RELOJ_Pase_a_OCUPADO_APP	    0x1E
     #define CMD_comandoTRANSPARENTE				0x40
+		#define subCMD_ECO				1
+		#define subCMD_estadoRELOJ		2
+		#define subCMD_consultaVIAJE	3
+		#define subCMD_consultaTURNO	4
+
+
 	#define CMD_comandoMENSAJE					0x50
+
+	#define CMD_RELOJ_Pase_a_LIBRE_SC           0x28
+	#define CMD_RELOJ_Pase_a_OCUPADO_SA_SC      0x2C
+	#define CMD_RELOJ_Pase_a_OCUPADO_APP_SC     0x2E
+	#define CMD_RELOJ_Pase_a_COBRANDO_SC        0x2A
 
 
 	#define CMD_RELOJ  ((CMD_a_Tx == CMD_RELOJ_Pase_a_LIBRE)			|| \
@@ -35,15 +46,12 @@
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_BANDERA)	|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_APP)		|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_COBRANDO)			|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_LIBRE_SC)			|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_SA_SC)	|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_APP_SC)	|| \
+						(CMD_a_Tx == CMD_RELOJ_Pase_a_COBRANDO_SC)		|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_FUERA_SERVICIO)	   \
-						)
-
-
-   #define CMD_RELOJ_RESP		(((CMD_a_RESP == 0x83) && (CMD_a_Tx == 0x80)) || \
-		                         ((CMD_a_RESP == 0x84) && (CMD_a_Tx == 0x80)) || \
-								 ((CMD_a_RESP == 0x85) && (CMD_a_Tx == 0x80)))
-
-
+					    )
 
 
 /* *************************************************************
@@ -51,18 +59,22 @@
  *************************************************************** */
 
 	#define cmdInicio_TURNO						0x01
-	#define cmdPase_LIBRE						0x03
-	#define cmdPase_OCUPADO						0x04
-	#define cmdPase_Cobrando					0x05
+	#define cmdPedido_Pase_LIBRE				0x03
+	#define cmdPedido_Pase_OCUPADO				0x04
+	#define cmdPedido_Pase_COBRANDO				0x05
 	#define cmdInicio_EPERA						0x06
 	#define cmdFin_ESPERA						0x07
 	#define cmdImpresion						0x08
 	#define cmdConsultaTarifas					0x09
 	#define cmdConsultaEstado					0x0A
 	#define cmdPase_fueraServicio				0x0B
-    #define cmdEntra_DESCANSO_Rx				0x0C
-	#define cmdSale_DESCANSO_Rx					0x0D
+    #define cmdEntra_DESCANSO					0x0C
+	#define cmdSale_DESCANSO					0x0D
+    #define cmdREPORTE_PARCIAL_Rx				0x0E
 
+	#define cmdPedido_Pase_LIBRE_SC				0x23
+	#define cmdPedido_Pase_OCUPADO_SC			0x24
+	#define cmdPedido_Pase_COBRANDO_SC			0x25
 
 
 #endif

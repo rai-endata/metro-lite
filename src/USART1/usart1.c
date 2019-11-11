@@ -10,11 +10,18 @@
 #include "Definicion de tipos.h"
 #include "Print UART.h"
 #include "- PRINT Config -.h"
+//#include "file aux1.h"
+
+
 
 #define	dim_noIMPORTA1	1
 byte noIMPORTA1[dim_noIMPORTA1];
 
 uint8_t choice_device_uart1;
+
+void set_choice_device_uart1(void){
+	//choice_device_uart1 = PROG_DEVICE;
+}
 
 static void MX_USART1_UART_Init(void);
 

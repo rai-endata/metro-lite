@@ -2,7 +2,7 @@
 
 /* INCLUDES */
 /************/
- 	
+
 	#include "main.h"
 	#include "Definicion de tipos.h"
 	#include "Definiciones Generales.h"
@@ -13,12 +13,12 @@
 	#include "usart1.h"
 	 
 	#include "- PRINT Config -.h"
-	#include "Ticket Common.h"
+	#include "Common Ticket.h"
 
 	#include "stm32f0xx_hal_uart.h"
 	#include "stm32f0xx_hal.h"
 	
-
+	//#include "file aux1.h"
 
 /*********************************************************************************************/
 /* ESTRUCTURAS */
@@ -44,13 +44,15 @@
 /*************/
 	//UART_HandleTypeDef huart1;						//
 
-	static byte timeout_PRINT_send;
+
 	byte PRINT_RxBuffer[dimPRINT_Rx];			// Buffer de Rx de AT CMDs
 	static byte* PRINT_RxGET;						// Puntero de extracción
 	static byte* PRINT_RxPUT;						// Puntero de inserción
-	static uint16_t PRINT_pendingCNT;					// Contador de bytes pendientes de procesamiento
 	 #define  PRINT_pendingMax     dimPRINT_Rx-2     	// max cantidad de comandos pendientes(debe ser menor a processCNTmax-2 , de
-	                                              	// lo contrario se puede dar el caso que no salga del lazo que hay
+
+	uint16_t PRINT_pendingCNT;					// Contador de bytes pendientes de procesamiento
+	byte timeout_PRINT_send;
+                                             	// lo contrario se puede dar el caso que no salga del lazo que hay
 	                                              	// en PRINT_preProcess (while(!foundCRLF && (processCNT <= pendingCNT)))
 	                                              
 	byte PRINT_TxBuffer[dimPRINT_Tx];			// Buffer de Tx de AT CMDs
@@ -130,9 +132,8 @@
 				PRINT_pendingCNT=0;
 				PRINT_N_Tx=0;
 				statusPRINT = NO_HAY_IMPRESION_EN_PROCESO;
+
 	}
-
-
 
 
 /* AGREGAR DATO A BUFFER DE Rx DE AT CMD */
@@ -184,26 +185,25 @@
 			if((NO_TXING_PRINTER && NO_RXING_PRINTER )|| exit_PRINT_send){                           //hay transmision en proceso ? agregado rai
 
 			choice_device_uart1 = PRINT_DEVICE;
+
+
 			USART_Ini(&huart1, 9600);
-
   			timeout_PRINT_send=0;                       				// timout de inhabilitacion de esta rutina
-  			
-  	//stringCopyN (PRINT_TxBuffer, CMD, N);							// Copio comando a buffer
-
+  				//stringCopyN (PRINT_TxBuffer, CMD, N);							// Copio comando a buffer
   			PRINT_N_Tx = N;					// Cantidad de datos a Tx
-
-  	//PRINT_TxBuffer[PRINT_N_Tx] = 0x0D;							// Agrego <CR> para ejecutar comando
-
-  	//* CMD = 0x0D;
-	//PRINT_N_Tx++;
-
-  	//PRINT_TxGET = PRINT_TxBuffer;								// Puntero de extraccion al inicio del buffer
-  	  PRINT_TxGET = CMD;
+				//PRINT_TxBuffer[PRINT_N_Tx] = 0x0D;							// Agrego <CR> para ejecutar comando
+				//CMD = 0x0D;
+				//PRINT_N_Tx++;
+				//PRINT_TxGET = PRINT_TxBuffer;								// Puntero de extraccion al inicio del buffer
+  			PRINT_TxGET = CMD;
 
   			huart1.Tx_TO_cnt = UART_TX_TIME_OUT;
+
   			HAL_UART_Transmit_IT(&huart1,PRINT_TxBuffer,PRINT_N_Tx);	// Habilito Transmisión
 
+
 			}
+
 		  PRINT_reint(seg_sendTO);                       				// reintento de comando
 		}
 

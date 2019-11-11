@@ -1,32 +1,50 @@
 apps android - comandos fin de turno
 ************************************
 
-reloj -> App
+ Permite al metrolite recibir comandos de la App
 
-inicio de turno: 01 03 00 01 01 03 
-resp:			 01 02 81 81 03
+App -> Reloj
+
+inicio/fin de turno: 01 03 00 01 01 03
+resp: 01 02 81 81 03
 
 Entrada Descanso: 01 02 0C 0C 03
-Resp: 			  01 02 8C 8C 03
+Resp: 01 02 8C 8C 03
 
 Salida Descanso:  01 02 0D 0D 03
-Resp: 			  01 02 8D 8D 03
-
+Resp: 01 02 8D 8D 03
 
 print ticket de viaje: 01 03 09 08 01 03
-resp:				   01 02 88 88 03
+resp: 01 02 88 88 03
 
 print ticket fin de turno : 01 03 0A 08 02 03
-resp:				   		01 02 88 88 03
+resp: 01 02 88 88 03
 
 
+App -> Reloj
 
+Pedido de Recaudacion Parcial: 01 02 0E 0E 03
+Resp: 01 02 8E 8E 03
 
+Reloj -> App
 
-App -> reloj
+Mensaje (con recaudacion parcial) : 01 N CHKSUM 50 00 14 04 12 29 01 18 07 "DATOS DE LA RECAUDACION PARCIAL" 03
+Resp: 01 02 D0 D0 03
 
-01 texto -> Primer inicio de turno con el chofer 1
-			finalizo turno chofer 1, inicio turno chofer 2
-			no se pudo inicar el turno por ...
-			Imprimiendo ...
-			
+Donde:
+
+Inicio							0x01
+N		                        cantidad de bytes
+ChekSUM                    		chksum 
+Comando                    		0x50
+Fuente de Hora					0x00
+Hora  (hora)					0x14
+Hora  (minuto)					0x04
+Hora  (segundo)					0X12
+Fecha (dia)						0X29
+Fecha (mes)						0X01
+Fecha (año)						0X18
+Tipo de Mensaje (rec. parcial)  0x07
+Mensaje						“   "DATOS DE LA RECAUDACION PARCIAL"
+Fin 							0x03
+

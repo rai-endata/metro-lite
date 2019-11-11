@@ -33,7 +33,8 @@
 
 	void PRINT_DEBUG_encolarBUFFER(uint8_t* buffer){
 		while(*buffer){
-			putBUFCIR (*buffer++, &printDEBUG);
+			//putBUFCIR (*buffer++, &printDEBUG);
+			PRINT_DEBUG_encolarBYTE(*buffer++);
 		}
 	}
 
@@ -43,7 +44,7 @@
 
 		uint8_t buffer[500];
 
-		if( printDEBUG_DATOScnt > 0 && NO_ESTA_IMPRIMIENDO && statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
+		if( printDEBUG_DATOScnt > 0 && NO_ESTA_IMPRIMIENDO ){
 			printDEBUG_DATOScnt--;
 			statusPRINT = IMPRESION_EN_PROCESO;
 			i=0;
@@ -68,21 +69,19 @@
         PRINT_DEBUG_encolarBUFFER("indice = ");
         valor = (uint32_t)newReg_GETptr->idx;
         convert_to_string_with_decimals (bufferPRINT, valor, 0xFF, 0, base_DECIMAL);
+        //encola valor de indice
         uint8_t i=0;
         while(i<5 && (bufferPRINT[i]!= 0)){
         	PRINT_DEBUG_encolarBYTE(bufferPRINT[i]);
         	i++;
         }
+        //encola espacios
         while(i<5 ){
         	PRINT_DEBUG_encolarBUFFER(" ");
         	i++;
         }
         PRINT_DEBUG_encolarBUFFER(", ");
-
-        //PRINT_DEBUG_encolarBUFFER("TIPO = ");
-        //valor = (uint32_t)newReg_GETptr->tipo;
-		//convert_to_string_with_decimals (bufferPRINT, valor, 0xFF, 0, base_DECIMAL);
-
+        //encola tipo
 		if(tipo == REG_libre){
 			PRINT_DEBUG_encolarBUFFER("LIBRE");
 			PRINT_DEBUG_encolarBUFFER(", ");
@@ -105,19 +104,19 @@
 			PRINT_DEBUG_encolarBUFFER("TIPO = ");
 			printVARIABLE((uint32_t)tipo, &bufferPRINT, 1, 0);
 		}
-
-
+        //
 		i=0;
         while(i<3 && (bufferPRINT[i]!= 0)){
         	PRINT_DEBUG_encolarBYTE(bufferPRINT[i]);
         	i++;
         }
+        //encolar espacios
         while(i<5 ){
         	PRINT_DEBUG_encolarBUFFER(" ");
         	i++;
         }
         PRINT_DEBUG_encolarBUFFER(", ");
-
+        //encolar chofer
         PRINT_DEBUG_encolarBUFFER("CHOFER = ");
         valor = (uint32_t)newReg_GETptr->chofer;
 		convert_to_string_with_decimals (bufferPRINT, valor, 0xFF, 0, base_DECIMAL);
@@ -126,7 +125,7 @@
         	PRINT_DEBUG_encolarBYTE(bufferPRINT[i]);
         	i++;
         }
-		//print km_h
+		//encolar km_h
         uint16_t KMH = 100;
         uint16_t* KMH_ptr = &KMH;
 		cargaContenidoPuntero_inDATA(KMH_ptr, &bufferPRINT[0]);
@@ -484,5 +483,26 @@ void printVARIABLE_VECTOR(byte* ptr_valor, byte* buffer, byte espacio, byte fin)
         }
 
 	}
+
+
+
+
+
+void printPRUEBA(uint8_t n){
+
+		uint8_t bufferPRINT[50];
+		uint8_t buffer_aux[20];
+
+	        PRINT_DEBUG_encolarBUFFER("PRUEBA: ");
+	        printVARIABLE((uint32_t)n, &bufferPRINT, 5, 0);
+
+	        //PRINT_DEBUG_encolarBUFFER("   Date IniTurno: ");
+	        //date_to_string(buffer_aux, date);
+	        //PRINT_DEBUG_encolarBUFFER(&buffer_aux);
+
+	        PRINT_DEBUG_encolarBYTE(0x00);
+	        printDEBUG_DATOScnt++;
+	}
+
 
 #endif

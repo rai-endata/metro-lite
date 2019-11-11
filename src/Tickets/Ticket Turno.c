@@ -18,7 +18,7 @@
 #include "Parametros Ticket.h"
 #include "Reloj.h"
 #include "Variables en flash.h"
-#include "Ticket Common.h"
+#include "Common Ticket.h"
 #include "Tarifacion Reloj.h"
 #include "Reportes.h"
 
@@ -27,7 +27,7 @@
 
   // Tabla de estados de reloj a imprimir.
   // Contiene los tipos de registros a buscar, y el orden en el que se imprimen
-  const byte TICKET_TURNO_estados[]={
+  const byte TICKET_TURNO_estados[3]={
     REG_libre,
     REG_ocupado,
     REG_fserv
@@ -38,11 +38,12 @@
 
 
 byte estadosTurno;
+
     #define estadoTICKET            TICKET_TURNO_estados[estadosTurno]
 
-byte tarifasTurno;
 
-uint8_t print_buffer[2000];
+
+
 
 
 tREG_SESION iniTURNO;
@@ -50,8 +51,6 @@ tREG_SESION finTURNO;
 tREG_SESION* iniTURNO_ptr;      // Puntero a inicio de Turno del tipo SESION
 tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 
-static tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
-static tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
 
 tREG_SESION* sesion_ptrs[max_turnosReporte];
 
@@ -227,7 +226,6 @@ void print_ticket_turno(void){
 					string_copy_incDest(ptrDouble,"N");
 				}
 				add_LF(ptrDouble);
-
 				//print  Viajes
 				string_copy_incDest(ptrDouble,"  Viajes                ");
 				preparar_print (TURNO_getCantViajes_tarifa(tarifasTurno), 0, &buffer_aux, 0);
@@ -353,10 +351,10 @@ void print_ticket_turno(void){
 			printLINE(ptrDouble);
 
 			//print recaudacion por km
-			string_copy_incDest(ptrDouble,"$ x km               ");
+			string_copy_incDest(ptrDouble,"$ x km              ");
 			string_copy_incDest(ptrDouble,"   ");
 			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
-			preparar_print (aux32, 0, &buffer_aux, 0 );
+			preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
 			//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
 			string_copy_incDest(ptrDouble,&buffer_aux);
 			add_LF(ptrDouble);
@@ -868,6 +866,27 @@ void print_ticket_turno(void){
     }
 
 
+    uint32_t TURNO_calcTiempoDesconexionAlim_turno_HEX(byte* buffer){
+      // Calcula el tiempo que la alimentacion estuvo deconectada en el turno, la convierte a string y la devuelve
+      // en el buffer.
+    uint32_t tiempoDesconectado;
+  	//tREG_SESION* sesion_ptrs[max_turnosReporte];
+  	tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
+  	tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
+
+  	//(void)REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+  	iniTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index + 1];
+  	finTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index];
+
+      tiempoDesconectado = REPORTES_getTiempoDesconexionAlim_byRango((tREG_GENERIC*)iniTURNO_ptr_aux, (tREG_GENERIC*)finTURNO_ptr_aux); // Total TIEMPO en DESCONEXIONES ALIM
+
+      if (buffer != NULL){
+        seconds_to_HMS_HEX(buffer, tiempoDesconectado);
+      }
+
+      return(tiempoDesconectado);
+    }
+
 
 
   /* EXTRAER IMPORTE PERDIDO EN TARIFA */
@@ -1308,7 +1327,7 @@ void print_ticket_turno(void){
 			  //libre,ocupado,fuera de servicio
 			  kmLIBRE += ((tREG_LIBRE*) aux_INI_ptr)->km;
 
-			  if (((tREG_LIBRE*) aux_INI_ptr)->velMax > velMax){
+			  if (((tREG_LIBRE*) aux_INI_ptr)->velMax > velMaxLIBRE){
 				velMaxLIBRE = ((tREG_LIBRE*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
 			  }
 
@@ -1323,7 +1342,7 @@ void print_ticket_turno(void){
 			  //libre,ocupado,fuera de servicio
 			  kmOCUPADO += ((tREG_OCUPADO*) aux_INI_ptr)->km;
 
-			  if (((tREG_OCUPADO*) aux_INI_ptr)->velMax > velMax){
+			  if (((tREG_OCUPADO*) aux_INI_ptr)->velMax > velMaxOCUPADO){
 				velMaxOCUPADO = ((tREG_OCUPADO*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
 			  }
 
@@ -1338,7 +1357,7 @@ void print_ticket_turno(void){
 			  //libre,ocupado,fuera de servicio
 			  kmFSERV += ((tREG_FSERV*) aux_INI_ptr)->km;
 
-			  if (((tREG_FSERV*) aux_INI_ptr)->velMax > velMax){
+			  if (((tREG_FSERV*) aux_INI_ptr)->velMax > velMaxFSERV){
 				velMaxFSERV = ((tREG_FSERV*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
 			  }
 

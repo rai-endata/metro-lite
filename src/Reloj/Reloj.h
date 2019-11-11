@@ -10,6 +10,10 @@
 *	 	ESTRUCTURAS
 ********************************************************************/
 
+
+#define CON_CONEXION_CENTRAL	1
+#define SIN_CONEXION_CENTRAL	0
+
 	// ESTADOS DE RELOJ
 	typedef enum{
 		LIBRE=0x18,
@@ -19,14 +23,6 @@
 		DESCONECTADO=0x27
 	}tRELOJ;
 
-/*
- 	#define CMD_RELOJ_Pase_a_LIBRE              0x18
-	#define CMD_RELOJ_Pase_a_OCUPADO            0x19
-	#define CMD_RELOJ_Pase_a_COBRANDO           0x1A
-    #define CMD_RELOJ_Pase_a_FUERA_SERVICIO     0x1B
-	#define CMD_RELOJ_Pase_a_OCUPADO_SA		    0x1C
-
- * */
 
 	// ERRORES DE RELOJ
 	typedef enum{
@@ -95,7 +91,7 @@
 *	 	MACROS
 ********************************************************************/
 
-
+	#define dim_Tabla_CMD_Reloj			11
 
     #define HAY_CMDS_RELOJ_ENCOLADOS    (RELOJ_CMDencolados_cnt > 0)
     #define CMD_RELOJ_TRANSMITIDO       (RELOJ_CMDencolados_cnt--)
@@ -138,6 +134,9 @@
 #define TARIFA_NO_PROGRAMADA			MENSAJE5
 #define COMANDO_TRANSPARENTE			MENSAJE6
 #define RECAUDACION_PARCIAL				MENSAJE7
+#define DEBE_REALIZAR_UN_VIAJE			MENSAJE8
+#define SESION_CERRADA_EXITOSAMENTE		MENSAJE9
+#define PASE_A_COBRANDO_NO_PERMITIDO	MENSAJE10
 
 
 #define CUENTA_MAX_TARIFA	4
@@ -147,17 +146,21 @@
 
   // COMANDOS DE TRANSMISION
     extern typeTxCMD   CMD_Pase_a_LIBRE;
+    extern typeTxCMD   CMD_Pase_a_LIBRE_SC;
     extern typeTxCMD   CMD_Pase_a_OCUPADO;
     extern typeTxCMD   CMD_Pase_a_OCUPADO_SA;
+    extern typeTxCMD   CMD_Pase_a_OCUPADO_SA_SC;
     extern typeTxCMD   CMD_Pase_a_OCUPADO_BANDERA;
     extern typeTxCMD   CMD_Pase_a_OCUPADO_APP;
+    extern typeTxCMD   CMD_Pase_a_OCUPADO_APP_SC;
     extern typeTxCMD   CMD_Pase_a_COBRANDO;
+    extern typeTxCMD   CMD_Pase_a_COBRANDO_SC;
     extern typeTxCMD   CMD_Pase_a_FUERA_SERVICIO;
 
     extern uint8_t nroTARIFA_HAB_MANUAL;		//CANTIDAD DE TARIFAS HABILITADAS
     extern uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
-    extern typeTxCMD* const Tabla_CMD_Reloj[7];
+    extern typeTxCMD* const Tabla_CMD_Reloj[dim_Tabla_CMD_Reloj];
 
     extern tRELOJ     ESTADO_RELOJ;
     extern byte ESTADO_RELOJ_X_PULSADOR;

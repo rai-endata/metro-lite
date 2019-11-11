@@ -23,5 +23,5 @@ extern uint8_t choice_device_uart1;
 #define USART1_dataTxSave();					UART_Tx_ISR (&huart1);
 
 extern void USART1_Ini(void);
-
+extern void set_choice_device_uart1(void);
 #endif /* USART3_UART3_H_ */

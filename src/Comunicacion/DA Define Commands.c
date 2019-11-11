@@ -104,8 +104,9 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	#define N_DATOS_comandoTRANSPARENTE		6
 	#define N_comandoTRANSPARENTE          (N_CMD + N_DATOS_comandoTRANSPARENTE)
 	//static byte comandoTRANSPARENTE_Buffer[N_DATOS_comandoTRANSPARENTE + 2];   // Sumo DF + 0A
-	static byte comandoTRANSPARENTE_Buffer[255];   // Sumo DF + 0A
-	typeTxCMD   CMD_TRANSPARENTE={0,CMD_comandoTRANSPARENTE,0,timeReint_rapido,N_comandoTRANSPARENTE,comandoTRANSPARENTE_Buffer};
+
+	static byte comandoTRANSPARENTE_Buffer[dim_comandoTRANSPARENTE_Buffer];   // Sumo DF + 0A
+	typeTxCMD   CMD_TRANSPARENTE={0,CMD_comandoTRANSPARENTE,0,timeReint_cmdCentral,N_comandoTRANSPARENTE,comandoTRANSPARENTE_Buffer};
 
 
 	// Comando comando MENSAJE
@@ -170,13 +171,13 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
     &Comando_25,
     &Comando_26,
     &Comando_27,
-    &Comando_28,
+    &CMD_Pase_a_LIBRE_SC,                         // 0x28 - Libre sin conexion
     &Comando_29,
-    &Comando_2A,
+	&CMD_Pase_a_COBRANDO_SC,
     &Comando_2B,
-    &Comando_2C,
+    &CMD_Pase_a_OCUPADO_SA_SC,
     &Comando_2D,
-    &Comando_2E,
+    &CMD_Pase_a_OCUPADO_APP_SC,
     &Comando_2F,
     &Comando_30,
     &Comando_31,
@@ -306,13 +307,13 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	Tx_comando_25,
 	Tx_comando_26,
     Tx_comando_27,
-    Tx_comando_28,
+	Tx_BUFFER,								//0x28 - Libre SIN CONEXION
 	Tx_comando_29,
-	Tx_comando_2A,
+	Tx_BUFFER,								//0x2A - cobrando SIN CONEXION
     Tx_comando_2B,
-	Tx_comando_2C,
+	Tx_BUFFER,								//0x2C - ocupado SA SIN CONEXION
 	Tx_comando_2D,
-	Tx_comando_2E,
+	Tx_BUFFER,								//0x2E - ocupado APP SIN CONEXION
 	Tx_comando_2F,
 	Tx_comando_30,
 	Tx_comando_31,
@@ -829,7 +830,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	   byte opcional1, opcional2, opcional3,opcional4;
 
 		CMD_Status_RELOJ.Tx_F = 1;                      // Levanto Bandera de Tx
-		CMD_Status_RELOJ.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		CMD_Status_RELOJ.Reintentos = reint_0;   // Cargo Cantidad de Reintentos (INFINITOS)
 		getDate();
 		Status_RELOJ_Buffer[0] = 0;   				//fuente de hora
 		Status_RELOJ_Buffer[1] = RTC_Date.hora[0];   // HORA
@@ -951,7 +952,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		}
 
 
-   void Tx_Comando_TRANSPARENTE(byte N, byte* buffer){
+   void Tx_cmdTRANSPARENTE(byte N, byte* buffer){
 
    	  // tDATE datePrueba;
    	   byte i;
@@ -965,7 +966,8 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
        n = N-1;
        chk = 0;
    	   while(i<n){
-   		comandoTRANSPARENTE_Buffer[i] = RxDA_buffer[i+2];
+   		//comandoTRANSPARENTE_Buffer[i] = RxDA_buffer[i+2];
+   		comandoTRANSPARENTE_Buffer[i] = buffer[i];
    		i++;
    	   }
 
@@ -976,6 +978,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 
       }
+
 
 
    void Tx_Comando_TRANSPARENTE_prueba(void){
@@ -1009,7 +1012,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 	   byte i;
    	   byte chk;
-   	   byte n;
+   	   byte n,k;
 
    	    CMD_MENSAJE.Tx_F = 1;                      // Levanto Bandera de Tx
    		CMD_MENSAJE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
@@ -1024,9 +1027,10 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
    		comandoMENSAJE_Buffer[i++] = RTC_Date.fecha[2];  // AÑO
    		comandoMENSAJE_Buffer[i++] = subCMD;   			 //tipo de mensaje
 
+   	   k=i;
    	   n = N-1;
-       while(i<n){
-   		comandoMENSAJE_Buffer[i] = RxDA_buffer[i+2];
+       while(i<n+k){
+   		comandoMENSAJE_Buffer[i] = RxDA_buffer[i-k+2];
    		i++;
    	   }
    	   CMD_MENSAJE.N = N_CMD +i;
@@ -1039,9 +1043,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
    void Tx_Comando_MENSAJE(byte subCMD){
 
 		tDATE datePrueba;
-		byte i;
-		byte chk;
-		byte n;
+		uint8_t i,n,chk,exit;
 		uint16_t k;
 
 		CMD_MENSAJE.Tx_F = 1;                      // Levanto Bandera de Tx
@@ -1057,35 +1059,42 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		comandoMENSAJE_Buffer[i++] = RTC_Date.fecha[2];  // AÑO
 		comandoMENSAJE_Buffer[i++] = subCMD;   			 //tipo de mensaje
 
+		exit = 0;
 		if(subCMD == MENSAJE1){
-			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Vehiculo en movimiento");
+			k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Vehiculo en movimiento");
 			i=i+k;
+			exit = 1;
 		}
 
-		if(subCMD == MENSAJE2){
-			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Espere unos segundos para pasar a LIBRE");
+		if(subCMD == MENSAJE2 && !exit){
+			k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Espere unos segundos para pasar a LIBRE");
 			i=i+k;
+			exit = 1;
 		}
 
-		if(subCMD == MENSAJE3){
-			k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Ya puede pasar a LIBRE");
+		if(subCMD == MENSAJE3 && !exit){
+			k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Ya puede pasar a LIBRE");
 			i=i+k;
+			exit = 1;
 		}
 
-		if(subCMD == MENSAJE4){
-					k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Tarifa INVALIDA");
+		if(subCMD == MENSAJE4 && !exit){
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Tarifa INVALIDA");
 					i=i+k;
+					exit = 1;
 		}
 
-		if(subCMD == MENSAJE5){
-					k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"Tarifa NO PROGRAMADA");
+		if(subCMD == MENSAJE5 && !exit){
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Tarifa NO PROGRAMADA");
 					i=i+k;
-				}
-
-		if(subCMD == MENSAJE6){
+					exit = 1;
 		}
 
-		if(subCMD == MENSAJE7){
+		if(subCMD == MENSAJE6 && !exit){
+			exit = 1;
+		}
+
+		if(subCMD == MENSAJE7 && !exit){
 
 			uint16_t aux16; uint32_t aux32; uint8_t buffer_aux[20];
 
@@ -1095,32 +1104,54 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
 
 				//Nro Turno
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nNro. Turno:       ");
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nTurno: "); //7 espacios
 				i=i+k;
 				preparar_print (finTURNO_ptr->nroTurno, 0, &buffer_aux, 0);
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 				i=i+k;
 
 				//viajes
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nViajes:               ");
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nViajes: "); //15 espacios
 				i=i+k;
 				aux16 = getViajes_Parcial();
-				aux16 = aux16 + 1;
+				//aux16 = aux16 + 1;
 				preparar_print (aux16, 0, &buffer_aux, 0);
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 				i=i+k;
 
 				//REC PARCIAL
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],"\nREC. PARCIAL:  ");
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nRecaud: ");
 				i=i+k;
 				aux32 = getRecaudacion_Parcial();
-				aux32 = aux32 + VALOR_VIAJE; //solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
+				if(ESTADO_RELOJ == COBRANDO){
+					//solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
+					//aux32 = aux32 + VALOR_VIAJE;
+				}
 				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
-				k = string_copy_reurnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 				i=i+k;
+				exit = 1;
 		}
 
-		CMD_MENSAJE.N = N_CMD +i;
+		if(subCMD == MENSAJE8 && !exit){
+			k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Debe realizar al menos un viaje en este turno, para poder finalizarlo");
+			i=i+k;
+			exit = 1;
+		}
+
+		if(subCMD == MENSAJE9 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Ha finalizado el turno con exito, y ha iniciado un nuevo turno");
+				i=i+k;
+				exit = 1;
+		}
+
+		if(subCMD == MENSAJE10 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"No puede pasar a Cobrando en este estado del reloj");
+				i=i+k;
+				exit = 1;
+		}
+
+		CMD_MENSAJE.N = N_CMD + i;
 
 		comandoMENSAJE_Buffer[i] = fin_datos_msb;  // Fin Datos
 		comandoMENSAJE_Buffer[i+1] = fin_datos_lsb;// Fin Datos

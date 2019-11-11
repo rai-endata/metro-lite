@@ -4,8 +4,13 @@
  *  Created on: 14/3/2018
  *      Author: Rai
  */
-#include "Ticket common.h"
+#include "Common Ticket.h"
+#include "Reportes.h"
 
+tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
+tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
+uint8_t print_buffer[2000];
+byte tarifasTurno;
 
 uint8_t to_print_cnt;
 tESTADO_IMPRESION statusPRINT;
