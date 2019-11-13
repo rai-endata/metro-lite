@@ -10,19 +10,53 @@ https://desarrolloweb.com/manuales/manual-de-git.html#capitulos185
 http://aprendegit.com/
 
  
+ 
++------------------------+
+| Working Directory		 |         -> Todos los archivos y carpetas del proyecto 
+|(directorio de trabajo) | 
++------------------------+
+
++---------------------------+
+| Stage Area  				|  	   -> Todos los archivos y carpetas que pasaran a .git directory luego de un commit   
+|(directorio de preparacion)|                                                                                         
++---------------------------+																						  	
+																													  		
++-----------------------------+																						  
+| .git Directory  			  |    -> repositorio local del proyecto que se va modificando con cada commit			  	
+|  (Repository)   			  |
+|(directorio de confirmacion) |
++-----------------------------+
+
+
+                     add              commit                    push
+(Working Directory)  ->  (Stage Area)   ->    (.git Directory)   ->  (Remote Directoy)
+             <---------------------------------         
+			             checkout
+			 <--------------------------------------------------------
+			             clone (copia local de unrepositorio remoto)
+			 <--------------------------------------------------------
+			              pull (bajo cambios que otros subieron)
+
+						  
+El flujo de trabajo básico en Git es algo así:
+	Modificas una serie de archivos en tu directorio de trabajo.
+	Preparas los archivos, añadiéndolos a tu área de preparación.
+	Confirmas los cambios, lo que toma los archivos tal y como están en el área de preparación y almacena esa copia instantánea de manera permanente en tu directorio de Git.
+    subir el repositorio local a uno remoto
+ 
  //crear un repositorio
  git init    	(en la carpeta donde esta el proyecto, ejecuta el comando)
  git config --global user.name 'tu nombre'
  git config --global user.email 'tu@email.com'
  
  //agregar carpeta o archivos al directorio stage (y tambien para iniciar el seguimieto de git del archivo)
- git add
+ git add (Working Directory -> Stage Area)
  
  //para sacar del directorio stage
  git reset HEAD <file>..." to unstage
  
  //crear nueva version (guardar en el stage area)
- git commit -m "comentario"
+ git commit -m "comentario"   (Stage Area -> .git Directory)
  
  //modificar un commit
  git commit --amend -m "comentario"

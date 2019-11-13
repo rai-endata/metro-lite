@@ -219,7 +219,7 @@
           nroCorrelativo_INTERNO = 0;
           EEPROM_WriteByte(EEPROM_NRO_CORRELATIVO, nroCorrelativo_INTERNO);
           //LIMPIA TABLA DE REPOSTES
-          clear_tabREPORTES();
+          //clear_tabREPORTES();
           // PRIMER ENCENDIDO o RESET REPORTES
           REPORTE_PUTptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
           data_ptr = (byte*) &REPORTE_PUTptr;           			// Guardo puntero PUT en EEPROM

@@ -1151,6 +1151,13 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				exit = 1;
 		}
 
+		if(subCMD == MENSAJE11 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Pase a Ocupado con tarifa automatica");
+				i=i+k;
+				exit = 1;
+		}
+
+
 		CMD_MENSAJE.N = N_CMD + i;
 
 		comandoMENSAJE_Buffer[i] = fin_datos_msb;  // Fin Datos

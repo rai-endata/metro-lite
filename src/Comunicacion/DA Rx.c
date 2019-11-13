@@ -1296,23 +1296,49 @@
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 				//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
 				tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
-				if(tarifa > 4){
-				//tarifa invalida
-					TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-					Tx_Comando_MENSAJE(TARIFA_INVALIDA);
-				}else if(tarifa > nroTARIFA_HAB_MANUAL){
-				//tarifa no programada
-					TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-					Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
+
+
+				if (seleccionManualTarifas){
+					if(tarifa > 4){
+					//tarifa invalida
+						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+						Tx_Comando_MENSAJE(TARIFA_INVALIDA);
+					}else if(tarifa > nroTARIFA_HAB_MANUAL){
+					//tarifa no programada
+						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+						Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
+					}else{
+						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+						paseOCUPADO_APP=1;
+						tarifa_1_4 = tarifa;
+						setTARIFA_MANUAL();
+						Pase_a_OCUPADO();
+						//envia valor de viaje para que muestre bajada de bandera
+						Tx_Valor_VIAJE();
+					}
 				}else{
+					tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
+					//set tarifa a mostrar en display
+					if(tarifa_1_8 < 5){
+						tarifa_1_4 = tarifa_1_8;
+					}else{
+						tarifa_1_4 = tarifa_1_8 - 4;
+					}
+
 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 					paseOCUPADO_APP=1;
-					tarifa_1_4 = tarifa;
-					setTARIFA_MANUAL();
+					if(tarifa != tarifa_1_4){
+						tarifa = tarifa_1_4;
+						Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
+					}
+
 					Pase_a_OCUPADO();
 					//envia valor de viaje para que muestre bajada de bandera
 					Tx_Valor_VIAJE();
+
+
 				}
+
 
 			}else{
 				TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);

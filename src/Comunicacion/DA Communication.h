@@ -41,6 +41,7 @@
   #define MENSAJE8		0x08		//Aun no tiene viajes en el turno empezado
   #define MENSAJE9		0x09		//SESION CERRADA EXITOSAMENTE
   #define MENSAJE10		0x0A		//cambio a cobrando no permitido
+  #define MENSAJE11		0x0B		//Pase a Ocupado con Tarifa automatica
 
   /* ESTRUCTURAS */
   /***************/  

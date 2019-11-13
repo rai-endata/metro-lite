@@ -137,6 +137,7 @@
 #define DEBE_REALIZAR_UN_VIAJE			MENSAJE8
 #define SESION_CERRADA_EXITOSAMENTE		MENSAJE9
 #define PASE_A_COBRANDO_NO_PERMITIDO	MENSAJE10
+#define TARIFA_AUTOMATICA				MENSAJE11
 
 
 #define CUENTA_MAX_TARIFA	4
@@ -192,7 +193,7 @@
     extern byte velMax_OCUPADO;								//Velocidad Máxima
 
     extern byte puntoDECIMAL;
-    extern byte fichaPESOS;
+    extern byte fichaPESOS;				//la tarifa esta en: Pesos: 1 , fichas: 2
     extern tDATE libreDATE;
     extern tDATE ocupadoDATE;
     extern tDATE cobrandoDATE;
