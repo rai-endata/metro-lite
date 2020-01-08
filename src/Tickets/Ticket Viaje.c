@@ -25,6 +25,7 @@ void print_ticket_viaje(void){
 	uint8_t buffer_TarifaN[11];
 	uint8_t buffer_Distancia[11];
 	uint8_t buffer_VelMax[11];
+	uint8_t buffer_nro_viaje[11];
 	uint8_t buffer_MinEspera[11];
 	uint8_t buffer_Date_cobrando[20];
 	uint8_t buffer_Date_ocupado[20];
@@ -33,6 +34,8 @@ void print_ticket_viaje(void){
 	uint32_t fichas_x_Pulsos;
 	uint32_t fichas_x_Tiempo;
 	uint16_t N_print;
+	uint8_t nro_viaje;
+
   if(ESTADO_RELOJ==COBRANDO){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
     		statusPRINT = IMPRESION_EN_PROCESO;
@@ -87,6 +90,11 @@ void print_ticket_viaje(void){
 
 			preparar_print (fichas_x_Pulsos, 0, &buffer_FichasD, 0 );
 			preparar_print (fichas_x_Tiempo, 0, &buffer_FichasT, 0 );
+
+			//preparar numero de viaje
+			//nro_viaje = nroCorrelativo_INTERNO; nro_viaje--; if(nro_viaje==255){nro_viaje=0;}
+			preparar_print (nroCorrelativo_INTERNO, 0, &buffer_nro_viaje, 0 );
+
 
 			//prepara hora y fecha de inicio y fin de viaje
 			date_to_string(buffer_Date_cobrando, cobrandoDATE);
@@ -223,20 +231,23 @@ void print_ticket_viaje(void){
 
 
 			printLINE(ptrDouble);
+			string_copy_incDest(ptrDouble,"Viaje Nro.:             ");
+			string_copy_incDest(ptrDouble,&buffer_nro_viaje);
+			add_LF(ptrDouble);
 
-			string_copy_incDest(ptrDouble,"INICIO: ");
+			string_copy_incDest(ptrDouble,"Inicio:");
 			if(TARIFA_PESOS){
-				string_copy_incDest(ptrDouble,"   ");
+				string_copy_incDest(ptrDouble,"    ");
 			}else{
 				if(EqPESOS_hab){
-					string_copy_incDest(ptrDouble,"    ");
+					string_copy_incDest(ptrDouble,"     ");
 				}else{
-					string_copy_incDest(ptrDouble,"    ");
+					string_copy_incDest(ptrDouble,"     ");
 				}
 			}
 			string_copy_incDest(ptrDouble,&buffer_Date_ocupado);
 			add_LF(ptrDouble);
-			string_copy_incDest(ptrDouble,"FIN:");
+			string_copy_incDest(ptrDouble,"Fin:");
 			if(TARIFA_PESOS){
 				string_copy_incDest(ptrDouble,"       ");
 			}else{

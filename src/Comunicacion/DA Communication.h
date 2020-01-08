@@ -17,6 +17,8 @@
 	#define reint_3      		0x03
 	#define reint_0      		0x00
 
+
+
   	#define OFFSET_RTA          0x80    // Offset en Tabla_ComandosTx
   // Longitudes de comandos estándar
     //#define N_CMD               (3)           // Longitud de COMANDO solo

@@ -110,6 +110,7 @@
       extern byte calcCantDigitos (uint32_t num, byte base);
       extern void convert_to_string(byte* buf, uint32_t i, byte cant_ceros, int base);
       extern void convert_to_string_with_decimals (byte* buf, uint32_t i, byte cant_ceros, byte decimales, int base);
+      extern void convert_to_string_with_decimals_poneCOMA (byte* buf, uint32_t i, byte cant_ceros, byte decimales, int base);
       extern void date_to_string(byte* buffer, tDATE date);
       extern void shortDate_to_string(byte* buffer, tDATE date);
     

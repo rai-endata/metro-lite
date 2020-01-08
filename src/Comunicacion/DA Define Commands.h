@@ -25,12 +25,14 @@
 	extern typeTxCMD CMD_Boton_EMERGENCIA;
 	extern typeTxCMD CMD_Bajada_BANDERA;
 	extern typeTxCMD CMD_Cuenta_FICHAS;
-	extern typeTxCMD CMD_PedidoPase_OCUPADO;
+	//extern typeTxCMD CMD_PedidoPase_OCUPADO;
 	extern typeTxCMD CMD_Resumen_VIAJE;
 	extern typeTxCMD CMD_Velocidad_Posicion;
 	extern typeTxCMD CMD_Status_RELOJ;
+	extern typeTxCMD CMD_TRANSPARENTE;
+
 	extern void Tx_minutos_ESPERA (void);
-	extern void Tx_Conf_finTURNO  (byte status);
+	//extern void Tx_Conf_finTURNO  (byte status);
 	extern void Tx_Conf_inicioTURNO  (byte status);
 	void Tx_Comando_MENSAJE(byte subCMD);
 
@@ -43,11 +45,16 @@
 	extern void Tx_Encendido_EQUIPO  (void);
 	extern void Tx_Valor_VIAJE (void);
 
-	extern void Tx_Distancia_Velocidad  (void);
-	extern void Tx_PedidoPase_OCUPADO (void);
-	extern void Tx_Resumen_VIAJE  (void);
+
+
+
 	extern void Tx_Boton_EMERGENCIA (void);
-	extern void Tx_Velocidad_Posicion (void);
+
+	//extern void Tx_PedidoPase_OCUPADO (void);
+	//extern void Tx_Distancia_Velocidad  (void);
+	//extern void Tx_Velocidad_Posicion (void);
+	//extern void Tx_Resumen_VIAJE  (void);
+
 	extern void Tx_Status_RELOJ (void);
 	extern void Tx_Comando_MENSAJE_fromBUFFER(byte N, byte* buffer, byte subCMD);
 

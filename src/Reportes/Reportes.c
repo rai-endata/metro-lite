@@ -245,7 +245,7 @@
 
   /* ENCOLAR NUEVO REGISTRO LIBRE */
   /********************************/
-    byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento){
+    byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento, uint8_t estado_de_conexion, uint8_t nroviaje){
       // Siempre y cuando haya lugar en la cola, encola un nuevo registro LIBRE para ser
       // grabado en FLASH.
       // Devuelve "1" en caso de haber encolado, devuelve "0" si no pudo encolar
@@ -288,7 +288,8 @@
         regLibre.segParado = segP;        // Segundos que permanecio Detenido en Libre
         regLibre.segMarcha = segM;        // Segundos que estuvo en Movimiento en Libre
         regLibre.sensor = asiento;        // Indica si se ocupo por sensor de asiento
-        
+        regLibre.estadoConexion = estado_de_conexion;
+        regLibre.nroViaje = nroviaje;
         queueDone = queueNewReg((tREG_GENERIC*) &regLibre);  // Intento encolar nuevo registro
       }else{
         queueDone = 0;
@@ -302,7 +303,7 @@
 
   /* ENCOLAR NUEVO REGISTRO OCUPADO */
   /********************************/
-    byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM){
+    byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t minutosEspera, uint8_t estado_de_conexion, uint8_t nroCorrelativo_INTERNO){
       // Siempre y cuando haya lugar en la cola, encola un nuevo registro OCUPADO para ser
       // grabado en FLASH.
       // Devuelve "1" en caso de haber encolado, devuelve "0" si no pudo encolar
@@ -323,7 +324,7 @@
     	  		uint8_t    velMax;         // Velocidad Maxima
     	  		uint16_t   segParado;      // Segundos que permanecio Detenido
     	  		uint16_t   segMarcha;      // Segundos que estuvo en Marcha
-    	  		uint8_t    empty[11];       // Relleno para longitud PAR
+    	  		uint8_t    empty[11];      // Relleno para longitud PAR
 
 			+---+---+---+---+---+---+---+---+---+---+---+---+---+----+
 			|   2   | 1 | 7 | 1 |   2   | 1 |   2   |   2   | 1 | 10 |
@@ -344,6 +345,14 @@
         regOcupa.segMarcha = segM;        // Segundos que estuvo en Movimiento en Ocupado
         regOcupa.bajadaBandera = TARIFA.bajadaBandera;
         regOcupa.fichaPesos = fichaPESOS;
+        regOcupa.minutosEspera = minutosEspera;
+        regOcupa.nroViaje = nroCorrelativo_INTERNO;
+        regOcupa.estadoConexion = estado_de_conexion;
+        if(fichaPESOS == 2){
+        	regOcupa.punto_decimal =  3;
+        }else{
+        	regOcupa.punto_decimal =  PUNTO_DECIMAL;
+        }
         
         queueDone = queueNewReg((tREG_GENERIC*) &regOcupa);  // Intento encolar nuevo registro
       }else{
@@ -358,7 +367,7 @@
 
   /* ENCOLAR NUEVO REGISTRO A PAGAR */
   /**********************************/
-    byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t minutosEspera){
+    byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t estado_de_conexion){
       // Siempre y cuando haya lugar en la cola, encola un nuevo registro A PAGAR para ser
       // grabado en FLASH.
       // Devuelve "1" en caso de haber encolado, devuelve "0" si no pudo encolar
@@ -391,7 +400,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regAPagar.date = date;            // Fecha y Hora del Pase a Ocupado
         regAPagar.chofer = chofer;        // Chofer
         regAPagar.nroViaje = nroViaje;    // Nº Correlativo de Viaje
-        regAPagar.punto_decimal =  PUNTO_DECIMAL;
+        regAPagar.estadoConexion = estado_de_conexion;
 
         //cambiar cuando se agrega programador
         /*
@@ -422,7 +431,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regAPagar.importe = valorViaje;   // Agrego Importe (Valor del Viaje)
         regAPagar.segundosEspera = esperaEspera;        // Agrego Espera (Segundos de Espera del viaje)
         regAPagar.segundosTarifacion = esperaTarifacion;        // Agrego Espera (Segundos de Espera del viaje)
-        regAPagar.minutosEspera = minutosEspera;        //
+              //
         
         queueDone = queueNewReg((tREG_GENERIC*) &regAPagar);  // Intento encolar nuevo registro
       }else{
@@ -436,7 +445,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
   
   /* ENCOLAR NUEVO REGISTRO FUERA DE SERVICIO */
   /********************************************/
-    byte REPORTE_queueFueraServ (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM){
+    byte REPORTE_queueFueraServ (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t estado_de_conexion){
       // Siempre y cuando haya lugar en la cola, encola un nuevo registro FUERA DE SERVICIO para ser
       // grabado en FLASH.
       // Devuelve "1" en caso de haber encolado, devuelve "0" si no pudo encolar
@@ -455,6 +464,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regFServ.velMax = vel;            // Velocidad Maxima en Fuera de Servicio
         regFServ.segParado = segP;        // Segundos que permanecio Detenido en Fuera de Servicio
         regFServ.segMarcha = segM;        // Segundos que estuvo en Movimiento en Fuera de Servicio
+        regFServ.estadoConexion = estado_de_conexion;
         
         queueDone = queueNewReg((tREG_GENERIC*) &regFServ);  // Intento encolar nuevo registro
       }else{
@@ -485,9 +495,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         regSesion.tipo = REG_sesion;       // Tipo de registro
         regSesion.date = *DATE_ptr;        // Fecha y Hora actual
         regSesion.chofer = chofer;         // Chofer
-        regSesion.punto_decimal =  PUNTO_DECIMAL;
         regSesion.bajadaBandera = TARIFA.bajadaBandera;
         regSesion.fichaPesos = fichaPESOS;
+
+        if(fichaPESOS == 2){
+        	regSesion.punto_decimal =  3;
+        }else{
+        	regSesion.punto_decimal =  PUNTO_DECIMAL;
+        }
 
         //EEPROM_ReadBuffer(&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
 
@@ -684,10 +699,22 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
 
       if (REPORTES_HABILITADOS && (newReg_qeueu_cnt > 0) /*&& (REPORTES_delay_cnt == 0)*/ && FLASH_chkCanUpdate()){
-        newReg_qeueu_cnt--;               // Decremento contador de registros encolados
+        newReg_qeueu_cnt--;               								//Decremento contador de registros encolados
         EEPROM_ReadBuffer(&REPORTE_NRO_VIAJE,ADDR_EEPROM_REPORTE_NRO_VIAJE,SIZE_EEPROM_REPORTE_NRO_VIAJE);
         EEPROM_ReadBuffer(&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
         EEPROM_ReadBuffer(&REPORTE_INDEX,ADDR_EEPROM_REPORTE_INDEX,SIZE_EEPROM_REPORTE_INDEX);
+
+        //prueba
+        tREG_OCUPADO* reg_ocupado;
+        tREG_A_PAGAR* reg_cobrando;
+        tREG_GENERIC reg_reloj;
+
+		 if (newReg_GETptr->tipo == REG_ocupado){
+			 reg_ocupado =  (tREG_OCUPADO*)newReg_GETptr;
+		 }
+		 if (newReg_GETptr->tipo == REG_apagar){
+			 reg_cobrando =  (tREG_A_PAGAR*)newReg_GETptr;
+		 }
 
 
         if (newReg_GETptr->tipo == REG_apagar){
@@ -711,7 +738,18 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         newReg_GETptr->idx = indice;        							// Agrego INDICE a registro a grabar
     	(void)EEPROM_WriteBuffer( newReg_GETptr, REPORTE_PUTptr, sizeof(tREG_GENERIC));
 
-#ifdef RELOJ_DEBUG
+
+    	//prueba
+    	EEPROM_ReadBuffer(&reg_reloj,REPORTE_PUTptr,sizeof(tREG_GENERIC));
+		 if (reg_reloj.tipo == REG_ocupado){
+			 reg_ocupado =  (tREG_OCUPADO*)&reg_reloj;
+		 }
+		 if (reg_reloj.tipo == REG_apagar){
+			 reg_cobrando =  (tREG_A_PAGAR*)&reg_reloj;
+		 }
+
+
+    	#ifdef RELOJ_DEBUG
         //imprime direccion de tabla
 		newReg_GETptrEEPROM = &Registro_En_EEPROM;
 		EEPROM_ReadBuffer(newReg_GETptrEEPROM,REPORTE_PUTptr,sizeof(tREG_GENERIC));
@@ -1196,21 +1234,55 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
           if (aux_INI.tipo == type){
-         	  aux_INI_ptr = &aux_INI;
-			  tarif1 = ((tREG_A_PAGAR*)aux_INI_ptr)->tarifa;
-			  tarif2 = REPORTE_getNroTarifa_fromRegistry(INI_ptr,type);
-			  if (tarif2 == tarifa){
-        	  //if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
-              // Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo fichas
-				fichas_aux = ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[0];
-				fichas_aux <<= 8;
-				fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[1];
-				fichas_aux <<= 8;
-				fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[2];
-				fichas += fichas_aux;
-				//fichas += REPORTE_getFichasT_fromRegistry(INI_ptr, type);
 
-            }
+        	aux_INI_ptr = &aux_INI;
+  			if (type == REG_apagar){
+  				tarif1 = ((tREG_A_PAGAR*)aux_INI_ptr)->tarifa;
+  			    tarif2 = REPORTE_getNroTarifa_fromRegistry(INI_ptr,type);
+  			    if (tarif2 == tarifa){
+				  //if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
+					// Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo fichas
+					fichas_aux = ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[0];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[1];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasTime[2];
+					fichas += fichas_aux;
+					//fichas += REPORTE_getFichasT_fromRegistry(INI_ptr, type);
+  			    }
+  			}else if (type == REG_desconexAlim){
+  				tarif1 = ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->tarifa;
+  			    tarif2 = REPORTE_getNroTarifa_fromRegistry(INI_ptr,type);
+  			    if (tarif2 == tarifa){
+				  //if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
+					// Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo fichas
+					fichas_aux = ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasTime[0];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasTime[1];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasTime[2];
+					fichas += fichas_aux;
+					//fichas += REPORTE_getFichasT_fromRegistry(INI_ptr, type);
+  			    }
+
+
+  			}else if (type == REG_desconexAcc){
+  				tarif1 = ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->tarifa;
+  			    tarif2 = REPORTE_getNroTarifa_fromRegistry(INI_ptr,type);
+  			    if (tarif2 == tarifa){
+				  //if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
+					// Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo fichas
+					fichas_aux = ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasTime[0];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasTime[1];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasTime[2];
+					fichas += fichas_aux;
+					//fichas += REPORTE_getFichasT_fromRegistry(INI_ptr, type);
+  			    }
+  			}
+
+
           }
           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
         }
@@ -1256,15 +1328,34 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
           if (aux_INI.tipo == type){
+
             if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
               // Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo fichas
             	aux_INI_ptr = &aux_INI;
-            	fichas_aux = ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[0];
-                fichas_aux <<= 8;
-                fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[1];
-                fichas_aux <<= 8;
-                fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[2];
-                fichas += fichas_aux;
+            	if (type == REG_apagar){
+                	fichas_aux = ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[0];
+                    fichas_aux <<= 8;
+                    fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[1];
+                    fichas_aux <<= 8;
+                    fichas_aux |= ((tREG_A_PAGAR*)aux_INI_ptr)->fichasDist[2];
+                    fichas += fichas_aux;
+            	}else if (type == REG_desconexAlim){
+					fichas_aux = ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasDist[0];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasDist[1];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->fichasDist[2];
+					fichas += fichas_aux;
+
+            	}else if (type == REG_desconexAcc){
+					fichas_aux = ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasDist[0];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasDist[1];
+					fichas_aux <<= 8;
+					fichas_aux |= ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->fichasDist[2];
+					fichas += fichas_aux;
+            	}
+
             	//fichas += REPORTE_getFichasD_fromRegistry(INI_ptr, type);
             }
           }
@@ -1316,10 +1407,17 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
             if (REPORTE_getNroTarifa_fromRegistry(INI_ptr,type) == tarifa){
               // Como se trata de un registro <tipo> en esa tarifa => Extraigo y acumulo importe
             	aux_INI_ptr = &aux_INI;
-                importe += ((tREG_A_PAGAR*)aux_INI_ptr)->importe;
-            	//importe += REPORTE_getImporte_fromRegistry(INI_ptr, type);
-         }
+				if (type == REG_apagar){
+					importe += ((tREG_A_PAGAR*)aux_INI_ptr)->importe;
+				}else if (type == REG_desconexAlim){
+					importe += ((tREG_DESCONEXION_ALIM*)aux_INI_ptr)->importe;
+				}else if (type == REG_desconexAcc){
+					importe += ((tREG_DESCONEXION_ACC*)aux_INI_ptr)->importe;
+				}
+	        	//importe += REPORTE_getImporte_fromRegistry(INI_ptr, type);
+            }
           }
+
           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
         }
         detenerTO_lazo();                         // Detengo Time Out de Lazo
@@ -1359,12 +1457,33 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
 
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
+
           if (aux_INI.tipo == type){
-            // Como se trata de un registro <tipo> => sumo KM
-        	  aux_INI_ptr = &aux_INI;
-        	km += ((tREG_LIBRE*) aux_INI_ptr)->km;
+       	  //  aux_INI_ptr = &aux_INI;
+          //	km += ((tREG_LIBRE*) aux_INI_ptr)->km;
+
+
+			  aux_INI_ptr = &aux_INI;
+			  //LIBRE
+			  if (type == REG_libre){
+				//libre
+				km += ((tREG_LIBRE*) aux_INI_ptr)->km;
+			  }
+
+			  //OCUPADO
+			  if (type == REG_ocupado){
+				//ocupado
+				km += ((tREG_OCUPADO*) aux_INI_ptr)->km;
+
+			  }
+
+			  //CALCULOS FUERA DE SERVICIO
+			  if (type == REG_fserv){
+				//fuera de servicio
+				km += ((tREG_FSERV*) aux_INI_ptr)->km;
+			  }
           }
-          incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
+		  incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
         }
         detenerTO_lazo();                         // Detengo Time Out de Lazo
       }
@@ -1404,12 +1523,21 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
           if (aux_INI.tipo == type){
-            // Como se trata de un registro <tipo> => sumo KM
-        	  aux_INI_ptr = &aux_INI;
-        	if (((tREG_LIBRE*) aux_INI_ptr)->velMax > velMax){
-              velMax = ((tREG_LIBRE*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
-            }
-          }
+       	   aux_INI_ptr = &aux_INI;
+			if (type == REG_libre){
+		        if (((tREG_LIBRE*) aux_INI_ptr)->velMax > velMax){
+		        	velMax = ((tREG_LIBRE*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
+		        }
+			}else if (type == REG_ocupado){
+		        if (((tREG_OCUPADO*) aux_INI_ptr)->velMax > velMax){
+		        	velMax = ((tREG_OCUPADO*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
+		        }
+			}else if (type == REG_fserv){
+		        if (((tREG_FSERV*) aux_INI_ptr)->velMax > velMax){
+		        	velMax = ((tREG_FSERV*) aux_INI_ptr)->velMax;  // Actualizo valor de velocidad maxima
+		        }
+			}
+	      }
           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
         }
         detenerTO_lazo();                         // Detengo Time Out de Lazo
@@ -1497,7 +1625,13 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           if (aux_INI.tipo == type){
             //Como se trata de un registro <tipo> => sumo tiempo
         	aux_INI_ptr = &aux_INI;
-        	tiempo += ((tREG_LIBRE*) aux_INI_ptr)->segParado;
+    		if (type == REG_libre){
+    			tiempo += ((tREG_LIBRE*) aux_INI_ptr)->segParado;
+    		}else if (type == REG_ocupado){
+    			tiempo += ((tREG_OCUPADO*) aux_INI_ptr)->segParado;
+   			}else if (type == REG_fserv){
+   				tiempo += ((tREG_FSERV*) aux_INI_ptr)->segParado;
+   			}
           }
           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
         }
@@ -2338,9 +2472,6 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 	  tREG_A_PAGAR* cobrando_ptr;
 
       tREG_GENERIC* INI_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;
-	  tREG_GENERIC* FIN_ptr = (tREG_GENERIC*)FIN_TABLA_REPORTE;
-
-	   FIN_ptr = ADDR_EEPROM_REPORTE + 500*sizeof(tREG_GENERIC);
 
 	    cobrando_ptr = 0;
         TO_F = 0;                                 // Reseteo Bandera de TimeOut
@@ -2355,7 +2486,6 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         	  regVIAJE.nroViaje 	 = aux_INI.nroViaje;
         	  regVIAJE.chofer 		 = aux_INI.chofer;
         	  regVIAJE.tarifa 		 = aux_INI.tarifa;
-        	  regVIAJE.minutosEspera = aux_INI.minutosEspera;
         	  regVIAJE.dateA_PAGAR 	 = aux_INI.date;
         	  regVIAJE.fichasDist[0] = aux_INI.fichasDist[0];
         	  regVIAJE.fichasDist[1] = aux_INI.fichasDist[1];
@@ -2364,7 +2494,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         	  regVIAJE.fichasTime[1] = aux_INI.fichasTime[1];
         	  regVIAJE.fichasTime[2] = aux_INI.fichasTime[2];
         	  regVIAJE.importe 		 = aux_INI.importe;
-        	  regVIAJE.puntoDecimal  = aux_INI.punto_decimal;
+        	  regVIAJE.estadoConexion_COBRANDO = aux_INI.estadoConexion;
         	 break;
           }
           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
@@ -2405,6 +2535,9 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         	  regVIAJE.segParadoOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segParado;
         	  regVIAJE.velMaxOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->velMax;
         	  regVIAJE.fichaPesos = ((tREG_OCUPADO*)aux_INI_ptr)->fichaPesos;
+        	  regVIAJE.puntoDecimal  = ((tREG_OCUPADO*)aux_INI_ptr)->punto_decimal;
+        	  regVIAJE.minutosEspera = ((tREG_OCUPADO*)aux_INI_ptr)->minutosEspera;
+        	  regVIAJE.estadoConexion_OCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->estadoConexion;
         	 break;
           }
 
@@ -2444,6 +2577,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         	  regVIAJE.segParadoLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segParado;
         	  regVIAJE.velMaxLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->velMax;
         	  regVIAJE.sensor = ((tREG_LIBRE*)aux_INI_ptr)->sensor;
+        	  regVIAJE.estadoConexion_LIBRE = ((tREG_LIBRE*)aux_INI_ptr)->estadoConexion;
          	  break;
            }
 
@@ -2465,6 +2599,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 	 mostrar_t_dsplyT=1;
 	 on_display_tarifa();
 	 print_display();
+
 	 eeprom_tab_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;
 
 	 aux=0;
@@ -2503,14 +2638,18 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
 
  void clearREGISTER_tabREPORTES (uint8_t* ptrEEPROM){
+	 uint32_t aux_TABLA;
+	 uint8_t i;
 
-	 uint8_t i =0;
+		i = 0;
+		 aux_TABLA = (uint32_t) ptrEEPROM;
+		 while(i < sizeof(tREG_GENERIC)){
+		 		//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
+		 		EEPROM_WriteByte(aux_TABLA, 0xff);
+		 		aux_TABLA++;
+		 		i++;
+		  }
 
- 	 while(i < sizeof(tREG_GENERIC)){
- 		EEPROM_WriteByte((uint32_t) ptrEEPROM, 0xff);
- 		ptrEEPROM++;
- 		i++;
- 	 }
 
   }
 

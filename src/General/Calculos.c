@@ -1111,6 +1111,101 @@
       string_copy(buf, s);
     }	    
 
+
+
+
+    /* CONVERTIR A STRING CON DECIMALES */
+    /************************************/
+      void convert_to_string_with_decimals_poneCOMA (byte* buf, uint32_t i, byte cant_ceros, byte decimales, int base){
+  	    // Convierte un numero a string, con decimales
+        byte reverse[MAX_LENGTH+1];      // plus one for the null
+        byte aux_buffer[MAX_LENGTH+1];   // plus one for the null
+        byte* s;
+        byte* s_aux;
+        byte menor_10= i < 10;
+        uint16_t cant_digitos;
+        uint16_t cant_digitos_old;
+        byte TO_F;
+
+        reverse[MAX_LENGTH]=0;					    // null, fin de cadena
+        s = reverse+MAX_LENGTH;
+
+        do {
+          *--s = "0123456789ABCDEFghijklmnopqrstuvwxyz"[i % base];
+          i /= base;
+        } while (i);
+
+        // decimales
+        if (decimales != 0){
+          s_aux = aux_buffer;
+
+          cant_digitos = string_length(s);
+
+          if (cant_digitos <= decimales){
+            *s_aux++ = '0';                 // Agrego cero a la izquierda
+            *s_aux++ = ',';                 // Agrego Punto Decimal
+
+            // EDIT 13/11/12
+            //  Como ya estoy agregando un cero despues de la coma => tengo que sacar un cero
+            // si le digo cuantos ceros quiero
+            if ((cant_ceros != 0xFF) && (cant_ceros != 0x00)){
+              cant_ceros--;
+            }
+
+            cant_digitos_old = cant_digitos;
+            while (cant_digitos < decimales){
+              *s_aux++ = '0';
+              cant_digitos++;
+            }
+            cant_digitos = cant_digitos_old;
+
+            *s_aux = 0;                     // Agrego fin de cadena para poder concatenar
+            string_concat(s_aux,s);								// Agrego todos los digitos
+
+            for(i=0; i<cant_digitos; i++ ){
+              s_aux++;                      // Necesito avanzar el puntero, sino copia mal los datos
+            }
+
+          }else{
+            while (cant_digitos > decimales){
+              *s_aux++ = *s++;							// Copio digitos a la izquierda
+              cant_digitos--;
+            }
+
+            *s_aux++ = ',';									// Agrego punto decimal
+
+            while (cant_digitos > 0){
+              *s_aux++ = *s++;              // Copio digitos a la derecha
+              cant_digitos--;
+            }
+          }
+
+          // Reseteo los puntero "s" y "s_aux", para que "s" apunte al buffer que tiene todos los decimales
+          reverse[MAX_LENGTH]=0;
+          s = reverse+MAX_LENGTH;
+
+          while(s_aux != aux_buffer){
+            *--s = *--s_aux;
+          }
+        }
+
+
+        // cant_ceros:
+        //    0x00: Agregar cero, sólo si es menor a 10
+        //    0xFF: No agregar ningun cero
+        //    0xAB: Agregar AB ceros
+        if (cant_ceros == 0){
+          if (menor_10)  *--s = '0';    // Agrego "0" si es menor a 10
+        }else if (cant_ceros != 0xFF){
+          while (cant_ceros != 0){
+            *--s = '0';                 // Agrego "0"
+            cant_ceros--;               // Decremento Contador
+          }
+        }
+
+        string_copy(buf, s);
+      }
+
     /* DETERMINACION DE EQUIVALENCIA DE LONGITUD */
       /*********************************************/
     /*
@@ -1157,6 +1252,7 @@
       convert_to_string(aux, date.hora[2], 0, base_BCD);      // Convierto Seg
       string_FAR_concat(buffer, aux);                         // Agrego Seg
     }
+
 
 
   /* CONVERTIR SHORT-DATE A STRING */

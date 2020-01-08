@@ -112,8 +112,10 @@
         #define paseLIBRE_interno_conKM         paseLIBRE(&kmRecorridos_INTERNO)
         #define paseLIBRE_interno_sinKM         paseLIBRE(NULL)
         #define paseOCUPADO_interno             paseOCUPADO(&kmRecorridos_INTERNO, velMax_INTERNO, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO)
-        #define paseAPAGAR_interno              paseAPAGAR(&kmRecorridos_INTERNO, velMax_INTERNO, minutosEspera_INTERNO, TARIFA.numero,((byte*)(&importe_INTERNO))+1, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO)
-        #define paseFUERA_SERVICIO_interno       paseFUERA_SERVICIO(&kmRecorridos_INTERNO)
+        //#define paseAPAGAR_interno              paseAPAGAR(&kmRecorridos_INTERNO, velMax_INTERNO, minutosEspera_INTERNO, TARIFA.numero,((byte*)(&importe_INTERNO))+1, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO)
+		#define paseAPAGAR_interno              paseAPAGAR(&kmRecorridos_INTERNO, velMax_INTERNO, minutosEspera, TARIFA.numero,((byte*)(&importe_INTERNO))+1, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO)
+
+    #define paseFUERA_SERVICIO_interno       paseFUERA_SERVICIO(&kmRecorridos_INTERNO)
 
 /*******************************************************************
 *	 	CONSTANTES
@@ -164,6 +166,8 @@
     extern typeTxCMD* const Tabla_CMD_Reloj[dim_Tabla_CMD_Reloj];
 
     extern tRELOJ     ESTADO_RELOJ;
+    extern byte     ESTADO_RELOJ_CONEXION;
+
     extern byte ESTADO_RELOJ_X_PULSADOR;
     extern void Reloj_iniTarifa(byte tarifa);
     extern void Reloj_iniTarifa1(void);
@@ -232,6 +236,8 @@
     extern void BanderaOut_Off(void);
     extern void BanderaOut_Toggle(void);
     extern void preparar_print (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos);
+    extern void preparar_print_poneCOMA (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos);
+    extern void preparar_print_new (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos, byte** buffer_print);
     extern void RELOJ_tomarDateCambioReloj_Arranque (void);
     extern tDATE RELOJ_getDateCambio(void);
     extern byte RELOJ_INTERNO_getChofer(void);

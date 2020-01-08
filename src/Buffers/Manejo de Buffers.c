@@ -664,6 +664,8 @@ byte getBUFCIR (buffcirTYPE* DATA){
 }
 
 
+
+
 /* INCREMENTAR ptr GET  */
 /************************/
 
@@ -730,6 +732,14 @@ byte check_cntDATOS_BUFCIR(buffcirTYPE* DATA){
    return(status);
 }
 
+byte check_cntBYTE_BUFCIR(buffcirTYPE* DATA){
+   byte status;
+   status = 0;
+   if(DATA->cntBYTE > 0){
+    status = 1;
+   }
+   return(status);
+}
 /* TOMA PUNTERO GET  */
 /*********************/
 

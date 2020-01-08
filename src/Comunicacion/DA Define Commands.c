@@ -50,29 +50,27 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 
 	//Comando Cuenta FICHAS
-	#define N_DATOS_Distancia_Velocidad		14
-	#define N_Distancia_Velocidad          (N_CMD + N_DATOS_Distancia_Velocidad)
-	static byte Distancia_Velocidad_Buffer[N_DATOS_Distancia_Velocidad + 2];   // Sumo DF + 0A
-	typeTxCMD   CMD_Distancia_Velocidad={0,cmdDistancia_Velocidad,0,timeReint_rapido,N_Distancia_Velocidad,Distancia_Velocidad_Buffer};
+	//#define N_DATOS_Distancia_Velocidad		14
+	//#define N_Distancia_Velocidad          (N_CMD + N_DATOS_Distancia_Velocidad)
+	//static byte Distancia_Velocidad_Buffer[N_DATOS_Distancia_Velocidad + 2];   // Sumo DF + 0A
+	//typeTxCMD   CMD_Distancia_Velocidad={0,cmdDistancia_Velocidad,0,timeReint_rapido,N_Distancia_Velocidad,Distancia_Velocidad_Buffer};
 
-	//Comando Encendido de EQUIPO
-	#define N_DATOS_PedidoPase_OCUPADO		8
-	#define N_PedidoPase_OCUPADO          (N_CMD + N_DATOS_PedidoPase_OCUPADO)
-	static byte PedidoPase_OCUPADO_Buffer[N_DATOS_PedidoPase_OCUPADO + 2];   // Sumo DF + 0A
-	typeTxCMD   CMD_PedidoPase_OCUPADO={0,cmdPedidoPase_OCUPADO,0,timeReint_rapido,N_PedidoPase_OCUPADO,PedidoPase_OCUPADO_Buffer};
+	//#define N_DATOS_PedidoPase_OCUPADO		8
+	//#define N_PedidoPase_OCUPADO          (N_CMD + N_DATOS_PedidoPase_OCUPADO)
+	//static byte PedidoPase_OCUPADO_Buffer[N_DATOS_PedidoPase_OCUPADO + 2];   // Sumo DF + 0A
+	//typeTxCMD   CMD_PedidoPase_OCUPADO={0,cmdPedidoPase_OCUPADO,0,timeReint_rapido,N_PedidoPase_OCUPADO,PedidoPase_OCUPADO_Buffer};
 
 	//Comando Resumen de VIAJE
-	#define N_DATOS_Resumen_VIAJE		32
-	#define N_Resumen_VIAJE          (N_CMD + N_DATOS_Resumen_VIAJE)
-	static byte Resumen_VIAJE_Buffer[N_DATOS_Resumen_VIAJE + 2];   // Sumo DF + 0A
-	typeTxCMD   CMD_Resumen_VIAJE={0,cmdResumen_VIAJE,0,timeReint_rapido,N_Resumen_VIAJE,Resumen_VIAJE_Buffer};
+	//#define N_DATOS_Resumen_VIAJE		32
+	//#define N_Resumen_VIAJE          (N_CMD + N_DATOS_Resumen_VIAJE)
+	//static byte Resumen_VIAJE_Buffer[N_DATOS_Resumen_VIAJE + 2];   // Sumo DF + 0A
+	//typeTxCMD   CMD_Resumen_VIAJE={0,cmdResumen_VIAJE,0,timeReint_rapido,N_Resumen_VIAJE,Resumen_VIAJE_Buffer};
 
 	//Comando Velocidad y posición
-	#define N_DATOS_Posicion		24
-
-	#define N_Posicion          (N_CMD + N_DATOS_Posicion)
-	static byte Posicion_Buffer[N_DATOS_Posicion + 2];   // Sumo DF + 0A
-	typeTxCMD   CMD_Posicion={0,cmdPosicion,0,timeReint_rapido,N_Posicion,Posicion_Buffer};
+	//#define N_DATOS_Posicion		24
+	//#define N_Posicion          (N_CMD + N_DATOS_Posicion)
+	//static byte Posicion_Buffer[N_DATOS_Posicion + 2];   // Sumo DF + 0A
+	//typeTxCMD   CMD_Posicion={0,cmdPosicion,0,timeReint_rapido,N_Posicion,Posicion_Buffer};
 
 
 	//Comando Consulta ESTADO
@@ -94,10 +92,10 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	typeTxCMD   CMD_Conf_inicioTURNO ={0,cmdConf_inicioTURNO,0,timeReint_rapido,N_Conf_inicioTURNO,Conf_inicioTURNO_Buffer};
 
 	//Comando fin de turno
-	#define N_DATOS_Conf_finTURNO		7
-	#define N_Conf_finTURNO          (N_CMD + N_DATOS_Conf_finTURNO)
-	static byte Conf_finTURNO_Buffer[N_DATOS_Conf_finTURNO + 2];   // Sumo DF + 0A
-	typeTxCMD   CMD_Conf_finTURNO={0,cmdConf_finTURNO,0,timeReint_rapido,N_Conf_finTURNO,Conf_finTURNO_Buffer};
+	//#define N_DATOS_Conf_finTURNO		7
+	//#define N_Conf_finTURNO          (N_CMD + N_DATOS_Conf_finTURNO)
+	//static byte Conf_finTURNO_Buffer[N_DATOS_Conf_finTURNO + 2];   // Sumo DF + 0A
+	//typeTxCMD   CMD_Conf_finTURNO={0,cmdConf_finTURNO,0,timeReint_rapido,N_Conf_finTURNO,Conf_finTURNO_Buffer};
 
 
 	// Comando comando transparente
@@ -136,14 +134,19 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	&CMD_Boton_EMERGENCIA,
 	&CMD_Valor_BAJADA_BANDERA,
 	&CMD_Valor_VIAJE,
-	&CMD_PedidoPase_OCUPADO,
-	&CMD_Resumen_VIAJE,
-	&CMD_Posicion,
+	&Comando_05,
+	&Comando_06,
+	&Comando_07,
+	//&CMD_PedidoPase_OCUPADO,
+	//&CMD_Resumen_VIAJE,
+	//&CMD_Posicion,
 	&CMD_Status_RELOJ,
 	&CMD_TARIFAS,
 	&CMD_Conf_inicioTURNO,
-	&CMD_Conf_finTURNO,
-    &CMD_Distancia_Velocidad,
+	//&CMD_Conf_finTURNO,
+	&Comando_0B,
+	&Comando_0C,
+    //&CMD_Distancia_Velocidad,
     &Comando_0D,
     &Comando_0E,
     &Comando_0F,
@@ -621,7 +624,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		Valor_VIAJE_Buffer[N_DATOS_Valor_VIAJE+1] = fin_datos_lsb;// Fin Datos
    }
 
-
+/*
    void Tx_Distancia_Velocidad  (void){
 
 	    byte* ptrDISTAMNCIAm;
@@ -654,7 +657,9 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		Distancia_Velocidad_Buffer[N_DATOS_Distancia_Velocidad+1] = fin_datos_lsb;// Fin Datos
    }
 
+*/
 
+/*
    void Tx_PedidoPase_OCUPADO (void){
 
 	   byte opcional1,opcional2;
@@ -676,34 +681,34 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		PedidoPase_OCUPADO_Buffer[N_DATOS_PedidoPase_OCUPADO] = fin_datos_msb;  // Fin Datos
 		PedidoPase_OCUPADO_Buffer[N_DATOS_PedidoPase_OCUPADO+1] = fin_datos_lsb;// Fin Datos
-   }
+   }*/
 
 
     byte* ptr_timerMarcha_cnt_LIBRE;
     byte* ptr_timerMarcha_cnt_OCUPADO;
 
-
+/*
    void Tx_Resumen_VIAJE  (void){
- /*
- LIBRE
- ******
- KM_ptr  	 		(2 BYTE )km recorrido en libre
- velMAX  			(1 BYTE)velocidad máxima en libre
- timerMarcha_cnt		(2 BYTE)tiempo en marcha en libre
- timerParado_cnt  	(2 BYTE)tiempo parado en libre
+ //
+ //LIBRE
+ //******
+ //KM_ptr  	 		(2 BYTE )km recorrido en libre
+ //velMAX  			(1 BYTE)velocidad máxima en libre
+ //timerMarcha_cnt		(2 BYTE)tiempo en marcha en libre
+ //timerParado_cnt  	(2 BYTE)tiempo parado en libre
 
- OCUPADO
- *******
- KM_ptr  	 		(2 BYTE)km recorrido en ocupado
- velMAX  	 		(1 BYTE)velocidad máxima en ocupado
- timerMarcha_cnt		(2 BYTE)tiempo en marcha en ocupado
- timerParado_cnt  	(2 BYTE)tiempo parado en ocupado
- MIN	    	 		(1 BYTE)minutos de espera
- tarifa  	 		(1 BYTE)tarifa
- importe_ptr  		(4 BYTE)importe de viaje
- chofer  	 		(1 BYTE)nro chofer con que inicio turno (1,2,3,4)
- NC      	 		(1 BYTE)nro correlativo
- */
+ //OCUPADO
+ //*******
+ //KM_ptr  	 		(2 BYTE)km recorrido en ocupado
+ //velMAX  	 		(1 BYTE)velocidad máxima en ocupado
+ //timerMarcha_cnt		(2 BYTE)tiempo en marcha en ocupado
+ //timerParado_cnt  	(2 BYTE)tiempo parado en ocupado
+ //MIN	    	 		(1 BYTE)minutos de espera
+ //tarifa  	 		(1 BYTE)tarifa
+ //importe_ptr  		(4 BYTE)importe de viaje
+ //chofer  	 		(1 BYTE)nro chofer con que inicio turno (1,2,3,4)
+ //NC      	 		(1 BYTE)nro correlativo
+
 
  	   //corregir bien el cambio de km a metros
 	   byte* ptr_mRecorridos_LIBRE;
@@ -778,9 +783,9 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
  		//FIN
  		Resumen_VIAJE_Buffer[N_DATOS_Resumen_VIAJE] = fin_datos_msb;  	// Fin Datos
  		Resumen_VIAJE_Buffer[N_DATOS_Resumen_VIAJE+1] = fin_datos_lsb;	// Fin Datos
-   }
+   }*/
 
-
+/*
    void Tx_Posicion (void){
 
 
@@ -823,7 +828,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		Posicion_Buffer[N_DATOS_Posicion] = fin_datos_msb;  // Fin Datos
 		Posicion_Buffer[N_DATOS_Posicion+1] = fin_datos_lsb;// Fin Datos
    }
-
+*/
 
    void Tx_Status_RELOJ  (void){
 
@@ -933,7 +938,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
      		Conf_inicioTURNO_Buffer[N_DATOS_Conf_inicioTURNO+1] = fin_datos_lsb;// Fin Datos
         }
 
-
+/*
    void Tx_Conf_finTURNO  (byte status){
 
 			CMD_Conf_finTURNO.Tx_F = 1;                      // Levanto Bandera de Tx
@@ -950,7 +955,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 			Conf_finTURNO_Buffer[N_DATOS_Conf_finTURNO] = fin_datos_msb;  // Fin Datos
 			Conf_finTURNO_Buffer[N_DATOS_Conf_finTURNO+1] = fin_datos_lsb;// Fin Datos
 		}
-
+*/
 
    void Tx_cmdTRANSPARENTE(byte N, byte* buffer){
 
@@ -959,14 +964,13 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
    	   byte chk;
    	   byte n;
 
-   	   CMD_TRANSPARENTE.Tx_F = 1;                      // Levanto Bandera de Tx
-   	   CMD_TRANSPARENTE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+   	   CMD_TRANSPARENTE.Tx_F = 1;               // Levanto Bandera de Tx
+   	   CMD_TRANSPARENTE.Reintentos = reint_0;   // no tiene reintentos
 
        i=0;
        n = N-1;
        chk = 0;
    	   while(i<n){
-   		//comandoTRANSPARENTE_Buffer[i] = RxDA_buffer[i+2];
    		comandoTRANSPARENTE_Buffer[i] = buffer[i];
    		i++;
    	   }
@@ -1127,7 +1131,15 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 					//solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
 					//aux32 = aux32 + VALOR_VIAJE;
 				}
-				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+				uint8_t puntoDECIMAL;
+				if(TARIFA_PESOS){
+					//muestra importe
+					puntoDECIMAL = PUNTO_DECIMAL;
+				}else{
+					//muestra ficha
+					puntoDECIMAL = 3;
+				}
+				preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
 				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 				i=i+k;
 				exit = 1;

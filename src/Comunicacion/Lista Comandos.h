@@ -10,14 +10,15 @@
 	#define cmdBoton_EMERGENCIA					0x02
 	#define cmdValor_BAJADA_BANDERA				0x03
 	#define cmdValor_VIAJE						0x04
-	#define cmdPedidoPase_OCUPADO				0x05
-	#define cmdResumen_VIAJE					0x06
-	#define cmdPosicion							0x07
+
+	//#define cmdResumen_VIAJE					0x06
+	//#define cmdPosicion						0x07
 	#define cmdStatus_RELOJ						0x08
 	#define cmdTARIFAS							0x09
 	#define cmdConf_inicioTURNO					0x0A
-	#define cmdConf_finTURNO					0x0B
-	#define cmdDistancia_Velocidad				0x0C
+	//#define cmdConf_finTURNO					0x0B
+	//#define cmdDistancia_Velocidad			0x0C
+
 	#define CMD_RELOJ_Pase_a_LIBRE              0x18
 	#define CMD_RELOJ_Pase_a_OCUPADO            0x19
 	#define CMD_RELOJ_Pase_a_COBRANDO           0x1A
@@ -25,20 +26,26 @@
 	#define CMD_RELOJ_Pase_a_OCUPADO_SA		    0x1C
 	#define CMD_RELOJ_Pase_a_OCUPADO_BANDERA    0x1D
 	#define CMD_RELOJ_Pase_a_OCUPADO_APP	    0x1E
-    #define CMD_comandoTRANSPARENTE				0x40
-		#define subCMD_ECO				1
-		#define subCMD_estadoRELOJ		2
-		#define subCMD_consultaVIAJE	3
-		#define subCMD_consultaTURNO	4
-
-
-	#define CMD_comandoMENSAJE					0x50
 
 	#define CMD_RELOJ_Pase_a_LIBRE_SC           0x28
 	#define CMD_RELOJ_Pase_a_OCUPADO_SA_SC      0x2C
 	#define CMD_RELOJ_Pase_a_OCUPADO_APP_SC     0x2E
 	#define CMD_RELOJ_Pase_a_COBRANDO_SC        0x2A
 
+	#define CMD_comandoTRANSPARENTE		0x40
+
+		//SUBCOMANDOS
+
+		//central -> reloj
+		#define subCMD_ECO				0x01
+		#define subCMD_VERSION			0x02
+		#define subCMD_consultaVIAJE	0x03
+		#define subCMD_consultaTURNO	0x04
+
+		//reloj -> central
+		#define subCMD_datosSC			0x3F
+
+		#define CMD_comandoMENSAJE			0x50
 
 	#define CMD_RELOJ  ((CMD_a_Tx == CMD_RELOJ_Pase_a_LIBRE)			|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO)			|| \
@@ -51,7 +58,9 @@
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_OCUPADO_APP_SC)	|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_COBRANDO_SC)		|| \
 						(CMD_a_Tx == CMD_RELOJ_Pase_a_FUERA_SERVICIO)	   \
-					    )
+						)
+
+
 
 
 /* *************************************************************

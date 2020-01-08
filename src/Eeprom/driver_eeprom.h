@@ -184,6 +184,7 @@ extern void EEPROM_Protect(eepromProtect_t p);
 uint8_t EEPROM_ReadByte(uint32_t addr);
 error_t EEPROM_ReadBuffer(uint8_t *buff,uint32_t addr,uint16_t num );
 error_t EEPROM_WriteByte(uint32_t addr,uint8_t byte);
+error_t EEPROM_WriteByte_irqDisable(uint32_t addr, uint8_t byte);
 error_t EEPROM_WritePage(uint8_t *array,uint16_t page);
 uint8_t EEPROM_ReadStatusReg(void);
 void EEPROM_WriteStatusReg(uint8_t val);

@@ -281,12 +281,12 @@
           // Con Equivalencia en Pesos => La imprimo
           if (nroTarifa > 4){
             // NOCTURNA
-            //eqPesos = EqPESOS_NOCTURNA;
-        	  eqPesos = EqPesosN;
+            eqPesos = EqPESOS_NOCTURNA;
+        	//  eqPesos = EqPesosN;
           }else{
             // DIURNA
-            //eqPesos = EqPESOS_DIURNA;
-        	  eqPesos = EqPesosD;
+            eqPesos = EqPESOS_DIURNA;
+        	//  eqPesos = EqPesosD;
           }
           importe = (viajes * eqPesos.bajadaBandera);
           importe += (fichasT * eqPesos.valorFichaTiempo);
@@ -294,8 +294,8 @@
           
           if (buffer != NULL){
             *buffer++ = '$';                        // Agrego signo $
-            //convert_to_string_with_decimals(buffer, importe, 0xFF, PUNTO_DECIMAL_EqPesos, base_DECIMAL);
-            convert_to_string_with_decimals(buffer, importe, 0xFF, PUNTO_DECIMAL, base_DECIMAL);
+            convert_to_string_with_decimals(buffer, importe, 0xFF, 3, base_DECIMAL);
+            //convert_to_string_with_decimals(buffer, importe, 0xFF, PUNTO_DECIMAL, base_DECIMAL);
           }
         
         }else{
@@ -444,16 +444,8 @@
             	 VALOR_VIAJE  = EqPESOS_DIURNA.bajadaBandera;
             	 VALOR_VIAJE += (fichas_xPulsos * EqPESOS_DIURNA.valorFicha);            // Fichas por Pulsos
             	 VALOR_VIAJE += (fichas_xTiempo * EqPESOS_DIURNA.valorFichaTiempo);      // Fichas por Tiempo
-
-            	 //VALOR_VIAJE  = EqPesosD.bajadaBandera;                             // Bajada Bandera
-
-            	//VALOR_VIAJE += (fichas_xPulsos * EqPesosD.valorFicha);            // Fichas por Pulsos
-    			//VALOR_VIAJE += (fichas_xTiempo * EqPesosD.valorFichaTiempo);      // Fichas por Tiempo
              }else{
             	 //tarifa Nocturna
-    			//VALOR_VIAJE  = EqPesosN.bajadaBandera;                             // Bajada Bandera
-    			//VALOR_VIAJE += (fichas_xPulsos * EqPesosN.valorFicha);            // Fichas por Pulsos
-    			//VALOR_VIAJE += (fichas_xTiempo * EqPesosN.valorFichaTiempo);      // Fichas por Tiempo
      			VALOR_VIAJE  = EqPESOS_NOCTURNA.bajadaBandera;                             // Bajada Bandera
      			VALOR_VIAJE += (fichas_xPulsos * EqPESOS_NOCTURNA.valorFicha);            // Fichas por Pulsos
      			VALOR_VIAJE += (fichas_xTiempo * EqPESOS_NOCTURNA.valorFichaTiempo);      // Fichas por Tiempo
@@ -1250,7 +1242,10 @@ uint8_t tarifando_tiempo(void){
           #endif
               tarifacion_actValorViaje = 1;                 // Como tengo nueva ficha, actualizo valor viaje
               segundosTarifacion += TARIFA.tiempoFicha;     // Avanzo los segundos de tarifacion en 1 ficha
-              minutosEspera = segundosTarifacion/60;
+
+	  		  uint16_t MINUTOS = segundosTarifacion/60;
+	  		  if(MINUTOS > 255){MINUTOS=255;}
+	  		  minutosEspera = MINUTOS;
             }
           }
         } 
@@ -1322,18 +1317,19 @@ uint8_t tarifando_tiempo(void){
         }else{
         	 if(EqPESOS_hab){
                  //valor en fichas
-                if(TARIFA.diaNoche==0){
-       			//tarifa diurna
-               	VALOR_VIAJE  = EqPesosD.bajadaBandera;                             // Bajada Bandera
-       			VALOR_VIAJE += (fichas_xPulsos * EqPESOS_DIURNA.valorFicha);            // Fichas por Pulsos
-       			VALOR_VIAJE += (fichas_xTiempo *EqPESOS_DIURNA.valorFichaTiempo);      // Fichas por Tiempo
-                }else{
-               	 //tarifa Nocturna
-       			VALOR_VIAJE  = EqPesosN.bajadaBandera;                             // Bajada Bandera
-       			VALOR_VIAJE += (fichas_xPulsos * EqPESOS_NOCTURNA.valorFicha);            // Fichas por Pulsos
-       			VALOR_VIAJE += (fichas_xTiempo * EqPESOS_NOCTURNA.valorFichaTiempo);      // Fichas por Tiempo
-                }
-                //RedondeoValorViaje_3();
+                   //valor en fichas
+                 if(TARIFA.diaNoche==0){
+           			//tarifa diurna
+                   	 VALOR_VIAJE  = EqPESOS_DIURNA.bajadaBandera;
+                   	 VALOR_VIAJE += (fichas_xPulsos * EqPESOS_DIURNA.valorFicha);            // Fichas por Pulsos
+                   	 VALOR_VIAJE += (fichas_xTiempo * EqPESOS_DIURNA.valorFichaTiempo);      // Fichas por Tiempo
+                    }else{
+                   	 //tarifa Nocturna
+            			VALOR_VIAJE  = EqPESOS_NOCTURNA.bajadaBandera;                             // Bajada Bandera
+            			VALOR_VIAJE += (fichas_xPulsos * EqPESOS_NOCTURNA.valorFicha);            // Fichas por Pulsos
+            			VALOR_VIAJE += (fichas_xTiempo * EqPESOS_NOCTURNA.valorFichaTiempo);      // Fichas por Tiempo
+
+                    }
         	 }else{
                  //valor en pesos
             	 VALOR_VIAJE  = TARIFA.bajadaBandera * TARIFA.valorFicha;                             // Bajada Bandera

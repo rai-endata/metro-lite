@@ -310,7 +310,9 @@ void check_corte_alimentacion(void){
 		    	  t_pulsos_anterior = 0;
 				  t_pulsos = 0;
 		  		  cntIC_anterior   = 0;
-		  		  minutosEspera = segundosTarifacion/60;
+		  		  uint16_t MINUTOS = segundosTarifacion/60;
+		  		  if(MINUTOS > 255){MINUTOS=255;}
+		  		  minutosEspera = MINUTOS;
 
 		    	  if(TARIFA_PESOS){
 					  //muetra importe

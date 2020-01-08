@@ -27,6 +27,8 @@ http://aprendegit.com/
 |(directorio de confirmacion) |
 +-----------------------------+
 
+                      git commit -a
+			--------------------------------------->
 
                      add              commit                    push
 (Working Directory)  ->  (Stage Area)   ->    (.git Directory)   ->  (Remote Directoy)
@@ -68,7 +70,11 @@ El flujo de trabajo básico en Git es algo así:
  //subir projecto gitlab
  git push --set-upstream https://gitlab.com/rai.endata/relojes.git master
  
+ //subir repositoio
+ git push --set-upstream https://gitlab.com/rai.endata/metroblue.git 
+ //subit tags
  git push --set-upstream https://gitlab.com/rai.endata/metroblue.git --tags
+ 
  git pull --tags https://gitlab.com/rai.endata/metroblue.git
  
  //crear etiquetas

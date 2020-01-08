@@ -14,7 +14,8 @@
 	Z: Major, se incrementa cuando se arregla algun/os errores, vuelve a cero cuando se incrementa minor o major
     */
 
-    #define version_firmware   v1.3.1
+    extern char versionFIRMWARE[];
+    extern char fechaFIRMWARE[];
 
 
 	//*****  Localidad  *********************************************

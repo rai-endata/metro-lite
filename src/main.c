@@ -57,6 +57,8 @@
 #include "inicio.h"
 #include "Bluetooth.h"
 #include "Panico.h"
+#include "Comandos sin conexion a central.h"
+
 //#include "file aux1.h"
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,7 +114,6 @@ int main(void)
 		//while(PVD_OFF==0){
 		//espero hasta que VDD > VPDthreshold
 		//};
-
 		HAL_Init();
 		//TST_segmentos_display_7seg();
 		ini_display_7seg();
@@ -123,6 +124,7 @@ int main(void)
 		//NVIC_SystemReset();
 		//chk_crc();
 		set_tipo_de_equipo();
+
 		//ini spi
 		MX_SPIx_Init();
 		EPROM_CS_Init();
@@ -218,13 +220,15 @@ int main(void)
 	PVD_Config();
 	InterruptPVD_When_VDD_OFF_Config();
 
+	ini_acumular_cmdSC();
+
 #ifdef RELOJ_DEBUG
 	iniPRINT_DEBUG();
 #endif
 
 	for(;;){
 
-
+		procesar_datosSC();
 		// REPORTES
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH

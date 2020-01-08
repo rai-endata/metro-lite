@@ -41,12 +41,14 @@
     	uint8_t    tipo;           // Tipo de registro
     	tDATE      date;           // Date [fecha y hora]
     	uint8_t    chofer;         // Chofer
-    	uint16_t   km;             // Km recorridos con 1 decimal
+    	uint8_t    estadoConexion; // comando transmitido
+    	uint8_t    nroViaje;        	// Numero Correlativo de Viaje
     	uint8_t    velMax;         // Velocidad Maxima
+    	uint8_t    sensor;         // Se ocupo por Sensor de Asiento
+    	uint16_t   km;             // Km recorridos con 1 decimal
     	uint16_t   segParado;      // Segundos que permanecio Detenido
     	uint16_t   segMarcha;      // Segundos que estuvo en Marcha
-    	uint8_t    sensor;         // Se ocupo por Sensor de Asiento
-    	uint8_t    empty[10];       // Relleno para longitud PAR
+    	uint8_t    empty[8];       // Relleno para longitud PAR
     }tREG_LIBRE;
 
 
@@ -57,18 +59,36 @@
     	uint8_t     tipo;           // Tipo de registro
     	tDATE       date;           // Date [fecha y hora]
     	uint8_t     chofer;         // Chofer
-    	uint16_t    km;             // Km recorridos con 1 decimal
+    	uint8_t     estadoConexion;	// comando transmitido
+    	uint8_t     nroViaje;      	// Numero Correlativo de Viaje
     	uint8_t     velMax;         // Velocidad Maxima
+    	uint8_t     minutosEspera;  // minutos espera
+    	uint8_t     fichaPesos;     // la tarifa esta en: Pesos: 1 , fichas: 2
+    	uint8_t     punto_decimal;  //
+    	uint16_t    km;             // Km recorridos con 1 decimal
+    	uint16_t    bajadaBandera;  // valor bajada de bandera
       	uint16_t    segParado;      // Segundos que permanecio Detenido
       	uint16_t    segMarcha;      // Segundos que estuvo en Marcha
-    	uint16_t    bajadaBandera;   // valor bajada de bandera
-    	uint8_t     fichaPesos;     // la tarifa esta en: Pesos: 1 , fichas: 2
-      	uint8_t     empty[8];       // Relleno para longitud PAR
+    	uint8_t     empty[4];       // Relleno para longitud PAR
     }tREG_OCUPADO;    
 
 
   // TIPO DE REPORTE A PAGAR
-  // todos los registros, de todos lo estados deben tener el mismo tamaño
+	typedef struct {
+		uint16_t   idx;            		// Indice
+		uint8_t    tipo;           		// Tipo de registro
+		tDATE      date;           		// Date [fecha y hora]
+		uint8_t    chofer;         		// Chofer
+		uint8_t    estadoConexion;		// comando transmitido
+		uint8_t    nroViaje;        	// Numero Correlativo de Viaje
+		uint8_t    tarifa;         		// Tarifa
+		uint32_t   importe;        		// Importe (PESOS)
+		uint8_t    fichasDist[3];  		// Cantidad de Fichas de Distancia
+		uint8_t    fichasTime[3];  		// Cantidad de Fichas de Tiempo
+		uint16_t   segundosEspera; 		// Espera (SEGUNDOS)
+		uint16_t   segundosTarifacion; 	// Espera (SEGUNDOS)
+		uint8_t    empty[1];            // Relleno para longitud PAR
+	}tREG_A_PAGAR;
 
 
   // TIPO DE REPORTE FUERA DE SERVICIO
@@ -78,11 +98,12 @@
       uint8_t   tipo;           // Tipo de registro
       tDATE   	date;           // Date [fecha y hora]
       uint8_t   chofer;         // Chofer
+      uint8_t   estadoConexion;			// comando transmitido
       uint16_t  km;             // Km recorridos con 1 decimal
       uint8_t   velMax;         // Velocidad Maxima
       uint16_t  segParado;      // Segundos que permanecio Detenido
       uint16_t  segMarcha;      // Segundos que estuvo en Marcha
-      uint8_t   empty[11];       // Relleno para longitud PAR
+      uint8_t   empty[10];       // Relleno para longitud PAR
     }tREG_FSERV;
 
 
@@ -101,22 +122,6 @@
       uint8_t    empty[4];       // Relleno para longitud PAR
     }tREG_DESCONEXION_ALIM;    
 
-    typedef struct {
-      uint16_t   idx;            // Indice
-      uint8_t    tipo;           // Tipo de registro
-      tDATE      date;           // Date [fecha y hora]
-      uint8_t    chofer;         // Chofer
-      //uint16_t   nroViaje;     // Numero Correlativo de Viaje
-      uint32_t   importe;        // Importe (PESOS)
-      uint8_t    nroViaje;        // Numero Correlativo de Viaje
-      uint8_t    tarifa;         // Tarifa
-      uint8_t    fichasDist[3];  // Cantidad de Fichas de Distancia
-      uint8_t    fichasTime[3];  // Cantidad de Fichas de Tiempo
-      uint16_t   segundosEspera; 	// Espera (SEGUNDOS)
-      uint16_t   segundosTarifacion; // Espera (SEGUNDOS)
-      uint8_t    minutosEspera;       // minutos espera
-      uint8_t    punto_decimal;       // Relleno para longitud PAR
-    }tREG_A_PAGAR;
 
   // TIPO DE REPORTE DESCONEXION ACCESORIO
   // todos los registros, de todos lo estados deben tener el mismo tamaño
@@ -141,7 +146,7 @@
           tDATE   		date;           // Date [fecha y hora]
           uint8_t       chofer;         // Chofer
           uint16_t      nroTurno;       // Numero de Turno
-          uint8_t    	punto_decimal;       // Relleno para longitud PAR
+          uint8_t    	punto_decimal;  // Relleno para longitud PAR
        	  uint8_t     	fichaPesos;     // la tarifa esta en: Pesos: 1 , fichas: 2
           uint16_t    	bajadaBandera;   // valor bajada de bandera
           uint8_t       empty[12];       // Relleno para igualar tamaños y longitud PAR
@@ -189,6 +194,10 @@
 	    uint16_t   segundosEspera; // Espera (SEGUNDOS)
 	    uint16_t   segundosTarifacion; // Espera (SEGUNDOS)
 	    uint8_t    minutosEspera;       // minutos espera
+	    uint8_t    estadoConexion_LIBRE;       //
+	    uint8_t    estadoConexion_OCUPADO;       //
+	    uint8_t    estadoConexion_COBRANDO;       //
+
     }tVIAJE;
 
   
@@ -298,10 +307,10 @@ extern uint16_t INDEX_LAST_SESION;
   /* RUTINAS */
   /***********/
     extern void iniREPORTES (void);
-    extern byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento);
-    extern byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM);
-    extern byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t minutosEspera);
-    extern byte REPORTE_queueFueraServ (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM);
+    extern byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento, uint8_t estado_de_conexion, uint8_t nroviaje);
+    extern byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t minutosEspera, uint8_t estado_de_conexion, uint8_t nroCorrelativo_INTERNO);
+    extern byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t estado_de_conexion);
+    extern byte REPORTE_queueFueraServ (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t estado_de_conexion);
     extern byte REPORTE_queueSesion (byte chofer);
     extern byte REPORTE_queueDesconexionAlim (tDATE date, byte chofer, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t importe);
     extern byte REPORTE_queueDesconexionAcc (tDATE dateDescon, byte chofer, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t importe);

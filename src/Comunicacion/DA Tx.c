@@ -77,6 +77,8 @@ byte CMD_a_Tx;                 // No de Comando a Transmitir
 
 uint16_t pauseTx_to_cnt;
 
+
+
 /* TRANSMITIR AL DATA TERMINAL */
 /*******************************/
 

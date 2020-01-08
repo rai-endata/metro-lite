@@ -41,18 +41,6 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
 			ptrSimple = buffer;
 			ptrDouble = (uint8_t**)&ptrSimple;
 
-//doy vuelta los bytes
-/*
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasDist, 3);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasTime, 3);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.importe, 4);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmLIBRE			, 2);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmOCUPADO		, 2);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaLIBRE	, 2);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaOCUPADO, 2);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoLIBRE	, 2);
-convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoOCUPADO, 2);
-*/
 			//NUMERO DE TURNO
 			string_copy_incDest(ptrDouble,"NT");									//comando a buffer
             aux32 = iniTURNO_ptr->nroTurno;
@@ -147,29 +135,31 @@ convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoOCUPADO, 2);
 
 			tarifasTurno = tarifa1D;
 			do{
-				//TARIFA n
-				string_copy_incDest(ptrDouble,"T");									//comando a buffer
-				convert_to_string(buffer_aux, tarifasTurno, 0xff, base_DECIMAL);
-				string_copy_incDest(ptrDouble,&buffer_aux);
+				uint32_t cant_viajes = TURNO_getCantViajes_tarifa(tarifasTurno);
+				if(cant_viajes){
+					//TARIFA n
+					string_copy_incDest(ptrDouble,"T");									//comando a buffer
+					convert_to_string(buffer_aux, tarifasTurno, 0xff, base_DECIMAL);
+					string_copy_incDest(ptrDouble,&buffer_aux);
 
-				//CANTIDAD DE VIAJES
-				string_copy_incDest(ptrDouble,"CV");
-				aux32 = TURNO_getCantViajes_tarifa(tarifasTurno);
-				convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
-				bufferNcopy_incDst(ptrDouble,(byte*)&aux32+3,1);
+					//CANTIDAD DE VIAJES
+					string_copy_incDest(ptrDouble,"CV");
+					aux32 = TURNO_getCantViajes_tarifa(tarifasTurno);
+					convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
+					bufferNcopy_incDst(ptrDouble,(byte*)&aux32+3,1);
 
-				//CANTIDAD DE FICHAS
-				string_copy_incDest(ptrDouble,"CF");
-				aux32 = getFichasTiempo_tarifa(tarifasTurno) + getFichasDistancia_tarifa(tarifasTurno);
-				convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
-				bufferNcopy_incDst(ptrDouble,(byte*)&aux32+2,2);
+					//CANTIDAD DE FICHAS
+					string_copy_incDest(ptrDouble,"CF");
+					aux32 = getFichasTiempo_tarifa(tarifasTurno) + getFichasDistancia_tarifa(tarifasTurno);
+					convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
+					bufferNcopy_incDst(ptrDouble,(byte*)&aux32+2,2);
 
-				//RECAUDACION
-				string_copy_incDest(ptrDouble,"RE");
-				aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
-				convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
-				bufferNcopy_incDst(ptrDouble,(byte*)&aux32,4);
-
+					//RECAUDACION
+					string_copy_incDest(ptrDouble,"RE");
+					aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
+					convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
+					bufferNcopy_incDst(ptrDouble,(byte*)&aux32,4);
+				}
 			}while(TICKET_pasarSiguienteTarifa(&tarifasTurno));
 
 

@@ -67,6 +67,16 @@ void print_ticket_turno(void){
     byte statusSESION;
     uint32_t datosMOV[4][3];
     uint32_t kmTotal, velMaxTotal, tMarchaTotal,tParadoTotal;
+    byte puntoDECIMAL;
+
+    if(TARIFA_PESOS){
+		//muestra importe
+		puntoDECIMAL = PUNTO_DECIMAL;
+   	}else{
+		//muestra ficha
+   		puntoDECIMAL = 3;
+   	}
+
   if(ESTADO_RELOJ==FUERA_SERVICIO){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
 		statusPRINT = IMPRESION_EN_PROCESO;
@@ -208,51 +218,58 @@ void print_ticket_turno(void){
 			//print LINE
 			printLINE(ptrDouble);
 			tarifasTurno = tarifa1D;
-			do{
-				//print tarifas
-				string_copy_incDest(ptrDouble,"TARIFA ");
-				if (tarifasTurno < tarifa1N){
-					convert_to_string(buffer_aux, tarifasTurno, 0xFF, base_DECIMAL);
-					//preparar_print (tarifasTurno, 0, &buffer_aux, 0);
-				}else{
-					convert_to_string(buffer_aux, tarifasTurno - tarifa1N + 1, 0xFF, base_DECIMAL);
-					//preparar_print (tarifasTurno - tarifa1N + 1, 0, &buffer_aux, 0);
-				}
-				string_copy_incDest(ptrDouble,&buffer_aux);
 
-				if (tarifasTurno < tarifa1N){
-					string_copy_incDest(ptrDouble,"D");
-				}else{
-					string_copy_incDest(ptrDouble,"N");
-				}
-				add_LF(ptrDouble);
-				//print  Viajes
-				string_copy_incDest(ptrDouble,"  Viajes                ");
-				preparar_print (TURNO_getCantViajes_tarifa(tarifasTurno), 0, &buffer_aux, 0);
-				string_copy_incDest(ptrDouble,&buffer_aux);
-				add_LF(ptrDouble);
-			//	if (TARIFA_FICHAS){
-					//print Fichas
-					string_copy_incDest(ptrDouble,"  Fichas                ");
-					preparar_print (getFichasTiempo_tarifa(tarifasTurno) + getFichasDistancia_tarifa(tarifasTurno), 0, &buffer_aux, 0);
+			do{
+				uint32_t cant_viajes = TURNO_getCantViajes_tarifa(tarifasTurno);
+				if(cant_viajes){
+					//print tarifas
+					string_copy_incDest(ptrDouble,"TARIFA ");
+					if (tarifasTurno < tarifa1N){
+						convert_to_string(buffer_aux, tarifasTurno, 0xFF, base_DECIMAL);
+						//preparar_print (tarifasTurno, 0, &buffer_aux, 0);
+					}else{
+						convert_to_string(buffer_aux, tarifasTurno - tarifa1N + 1, 0xFF, base_DECIMAL);
+						//preparar_print (tarifasTurno - tarifa1N + 1, 0, &buffer_aux, 0);
+					}
+					string_copy_incDest(ptrDouble,&buffer_aux);
+
+					if (tarifasTurno < tarifa1N){
+						string_copy_incDest(ptrDouble,"D");
+					}else{
+						string_copy_incDest(ptrDouble,"N");
+					}
+					add_LF(ptrDouble);
+					//print  Viajes
+					string_copy_incDest(ptrDouble,"  Viajes                ");
+					preparar_print (cant_viajes, 0, &buffer_aux, 0);
 					string_copy_incDest(ptrDouble,&buffer_aux);
 					add_LF(ptrDouble);
-			//	}else{
-					//print LINE
-					//printLINE(ptrDouble);
-			//	}
+				//	if (TARIFA_FICHAS){
+						//print Fichas
+						string_copy_incDest(ptrDouble,"  Fichas                ");
+						preparar_print (getFichasTiempo_tarifa(tarifasTurno) + getFichasDistancia_tarifa(tarifasTurno), 0, &buffer_aux, 0);
+						string_copy_incDest(ptrDouble,&buffer_aux);
+						add_LF(ptrDouble);
+				//	}else{
+						//print LINE
+						//printLINE(ptrDouble);
+				//	}
 
-				//print Recaudacion
-				if(PUNTO_DECIMAL == 0){
-					string_copy_incDest(ptrDouble,"  Recaudado [$]         ");
-				}else{
-					string_copy_incDest(ptrDouble,"  Recaudado [$]        ");
+					//print Recaudacion
+					if(puntoDECIMAL == 0){
+						string_copy_incDest(ptrDouble,"  Recaudado [$]         ");
+					}else{
+						string_copy_incDest(ptrDouble,"  Recaudado [$]        ");
+					}
+					aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
+					//preparar_print (aux32, 3, &buffer_aux, 0 );
+					//preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0 );
+					preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
+
+					string_copy_incDest(ptrDouble,&buffer_aux);
+					add_LF(ptrDouble);
+
 				}
-				aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
-				//preparar_print (aux32, 3, &buffer_aux, 0 );
-				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
-				string_copy_incDest(ptrDouble,&buffer_aux);
-				add_LF(ptrDouble);
 			}while(TICKET_pasarSiguienteTarifa(&tarifasTurno));
 
 			//print LINE
@@ -299,14 +316,14 @@ void print_ticket_turno(void){
 			}*/
 
 			//print recaudacion
-			if(PUNTO_DECIMAL == 0){
+			if(puntoDECIMAL == 0){
 				string_copy_incDest(ptrDouble,"  Recaudado [$]         ");
 			}else{
 				string_copy_incDest(ptrDouble,"  Recaudado [$]        ");
 			}
 			aux32 = (uint32_t)TURNO_getRecaudacion_turno(&buffer_aux);
 			//preparar_print (aux32, 3, &buffer_aux, 0 );
-			preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
 			string_copy_incDest(ptrDouble,&buffer_aux);
 			add_LF(ptrDouble);
 
@@ -329,14 +346,15 @@ void print_ticket_turno(void){
 				string_copy_incDest(ptrDouble,"  ");
 				string_copy_incDest(ptrDouble,&buffer_aux);
 				string_copy_incDest(ptrDouble,"%");
-				if(PUNTO_DECIMAL == 0){
+				if(puntoDECIMAL == 0){
 					string_copy_incDest(ptrDouble," Chofer [$]      ");
 				}else{
 					string_copy_incDest(ptrDouble," Chofer [$]     ");
 				}
 				string_copy_incDest(ptrDouble,"  ");
 				aux32 = (uint32_t)TURNO_calcRecaudacionChofer(buffer_aux);
-				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+				//preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0 );
+				preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
 				//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
 				string_copy_incDest(ptrDouble,&buffer_aux);
 				add_LF(ptrDouble);
@@ -354,7 +372,7 @@ void print_ticket_turno(void){
 			string_copy_incDest(ptrDouble,"$ x km              ");
 			string_copy_incDest(ptrDouble,"   ");
 			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
-			preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble );
 			//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
 			string_copy_incDest(ptrDouble,&buffer_aux);
 			add_LF(ptrDouble);
@@ -381,19 +399,20 @@ void print_ticket_turno(void){
 			//print tiempo de desconexiones de alimentacion
 			string_copy_incDest(ptrDouble,"Tiempo [hh:mm:ss]     ");
 			//aux32 = (uint32_t)TURNO_calcTiempoDesconexionAlim_turno(&buffer_aux);
-			//preparar_print (aux32, EqPesosD.PUNTO_DECIMAL, &buffer_aux, 0 );
+			//preparar_print (aux32, EqPesosD.puntoDECIMAL, &buffer_aux, 0 );
 			(void)TURNO_calcTiempoDesconexionAlim_turno(buffer_aux);
 			string_copy_incDest(ptrDouble,&buffer_aux);
 			add_LF(ptrDouble);
 
 			//print importe perdido
-			if(PUNTO_DECIMAL == 0){
+			if(puntoDECIMAL == 0){
 				string_copy_incDest(ptrDouble,"Perdidos [$]          ");
 			}else{
 				string_copy_incDest(ptrDouble,"$ Perdidos             ");
 			}
 			aux32 = (uint32_t)TURNO_calcImportePerdido_turno(&buffer_aux);
-			preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+			//preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0 );
+			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
 			string_copy_incDest(ptrDouble,&buffer_aux);
 			add_LF(ptrDouble);
 
@@ -1274,7 +1293,7 @@ void print_ticket_turno(void){
       tREG_GENERIC* lastSesion_ptr;
 
       iniTable_ptr = get_iniFlashTable_ptr();
-      (void)REPORTES_getSesions(lastSesion, 1);                         // Obtengo ultimo puntero de sesion
+      (void)REPORTES_getSesions(lastSesion, 1);                      // Obtengo ultimo puntero de sesion
       lastSesion_ptr = (tREG_GENERIC*)lastSesion[0];                 // ultimo puntero de sesion
 
       veces = REPORTES_getCantidadMovSinPulsos_byRango((tREG_GENERIC*)iniTable_ptr, (tREG_GENERIC*)lastSesion_ptr);

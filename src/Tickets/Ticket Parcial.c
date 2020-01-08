@@ -42,10 +42,19 @@
 		uint32_t aux32;
 		uint16_t N_print;
 		tREG_GENERIC* REPORTE_PUTptr_aux;
+		uint8_t puntoDECIMAL;
 
 		if(ESTADO_RELOJ==FUERA_SERVICIO){
 			if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
 				statusPRINT = IMPRESION_EN_PROCESO;
+
+			if(TARIFA_PESOS){
+				//muestra importe
+				puntoDECIMAL = PUNTO_DECIMAL;
+			}else{
+				//muestra ficha
+				puntoDECIMAL = 3;
+			}
 
 				//printf("STATUS = %c\n",statusPRINT);
 				//fflush(stdout);
@@ -119,7 +128,7 @@
 				string_copy_incDest(ptrDouble,"RECAUDACION:            ");
 				aux32 = getRecaudacion_Parcial();
 				//preparar_print (aux32, 0, &buffer_aux, 0);
-				preparar_print (aux32, PUNTO_DECIMAL, &buffer_aux, 0 );
+				preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
 				string_copy_incDest(ptrDouble,&buffer_aux);
 				add_LF(ptrDouble);
 

@@ -76,6 +76,7 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void Impresion_Rx (byte* Rx_data_ptr);
 	extern void ConsultaEstado (byte* Rx_data_ptr);
 	extern void Comando_TRANSPARENTE_Rx (byte* Rx_data_ptr);
+	extern uint8_t armar_buff_viaje(uint8_t* buff_aux, uint8_t i);
 
 	extern void Pedido_reportePARCIAL_Rx (byte* Rx_data_ptr);
 

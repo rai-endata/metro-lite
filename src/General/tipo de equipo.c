@@ -113,6 +113,7 @@ static void check_pressTIPO_EQUIPO_PIN0(void){
 	}
 }
 
+
 static void check_pressTIPO_EQUIPO_PIN1(void){
 
 	GPIO_PinState pinSTATE;
@@ -125,6 +126,8 @@ static void check_pressTIPO_EQUIPO_PIN1(void){
 		pin1_tipoEQUIPO = 0;
 	}
 }
+
+
 
 void set_tipo_de_equipo (void){
 

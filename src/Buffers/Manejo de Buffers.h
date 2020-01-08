@@ -4,6 +4,9 @@
 #ifndef _MANEJO_DE_BUFFERS_
   #define _MANEJO_DE_BUFFERS_
 
+  #include "Manejo de Buffers.h"
+
+
   /* ESTRUCTURAS */
   /***************/
    // #include "- Visor Config -.h"
@@ -82,6 +85,7 @@
     extern void decGET_BUFCIR (buffcirTYPE* DATA);
     extern void dec_cntDATOS_BUFCIR (buffcirTYPE* DATA);
     extern byte check_cntDATOS_BUFCIR(buffcirTYPE* DATA);
+    extern byte check_cntBYTE_BUFCIR(buffcirTYPE* DATA);
     extern byte* take_ptrGET_BUFCIR(buffcirTYPE* DATA);
     extern void incN_ptrDATA (byte* ptrDATA, byte* iniBUFFER, uint16_t sizeBUFFER, byte N);
     extern void decN_ptrDATA (byte* ptrDATA, byte* iniBUFFER, uint16_t sizeBUFFER, byte N);

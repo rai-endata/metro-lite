@@ -21,6 +21,7 @@
 	#include "Ticket Viaje.h"
 	#include "Parametros Reloj.h"
 	#include "tipo de equipo.h"
+	#include "Comandos sin conexion a central.h"
 
 	//#include "Param Reloj.h"
 
@@ -40,6 +41,7 @@
 
 /* PROTOTIPOS */
 /*************/
+void RELOJ_INTERNO_addAPagarReportes (uint8_t estado_de_conexion);
 void setTARIFA_MANUAL(void);
 static byte RELOJ_chkTransmitiendo (void);
 static byte RELOJ_chkTransmitiendo (void);
@@ -92,11 +94,12 @@ static uint16_t cambioRELOJ_TO_cnt;	// Contador del timer para pasar de A PAGAR 
 	uint16_t kmRecorridos_INTERNO;            // KM Recorridos segun el reloj interno
 	uint8_t velMax_INTERNO;                  // Velocidad Maxima segun el reloj interno
 	uint8_t nroCorrelativo_INTERNO;          // Nro Correlativo de Viaje segun el reloj interno
-	uint8_t minutosEspera_INTERNO;           // Minutos de Espera del Reloj Interno segun el reloj interno
+	//uint8_t minutosEspera_INTERNO;           // Minutos de Espera del Reloj Interno segun el reloj interno
 	uint32_t importe_INTERNO;                // Importe del Viaje segun el reloj interno
 	tPASE_OCUPADO _status_paseOCUPADO;
 
 	byte ESTADO_RELOJ_X_PULSADOR;
+	byte     ESTADO_RELOJ_CONEXION;
 
 static byte 	sensorAsiento;            // Indica si se ocupo por sensor de asiento y el motivo
 static tDATE  	RELOJ_dateCambio;
@@ -238,6 +241,8 @@ void Pase_a_LIBRE (void){
     byte nro_correlativo;
 	uint32_t Address;
 
+	ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
+
 	#ifdef RELOJ_DEBUG
 	timerA_PAGAR_to_LIBRE_cnt = 0;
 	#endif
@@ -325,14 +330,16 @@ void Pase_a_OCUPADO (void){
 		}
 		velMax_LIBRE = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
 		DISTANCIAm_LIBRE = DISTANCIAm;
-		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
+		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;			// Distancia Recorrida en LIBRE (KM xxx.x)
 		kmRecorridos_LIBRE = kmRecorridos_INTERNO;
 
 
 		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();        // Nro Correlativo de Viaje
 #ifdef VISOR_REPORTES
 		if (REPORTES_HABILITADOS){
-		  (void)REPORTE_queueLibre (libreDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_LIBRE, velMax_LIBRE, timerParado_cnt, timerMarcha_cnt, sensorAsiento);
+			uint8_t nroviaje = nroCorrelativo_INTERNO;
+			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
+			(void)REPORTE_queueLibre (libreDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_LIBRE, velMax_LIBRE, timerParado_cnt, timerMarcha_cnt, sensorAsiento, ESTADO_RELOJ_CONEXION, nroviaje);
 		}
 #endif
 
@@ -368,12 +375,17 @@ void Pase_a_OCUPADO (void){
 	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 	resetVELOCIDAD_MAX;
 	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
+	ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
+
 }
 
 void Pase_a_COBRANDO (void){
 
 	byte nro;
 	//if(ESTADO_RELOJ==OCUPADO){
+
+
+
 		anularReTx_RELOJ();
 		cobrandoDATE = getDate();
 		RELOJ_dateCambio = cobrandoDATE;
@@ -391,7 +403,9 @@ void Pase_a_COBRANDO (void){
         #else
         timerA_PAGAR_to_LIBRE_cnt = 0;  // Al no estar Homologado, no espero nada
       #endif
-		//Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
+
+
+        //Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
 		if(VELOCIDAD_MAX < 255){
 			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
 		}else{
@@ -403,7 +417,7 @@ void Pase_a_COBRANDO (void){
 		DISTANCIAm_OCUPADO = DISTANCIAm;
 		write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
 		DISTANCIA_iniCalculo_PULSE_ACCUM();
-		minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
+		//minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
 		importe_INTERNO = VALOR_VIAJE;                          	// Valor del Viaje
 		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM;        		// Nro Correlativo de Viaje
 
@@ -415,7 +429,10 @@ void Pase_a_COBRANDO (void){
 		// Guardo reporte -> datos de OCUPADO
 		#ifdef VISOR_REPORTES
 		if (REPORTES_HABILITADOS){
-		 (void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt);
+
+		(void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt, minutosEspera, ESTADO_RELOJ_CONEXION, nroCorrelativo_INTERNO);
+
+		 ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
 
 		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
 		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
@@ -429,7 +446,7 @@ void Pase_a_COBRANDO (void){
 		 #endif
 
 		 // Guardo reporte -> datos de A PAGAR
-		 RELOJ_INTERNO_addAPagarReportes();
+		 RELOJ_INTERNO_addAPagarReportes(CON_CONEXION_CENTRAL);
 
 		 // EDIT 04/04/2013
 		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -459,14 +476,22 @@ void Pase_a_COBRANDO (void){
          }
      #endif
 
-		//envio pase a corando al celular
+		//envio pase a cobrando al celular
 		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
-		cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+        if(guardarCMD_sinCONEXION_CENTRAL){
+          guardarCMD_sinCONEXION_CENTRAL=0;
+          acumular_cmdSC(nroCorrelativo_INTERNO);
+        }
+
+         cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+
+
 		//resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
 		RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
 		RELOJ_clearMOTIVO_paseOCUPADO();
 		 sensorAsiento = 0;                  // Borro Indicacion
 	//}
+
 }
 
 
@@ -499,7 +524,10 @@ static void fuera_de_servicio(void){
 	 // Guardo reporte -> datos de LIBRE
 	 #ifdef VISOR_REPORTES
 	   if (REPORTES_HABILITADOS){
-		 (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0);
+		uint8_t nroviaje = nroCorrelativo_INTERNO;
+		if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
+
+		(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0, CON_CONEXION_CENTRAL, nroviaje);
 		 // EDIT 04/04/2013
 		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
 		 // no inhibir las IRQs
@@ -547,9 +575,15 @@ static void fuera_de_servicio(void){
       byte nro_correlativo;
   	uint32_t Address;
 
+  	ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
+
   	#ifdef RELOJ_DEBUG
   	timerA_PAGAR_to_LIBRE_cnt = 0;
   	#endif
+
+	if(tipo_de_equipo == METRO_LITE){
+		timerA_PAGAR_to_LIBRE_cnt = 0;
+	}
 
   	if(timerA_PAGAR_to_LIBRE_cnt == 0){
   		anularReTx_RELOJ();
@@ -568,7 +602,8 @@ static void fuera_de_servicio(void){
   			}
 
   			//envio pase a libre al celular
-  			Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
+  			guardarCMD_sinCONEXION_CENTRAL=1;
+  			//Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
 
   			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
   			VELOCIDAD_MAX = 0;
@@ -600,6 +635,7 @@ static void fuera_de_servicio(void){
 
   	    //RELOJ_setTarifa(TARIFA_AUTO_getNroTarifa());        // Seteo automatico de tarifa
   	    //tarifa = TARIFA.numero;
+
   		anularReTx_RELOJ();
 
   		t_pulsos_anterior = 0;
@@ -638,7 +674,9 @@ static void fuera_de_servicio(void){
   		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();        // Nro Correlativo de Viaje
   #ifdef VISOR_REPORTES
   		if (REPORTES_HABILITADOS){
-  		  (void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento);
+  			uint8_t nroviaje = nroCorrelativo_INTERNO;
+  			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
+  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento, SIN_CONEXION_CENTRAL, nroviaje);
   		}
   #endif
 
@@ -671,10 +709,14 @@ static void fuera_de_servicio(void){
   	//}
   	//envio pase a ocupado al celular
 
-  	Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+  	//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+	guardarCMD_sinCONEXION_CENTRAL=1;
+
   	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
   	resetVELOCIDAD_MAX;
   	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
+
+  	ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
   }
 
@@ -682,6 +724,7 @@ static void fuera_de_servicio(void){
 
   	byte nro;
   	//if(ESTADO_RELOJ==OCUPADO){
+
   		anularReTx_RELOJ();
   		cobrandoDATE = getDate();
   		RELOJ_dateCambio = cobrandoDATE;
@@ -711,7 +754,7 @@ static void fuera_de_servicio(void){
   		DISTANCIAm_OCUPADO = DISTANCIAm;
   		write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
   		DISTANCIA_iniCalculo_PULSE_ACCUM();
-  		minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
+  		//minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
   		importe_INTERNO = VALOR_VIAJE;                          	// Valor del Viaje
   		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM;        		// Nro Correlativo de Viaje
 
@@ -723,7 +766,9 @@ static void fuera_de_servicio(void){
   		// Guardo reporte -> datos de OCUPADO
   		#ifdef VISOR_REPORTES
   		if (REPORTES_HABILITADOS){
-  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt);
+  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, minutosEspera, SIN_CONEXION_CENTRAL, nroCorrelativo_INTERNO);
+
+  		 ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
   		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
   		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
@@ -737,7 +782,7 @@ static void fuera_de_servicio(void){
   		 #endif
 
   		 // Guardo reporte -> datos de A PAGAR
-  		 RELOJ_INTERNO_addAPagarReportes();
+  		 RELOJ_INTERNO_addAPagarReportes(SIN_CONEXION_CENTRAL);
 
   		 // EDIT 04/04/2013
   		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -768,8 +813,12 @@ static void fuera_de_servicio(void){
        #endif
 
   		//envio pase a corando al celular
-  		Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
-  		cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
+  		//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+        guardarCMD_sinCONEXION_CENTRAL=0;
+        acumular_cmdSC(nroCorrelativo_INTERNO);
+
+
+         cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
   		//resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
   		RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
   		RELOJ_clearMOTIVO_paseOCUPADO();
@@ -1117,27 +1166,33 @@ static void RELOJ_resetReintentos (void){
 
 /* MOSTRAR IMPORTE */
 /*******************/
+
 	void preparar_print (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos){
 	// Muestra en pantalla un importe.
 		byte espacios;
 		byte* buffer;
 		byte importe_ascii[20];
+		byte digitos;
 
 		buffer = importe_ascii;
 
 		convert_to_string_with_decimals (buffer, importe, 0xFF, decimales, base_DECIMAL);
+		digitos = string_length(importe_ascii);
+
 
 		if(TARIFA_PESOS){
+
 			if(importe < 99999){
-				espacios = 5 - string_length(importe_ascii);  // Cantidad de espacios en blanco para completar 5 digitos
+				espacios = 5 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
 			}else{
 				espacios =0;
 			}
 
 		}else{
 			if(importe < 999999){
-				espacios = 6 - string_length(importe_ascii);  // Cantidad de espacios en blanco para completar 5 digitos
+				espacios = 6 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
 			}else{
+
 				espacios = 0;
 			}
 		}
@@ -1166,8 +1221,136 @@ static void RELOJ_resetReintentos (void){
 		}
 
 		*buffer++ = 0;                                // Agrego fin de cadena para concatenar
+
 		string_concat(buffer_reloj, importe_ascii);   // Concateno importe
 	}
+
+
+	void preparar_print_poneCOMA (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos){
+		// Muestra en pantalla un importe.
+			byte espacios;
+			byte* buffer;
+			byte importe_ascii[20];
+			byte digitos;
+
+			buffer = importe_ascii;
+
+			convert_to_string_with_decimals_poneCOMA (buffer, importe, 0xFF, decimales, base_DECIMAL);
+			digitos = string_length(importe_ascii);
+
+
+			if(TARIFA_PESOS){
+
+				if(importe < 99999){
+					espacios = 5 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
+				}else{
+					espacios =0;
+				}
+
+			}else{
+				if(importe < 999999){
+					espacios = 6 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
+				}else{
+
+					espacios = 0;
+				}
+			}
+
+			if (decimales != 0){
+				espacios += 1;                              // El length incluye el punto decimal entonces me restó un espacio
+			}
+
+			buffer = buffer_reloj;
+
+
+			while (espacios > 0){
+				espacios--;
+				if(espacios > 5){
+					break;
+				}
+				*buffer++ = ' ';                          // Agrego espacio
+			}
+
+			if (printPesos){
+				*buffer++ = '$';                          // Agrego signo PESOS
+				*buffer++ = ' ';                          // Agrego espacio en blanco
+			}else{
+				//*buffer++ = ' ';                        // Agrego espacio en blanco
+				*buffer++ = ' ';                          // Agrego espacio en blanco
+			}
+
+			*buffer++ = 0;                                // Agrego fin de cadena para concatenar
+
+			string_concat(buffer_reloj, importe_ascii);   // Concateno importe
+		}
+
+
+	void preparar_print_new (uint32_t importe, byte decimales, byte* buffer_reloj, byte printPesos, byte** buffer_print){
+	// Muestra en pantalla un importe.
+		byte espacios;
+		byte* buffer;
+		byte importe_ascii[20];
+		byte digitos;
+
+		buffer = importe_ascii;
+
+		convert_to_string_with_decimals (buffer, importe, 0xFF, decimales, base_DECIMAL);
+		digitos = string_length(importe_ascii);
+
+
+		if(TARIFA_PESOS){
+
+			if(importe < 99999){
+				espacios = 5 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
+			}else{
+				espacios =0;
+			}
+
+		}else{
+			if(importe < 999999){
+				espacios = 6 - digitos;  // Cantidad de espacios en blanco para completar 5 digitos
+			}else{
+
+				espacios = 0;
+			}
+		}
+
+		if (decimales != 0){
+			espacios += 1;                              // El length incluye el punto decimal entonces me restó un espacio
+		}
+
+		buffer = buffer_reloj;
+
+
+		while (espacios > 0){
+			espacios--;
+			if(espacios > 5){
+				break;
+			}
+			*buffer++ = ' ';                          // Agrego espacio
+		}
+
+		if (printPesos){
+			*buffer++ = '$';                          // Agrego signo PESOS
+			*buffer++ = ' ';                          // Agrego espacio en blanco
+		}else{
+			//*buffer++ = ' ';                        // Agrego espacio en blanco
+			*buffer++ = ' ';                          // Agrego espacio en blanco
+		}
+
+		*buffer++ = 0;                                // Agrego fin de cadena para concatenar
+
+		if(digitos > 6){
+			byte i = digitos - 6;
+			while(i>0){
+				(*buffer_print)--;
+				i--;
+			}
+
+		}
+		string_concat(buffer_reloj, importe_ascii);   // Concateno importe
+	}
+
 
 void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
 	// Muestra en pantalla un importe.
@@ -1292,7 +1475,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
 
   /* AGREGAR A PAGAR A REPORTES */
    /******************************/
-     void RELOJ_INTERNO_addAPagarReportes (void){
+     void RELOJ_INTERNO_addAPagarReportes (uint8_t estado_de_conexion){
        // Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
        uint32_t importe;
 
@@ -1312,7 +1495,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
            // sino la equivalencia en PESOS
            // En TARIFACION NORMAL, el importe lo calculo, para que en caso de que sea FICHAS, sea la equivalencia
            importe = RELOJ_calcularImporte(TARIFACION_getFichasT(), TARIFACION_getFichasD(), 1, TARIFA.numero, NULL);
-           (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero, TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, minutosEspera);
+           (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero, TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, estado_de_conexion);
 
            // EDIT 04/04/2013
            //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -1414,7 +1597,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
             if (REPORTES_HABILITADOS){
               //(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0);
             	// Guardo reporte -> datos de f.servicio (porque la nueva sesion siempre es en fuera de servicio)
-             (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt);
+             (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, CON_CONEXION_CENTRAL);
 
               // Guardo reporte -> nueva SESION
               (void)REPORTE_queueSesion (nroChofer);
@@ -1647,7 +1830,9 @@ void cambio_de_reloj_x_sensor_asiento(void){
       timerA_PAGAR_to_LIBRE_cnt--;
       if (timerA_PAGAR_to_LIBRE_cnt == 0){
     	  Buzzer_On(BEEP_HABILITA_PASE_LIBRE);
-    	  Tx_Comando_MENSAJE(YA_PUEDE_PASAR_A_LIBRE);
+          if(tipo_de_equipo != METRO_LITE){
+        	  Tx_Comando_MENSAJE(YA_PUEDE_PASAR_A_LIBRE);
+          }
       }
     }
   }
@@ -1843,12 +2028,12 @@ void cambio_de_reloj_x_sensor_asiento(void){
 			CMD_Pase_a_LIBRE_SC.Tx_F = 1;                      // Levanto Bandera de Tx
 			CMD_Pase_a_LIBRE_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
 		}
-
-
+        //
 		getDate();
 
 		//fuente de hora
 		Pase_a_LIBRE_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)
+
  		//DATE
  		Pase_a_LIBRE_Buffer[1] = RTC_Date.hora[0];   					// HORA
  		Pase_a_LIBRE_Buffer[2] = RTC_Date.hora[1];   					// MINUTOS
@@ -1942,19 +2127,19 @@ void cambio_de_reloj_x_sensor_asiento(void){
 		//tipo = SIN_CONEXION_CENTRAL;
 		if(paseOCUPADO_APP){
 			if(tipo ==CON_CONEXION_CENTRAL){
-		 	    CMD_Pase_a_OCUPADO_APP.Tx_F = 1;                      // Levanto Bandera de Tx
-		 		CMD_Pase_a_OCUPADO_APP.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		 	    CMD_Pase_a_OCUPADO_APP.Tx_F = 1;                     // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_APP.Reintentos = reint_3;   		// Cargo Cantidad de Reintentos (INFINITOS)
 			}else{
-		 	    CMD_Pase_a_OCUPADO_APP_SC.Tx_F = 1;                      // Levanto Bandera de Tx
-		 		CMD_Pase_a_OCUPADO_APP_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		 	    CMD_Pase_a_OCUPADO_APP_SC.Tx_F = 1;                 // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_APP_SC.Reintentos = reint_3;   	// Cargo Cantidad de Reintentos (INFINITOS)
 			}
 		}else if(paseOCUPADO_SENSOR_ASIENTO){
 			if(tipo ==CON_CONEXION_CENTRAL){
 		 	    CMD_Pase_a_OCUPADO_SA.Tx_F = 1;                      // Levanto Bandera de Tx
-		 		CMD_Pase_a_OCUPADO_SA.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		 		CMD_Pase_a_OCUPADO_SA.Reintentos = reint_3;   		// Cargo Cantidad de Reintentos (INFINITOS)
 			}else{
-		 	    CMD_Pase_a_OCUPADO_SA_SC.Tx_F = 1;                      // Levanto Bandera de Tx
-		 		CMD_Pase_a_OCUPADO_SA_SC.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		 	    CMD_Pase_a_OCUPADO_SA_SC.Tx_F = 1;                  // Levanto Bandera de Tx
+		 		CMD_Pase_a_OCUPADO_SA_SC.Reintentos = reint_3;   	// Cargo Cantidad de Reintentos (INFINITOS)
 			}
 
 		}else if(paseOCUPADO_BANDERITA){
@@ -2183,13 +2368,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
 
   		Pase_a_COBRANDO_Buffer[26] = *(ptrFichasDistancia+3);             //
   		Pase_a_COBRANDO_Buffer[27] = *(ptrFichasDistancia+2);             //
-  		Pase_a_COBRANDO_Buffer[28] = *(ptrFichasDistancia+1);             //
-  		Pase_a_COBRANDO_Buffer[29] = *(ptrFichasDistancia+0);             //
+  		Pase_a_COBRANDO_Buffer[28] = *(ptrFichasDistancia+1);            	 //
+  		Pase_a_COBRANDO_Buffer[29] = *(ptrFichasDistancia+0);             	//
 
-  		Pase_a_COBRANDO_Buffer[30] = *(ptrFichasTiempo+3);             //
-  		Pase_a_COBRANDO_Buffer[31] = *(ptrFichasTiempo+2);             //
-  		Pase_a_COBRANDO_Buffer[32] = *(ptrFichasTiempo+1);             //
-  		Pase_a_COBRANDO_Buffer[33] = *(ptrFichasTiempo+0);             //
+  		Pase_a_COBRANDO_Buffer[30] = *(ptrFichasTiempo+3);             		//
+  		Pase_a_COBRANDO_Buffer[31] = *(ptrFichasTiempo+2);             		//
+  		Pase_a_COBRANDO_Buffer[32] = *(ptrFichasTiempo+1);             		//
+  		Pase_a_COBRANDO_Buffer[33] = *(ptrFichasTiempo+0);             		//
 
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO]  = fin_datos_msb;  // Fin Datos
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO+1] = fin_datos_lsb;// Fin Datos
@@ -2264,7 +2449,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
 	   if (REPORTES_HABILITADOS){
 
       // Guardo reporte -> datos de FUERA DE SERVICIO
-          (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt);
+          (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, CON_CONEXION_CENTRAL);
           // EDIT 04/04/2013
           //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
           // no inhibir las IRQs

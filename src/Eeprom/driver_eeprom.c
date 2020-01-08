@@ -226,6 +226,98 @@
 
  }
 
+
+ error_t EEPROM_WriteByte_irqDisable(uint32_t addr, uint8_t byte)
+  {
+  /*
+  	 * !CS=L
+  	 * tx WREN
+  	 * !CS=H
+  	 * Implicit internal erase cycle is performed. Presumably over before next
+  	 * spi data is clocked in as no mention of pause reqd
+  	 * !CS=L
+  	 * clock out data (MSB first). Up to 32/128 bytes before new Write is reqd. All data
+  	 * must be in same page.
+  	 * !CS=H for data to be written.
+  */
+ 	 uint8_t status;
+ 	 uint8_t* status_ptr;
+ 	error_t error;
+
+
+ 	 uint32_t prim = __get_PRIMASK();
+	 __disable_irq();
+
+      status_ptr = &status;
+      error=errNone;
+
+ #if defined 	USING_MEMORY_PROTECT
+  	 if(EEPROM_IsProtected(addr,addr))
+  	 {
+  		 //return errProtected;
+  		error = errProtected;
+  		//return error;
+  	 }
+ #endif
+  	//Set CS low for the write sequence
+   	 GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
+  // EEPROM_MilliSecDelay(1);
+   	 SpiTxRxByte(EEPROM_WREN, status_ptr);							//Send the write sequence
+   	 GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);			//CS==H
+  // EEPROM_MilliSecDelay(1);
+   	 //end of write sequence. Write latch is enabled
+
+       //Set CS low for the command sequence
+       GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
+  //EEPROM_MilliSecDelay(1);
+       status = 7;
+       SpiTxRxByte(EEPROM_WRITE, status_ptr);							//send the WRITE command
+       if(status !=errorNONE){
+    		//error=2;
+    		error=errFail;
+    		//return error;
+       }
+       SpiTxRxByte((uint8_t)(addr >> 8), status_ptr);					//send H 8 bits of addr
+       if(status !=errorNONE){
+    		//error=3;
+    		error=errFail;
+    		//return error;
+       }
+       SpiTxRxByte((uint8_t)(addr &255), status_ptr);					//send low 8 bits of addr
+       if(status !=errorNONE){
+    		//error=4;
+    	   error=errFail;
+    		//return error;
+       }
+
+       SpiTxRxByte(byte, status_ptr);									//send the byte DATA to the eeprom
+       if(status !=errorNONE){
+    		//error=5;
+    		error=errFail;
+    		//return error;
+       }
+
+       //byte written. Page writes are more efficient as the write time
+       //for a page and a byte are the same at about 5mS
+       GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);			//CS==H
+  //  EEPROM_MilliSecDelay(1);
+       //we have a minimum of 3 mS delay here so rather than generate a lot
+       //of useless sck's and perhaps noise, lets do a software delay
+
+		 if (!prim) {
+			__enable_irq();
+		}
+
+
+       EEPROM_MilliSecDelay(4);		//this could be as little as 3mS and no greater than 4mS
+       //EEPROM_MilliSecDelay(16);		//this could be as little as 3mS and no greater than 4mS
+       EEPROM_WaitForWIP();
+
+
+       return error ;
+
+
+  }
 /****************************************************************************
  *! \brief
  *Write a page of data. For the lc640 a page is 32 bytes
@@ -355,6 +447,15 @@ error_t WriteBuffer_EEPROM(uint8_t *array, uint32_t addr, uint16_t num)
 	uint16_t cursor=0;
 	byte status;
 	uint16_t sizeBUFF;
+	//error_t error;
+
+	//__disable_irq();
+
+		//if (!prim) {
+		//	__enable_irq();
+		//}
+
+
 
 	sizeBUFF = num+3;
 
@@ -429,6 +530,7 @@ error_t WriteBuffer_EEPROM(uint8_t *array, uint32_t addr, uint16_t num)
 		EEPROM_WaitForWIP();
 		offsetInPage=0;
 	}
+
 
 	return errNone;
 }
