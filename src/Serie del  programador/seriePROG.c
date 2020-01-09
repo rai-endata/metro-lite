@@ -10,6 +10,9 @@
 	#include "stm32f0xx_hal.h"
 	#include "main.h"
 	#include "Programacion Parametros.h"
+	#include "tipo de equipo.h"
+	#include "Reloj.h"
+
 	//#include "file aux1.h"
 
 /*********************************************************************************************/
@@ -74,12 +77,12 @@
       //luego PROGRAMADOR_chkTx se ocupara de iniciar transmision si se puede
       error = BAX_Tx_data(N, data, &BAX_SCI_PROG);
 
-
       if (!error){
       }
 
     }
     
+
     /* INICIAR TRANSMITIR DATOS POR SERIE RELOJ/PROGRAMADOR */
     /********************************************************/
       void PROGRAMADOR_chkTx (void){
@@ -127,6 +130,15 @@
         // Si finalizo alguna de las recepciones, tengo que resetear el tipo, xq
         // sino que ese mismo tipo seteado para la proxima recepcion, y no debe
         // ser asi
+    	if((tipo_de_equipo == METRO_LITE)){
+    	  prog_mode=1;
+	    }
+
+    	if(prog_mode){
+        	//indica que esta programando con el led de salida de bandera
+        	HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+    	}
+
         BAX_SCI_PROG.Rx_fin = 0;				// Bajo Bandera
         
       }

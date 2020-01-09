@@ -72,10 +72,14 @@ El flujo de trabajo básico en Git es algo así:
  
  //subir repositoio
  git push --set-upstream https://gitlab.com/rai.endata/metroblue.git 
+ 
  //subit tags
  git push --set-upstream https://gitlab.com/rai.endata/metroblue.git --tags
  
+ //bajar
  git pull --tags https://gitlab.com/rai.endata/metroblue.git
+ 
+ git clone https://gitlab.com/rai.endata/metroblue.git
  
  //crear etiquetas
  git tag 1.0.0 1b2e1d63ff (donde 1b2e1d63ff es el id del commit que se puese ver con git log)

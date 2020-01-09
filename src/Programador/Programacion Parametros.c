@@ -423,7 +423,10 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       }
       if (error == EEPROM_OK){
         error = PROG_RELOJcalend_grabarEEPROM();    // Grabacion de Calendario en EEPROM
-        levantar_progRELOJ();
+        //levantar_progRELOJ();
+        if (error == EEPROM_OK){
+        	prgRELOJ_ini();
+        }
       }
 
       // Programacion de Ticket
