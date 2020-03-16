@@ -206,8 +206,6 @@
   /* INICIALIZACION DE SENSOR DE ASIENTO */
   /***************************************/
     void ASIENTO_ini (void){
-    	ini_puerto_sensor_asiento();
-
   		carreraBandera_toPulsos();        // Convierto la carrera de bandera a Pulsos
         reset_sensor = 1;                 // Para q al detectar SENSOR ASIENTO, resetee la distancia/tiempo del sensor
   		

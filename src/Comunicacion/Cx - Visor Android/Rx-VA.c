@@ -80,6 +80,7 @@ void guardarRxDA_BaxFORMAT (void){
 	byte rxBYTE;
 
 	if( va_rx_cntBYTE > 0){
+		//toma datos del buffer de sci (va_rxDATA)
 		rxBYTE = getBUFCIR(&va_rxDATA);
 		//chk si están llegando datos con el protocolo bax
 		rxVA_chk_baxFORMAT(rxBYTE);
@@ -93,6 +94,7 @@ void rxVA_chk_baxFORMAT(byte dato){
 
 	//se guarda el dato en ASCII en dataSKYPATROL_baxFORMAT.RxBuffer
 	BAX_Rx_data(dato, &rxVA_protBAX_STAGE, &rxVA_baxFORMAT);
+
 	//RECEPCION EXITOSA
 	if (rxVA_baxFORMAT.Rx_fin){
 	  rxVA_baxFORMAT.Rx_fin = 0;      // Bajo Bandera

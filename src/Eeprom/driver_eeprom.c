@@ -376,7 +376,7 @@ error_t EEPROM_WritePage(uint8_t *array, uint16_t page)
  *For the lc640 a page is 32 bytes
  *for the lc512 it is 128 bytes
  * ***************************************************************************/
-error_t EEPROM_WriteBuffer(uint8_t *array, uint32_t addr, uint16_t num)
+error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 {
 	//uint16_t page;
 	uint16_t offsetInPage;
@@ -539,7 +539,7 @@ error_t WriteBuffer_EEPROM(uint8_t *array, uint32_t addr, uint16_t num)
  *! \brief
  *Read a buffer of data
  ***************************************************************************/
-error_t EEPROM_ReadBuffer(uint8_t *buff, uint32_t addr, uint16_t num)
+error_t EEPROM_ReadBuffer(uint8_t* buff, uint32_t addr, uint16_t num)
 	{
 	/*
 	 !CS =L

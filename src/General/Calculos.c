@@ -65,6 +65,26 @@
     5         // Diciembre
   };
 
+
+  uint8_t esbisiesto (uint16_t anio){
+	  //valido desde 2001 al 2099
+	  uint8_t resultado;
+
+	  resultado = anio%4;     //calculo del resto de la division por 4
+	  if(resultado){
+		  //no es bisiesto
+		  return 0;
+	  }else{
+		  //es bisiesto
+		  return 1;
+	  }
+
+  }
+
+
+  //Año regular	    0	3	3	6	1	4	6	2	5	0	3	5
+  //Año bisiesto	0	3	4	0	2	5	0	3	6	1	4	6
+
   /*
   // Tabla de Equivalencia de Lng
    static const uint32_t GENERIC_LOCATION_TablaEqLng[]={
@@ -715,6 +735,42 @@
       return(high+low);
     }
     
+
+
+    /* BCD to HEX - 2 byte */
+      /***********************/
+
+     word BCDtoHEX_2BYTES (byte* num_bcd){
+          // Convierte de BCD a HEX, un numero menor a 99
+          byte H, MH, ML, L, bajo, alto;
+          word valor;
+
+            /*  2 BYTES
+           *
+           *  H   MH  ML   L
+           * +---+---+---+---+
+		   * | 4 | 2 | 7 | 5 |  --> 4275 = 4*1000 + 2*100 + 7*10 + 5
+			 +---+---+---+---+
+           *
+           *
+           * */
+
+          H   = num_bcd[0];
+          L	  = num_bcd[1];
+
+          alto = H>>4;
+          alto = 1000*alto;
+          bajo = (H & 0x0F)*100;
+          valor= alto + bajo;
+
+          alto = L>>4;
+          alto = 10*alto;
+          bajo = L & 0x0F;
+          valor= valor + alto + bajo;
+
+          return(valor);
+        }
+
     
   /* BCD to HEX - 4 bytes */
   /************************/
@@ -1967,6 +2023,11 @@
 			//  Correccion en la rutina, no era MES, sino CLAVE DEL MES, por eso daba
 			// mal. Ademas, no tenia en cuenta que los datos estan en BCD.
 			//  http://www.albaiges.com/cronologia/calculodiasemana.htm
+
+    	    //EDIT 10/02/2020
+    	    //correccion para años bisiestos
+    	    //en años bisiestos se le debe restar uno a la tabla en los meses de enero y febrero
+
       byte DDLS;
       byte dia, mes, anio;
       
@@ -1976,6 +2037,14 @@
       
       DDLS = dia + Tabla_ClaveMeses[mes] + anio + (anio/4) + 6;
       
+      //verifica si el año es bisiesto
+      if(esbisiesto(anio)){
+    	  //si estamos en enero o febrero le resto uno para años bisiestos
+    	  if(mes == 1 || mes == 2){
+    		  DDLS = DDLS -1;
+    	  }
+      }
+
       DDLS = (DDLS % 7) + 1;
       
       return(DDLS);

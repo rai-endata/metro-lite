@@ -41,6 +41,8 @@
   /* TIMER */
   /*********/
     extern void timer_muestreo_banderita (void);
+    extern void set_BANDERA (void);
+    extern void clr_BANDERA (void);
 
 
 #endif

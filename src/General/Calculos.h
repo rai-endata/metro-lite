@@ -25,7 +25,8 @@
       extern uint32_t potenciaDWORD (uint16_t x, byte y);
       extern uint32_t SQRT_aprox (uint32_t xval);
       extern uint32_t Pitagoras (uint16_t x, uint16_t y);
-  
+      extern word BCDtoHEX_2BYTES (byte* num_bcd);
+
   /* CALCULOS CON COORDENADAS */
   /****************************/
     // Tabla de Equivalencia en Metros de Longitud a distintas Latitudes
@@ -180,3 +181,4 @@ extern byte  rotarBuffIzq(byte *buff,uint16_t N, byte BIT);
   extern void convert_bigINDIAN_to_litleINDIAN (uint8_t* buffer, uint8_t n);
   extern void  cargaContenidoPuntero_inDATA (uint16_t* ptrDIR, byte* DATA);
   extern byte checkRANGE(byte* ini_ptr, byte*  fin_ptr, byte timeOUT );
+  extern uint8_t esbisiesto (uint16_t anio);

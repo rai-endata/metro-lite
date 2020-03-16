@@ -23,6 +23,9 @@
 #include "Comandos sin conexion a central.h"
 #include "DA Define Commands.h"
 #include "Display-7seg.h"
+#include "Reportes.h"
+
+
 
 //#include "usart1.h"
 
@@ -57,7 +60,11 @@
 
 	static void borrarTABLA_REPORTES_BUFFER_Rx (byte* Rx_data_ptr);
 	static void setREGISTRO_TABLA_Rx (byte* Rx_data_ptr);
-	static void clearREGISTRO_TABLA_Rx (byte* Rx_data_ptr);
+	static void print_and_wait(byte* bufferTx, uint16_t i);
+	static void writeREG_TABLA(byte* ptrTABLA, byte dato);
+	static void Leer_reportesTAB(byte* Rx_data_ptr);
+	static void READandPRINT(byte** ptrptrTABLA, byte tipo);
+	static void Print_turno (byte* Rx_data_ptr);
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -361,9 +368,9 @@
 	    Rx_comando_74,
 	    Rx_comando_75,
 	    Rx_comando_76,
-	    Rx_comando_77,
+	    Print_turno,
+		Leer_reportesTAB,
 		setREGISTRO_TABLA_Rx,
-		clearREGISTRO_TABLA_Rx,
 		borrarTABLA_REPORTES_BUFFER_Rx,
 		Escribir_BUFFER_Rx,
 		Escribir_BYTE_Rx,
@@ -855,81 +862,32 @@
 
 	void Leer_EEPROM_Rx (byte* Rx_data_ptr){
 
-		tREG_GENERIC bufferDATOS_LEIDOS;
-		uint8_t bufferTx[2*sizeof(tREG_GENERIC)];
+		tREG_GENERIC 	bufferDATOS_LEIDOS;
+		uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+		tREG_GENERIC* 	ptrTABLA;
+        uint 			status, i;
+        byte* 			INI_TABLA_ptr; byte* auxRX_DATA_ptr;
+        uint32_t 		INI_TABLA, auxRX_DATA;
+        byte TO_F;
 
-		tREG_GENERIC* ptrTABLA;
-
-		//
 		// El formato de datos de recepcion es
-		//
-		//    | N | CMD | DATA_1 | DATA_2 | . | . |
-		//
-		//
-		// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
-		// cantidad maxima de FICHAS/PESOS.
-		byte N, cmd,i,dato;
-		uint16_t aux16;
-		uint8_t*  aux_ptr;
-        uint status;
-		N 	= *Rx_data_ptr++;               // Extraigo N
-		cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+        //    | N | CMD | DATA_1 | DATA_2 | . | . |
+
+
+        Rx_data_ptr++;               // salto N
+		Rx_data_ptr++;               // salto CMD
 
 		//apunto a inicio de tabla en eeprom
 		ptrTABLA = ADDR_EEPROM_REPORTE;
-		status = 0;
-		while(ptrTABLA < FIN_EEPROM_REPORTE){
-
+		dispararTO_lazo();
+		while(ptrTABLA <=FIN_TABLA_REPORTE){
 			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
-
-				i=0;
-				if(!status){
-					status=1;
-					stringCopyN(&bufferTx[i], "Direcc. ", 8);       	i = i+8;
-					stringCopyN(&bufferTx[i], "Indice   ", 9);		   	i = i+9;
-					stringCopyN(&bufferTx[i], "Tipo          ", 14); 	i = i+14;
-					stringCopyN(&bufferTx[i], "Fecha           ", 16);	i = i+16;
-					stringCopyN(&bufferTx[i], "Chofer", 6);				i = i+6;
-					bufferTx[i++] = 0x0D;
-					bufferTx[i++] = 0x0A;
-					statusPRINT = IMPRESION_EN_PROCESO;
-					PRINT_send(bufferTx, i+1);
-				}else{
-
-
-					EEPROM_ReadBuffer(&bufferDATOS_LEIDOS, ptrTABLA, sizeof(tREG_GENERIC));
-					aux16 = ptrTABLA;
-					aux_ptr = &aux16;
-					bufferTx[i++] = aux_ptr[1];
-					bufferTx[i++] = aux_ptr[0];
-					bufferTx[i++] = ' ';
-					bufferTx[i]   = ' ';
-					//stringCopyN(&bufferTx[i], bufferDATOS_LEIDOS, sizeof(tREG_GENERIC));
-					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.idx, 2); 		i=i+2;
-					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.tipo, 1); 	i=i+1;
-					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.date, 7);		i=i+7;
-					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.chofer, 1);	i=i+1;
-					stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-					stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.empty, 18);	i=i+18;
-					bufferTx[i++] = 0x0D;
-					bufferTx[i++] = 0x0A;
-					statusPRINT = IMPRESION_EN_PROCESO;
-					PRINT_send(bufferTx, i+1);
-					while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
-											//espera fin de transmision
-											//porque el buffer de tx esta en el stack
-											//y si vuelvo al loop principal es probable que se pise el
-											//stack mientras se transmite los datos desde la sci
-					}
-					ptrTABLA++;
-					//da tiempo al docklight que no se me cuelque
-					HAL_Delay(50);
-				}
+				if(checkRANGE(ptrTABLA, FIN_TABLA_REPORTE, chkTO_lazo_F())){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
+				READandPRINT(&ptrTABLA, REG_generico);
 			}
 		}
+		detenerTO_lazo();
 	}
 
 
@@ -943,66 +901,85 @@
 			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
 			// cantidad maxima de FICHAS/PESOS.
 
-
-			uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
 			tREG_GENERIC* 	ptrTABLA;
 
-			byte N, 	cmd,i,dato;
-			uint32_t 	aux32;
 			uint32_t 	aux_TABLA;
-			uint8_t*  	aux_Rx_data_ptr;
 			uint8_t* 	aux_ptrTABLA;
-	        uint 		status;
-	        uint16_t* 	aux16_ptr;
+			uint8_t*  	aux_Rx_data_ptr;
 
-	    	tREG_GENERIC 	bufferDATOS_LEIDOS;
-
-
-	        N 	= *Rx_data_ptr++;               // Extraigo N
-			cmd = *Rx_data_ptr++;               // Extraigo CMD
-
+	        Rx_data_ptr++;               // Extraigo N
+			Rx_data_ptr++;               // Extraigo CMD
 
 			aux_Rx_data_ptr = &Rx_data_ptr;
 			aux_ptrTABLA = &ptrTABLA;
+
 			//apunto al registro de tabla que quiero leer (con ptrTABLA)
 			aux_ptrTABLA[3] = 0;
 			aux_ptrTABLA[2] = 0;
 			aux_ptrTABLA[1] = *Rx_data_ptr;
 			aux_ptrTABLA[0] = *(Rx_data_ptr+1);
+			READandPRINT_regTABLA_REPORTES (ptrTABLA, REG_generico);
 
-			EEPROM_ReadBuffer(&bufferDATOS_LEIDOS, ptrTABLA, sizeof(tREG_GENERIC));
-
-			i=0;
-			bufferTx[i++] = aux_ptrTABLA[1];
-			bufferTx[i++] = aux_ptrTABLA[0];
-			bufferTx[i++] = ' ';
-			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.idx, 2); 		i=i+2;
-			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.tipo, 1); 	i=i+1;
-			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.date, 7);		i=i+7;
-			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.chofer, 1);	i=i+1;
-			stringCopyN(&bufferTx[i], " ", 1);				 			i=i+1;
-			stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.empty, 18);	i=i+18;
-			bufferTx[i++] = 0x0D;
-			bufferTx[i++] = 0x0A;
-
-			status = 1;
-			while(status){
-				if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
-					statusPRINT = IMPRESION_EN_PROCESO;
-					PRINT_send(bufferTx, i+1);
-					while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
-						//espera fin de transmision
-						//porque el buffer de tx esta en el stack
-						//y si vuelvo al loop principal es probable que se pise el
-						//stack mientras se transmite los datos desde la sci
-						status=0;
-					}
-				}
-			}
 		}
+
+
+	static void Print_turno (byte* Rx_data_ptr){
+				//
+				// El formato de datos de recepcion es
+				//
+				//    | N | CMD | DATA_1 | DATA_2 | . | . |
+				//
+				//
+				// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+				// cantidad maxima de FICHAS/PESOS.
+
+				tREG_GENERIC* 	ptrTABLA;
+
+				uint32_t 	aux_TABLA;
+				uint8_t* 	aux_ptrTABLA;
+				uint8_t*  	aux_Rx_data_ptr;
+                uint8_t 	nroTURNO, i;
+        		uint8_t 		bufferTx[120*sizeof(tREG_GENERIC)];
+
+		        Rx_data_ptr++;               // Extraigo N
+				Rx_data_ptr++;               // Extraigo CMD
+				nroTURNO = *Rx_data_ptr;
+
+				print_ticket_turno(nroTURNO);
+			}
+
+	void READandPRINT_regTABLA_REPORTES (byte* ptrTABLA, byte tipo){
+
+		uint8_t 		i;
+		tREG_GENERIC 	bufferDATOS_LEIDOS;
+		uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+		uint8_t* 	aux_ptrTABLA;
+
+		aux_ptrTABLA = &ptrTABLA;
+
+		EEPROM_ReadBuffer(&bufferDATOS_LEIDOS, ptrTABLA, sizeof(tREG_GENERIC));
+
+        if(bufferDATOS_LEIDOS.tipo == tipo || tipo == REG_generico ){
+    		i=0;
+    		bufferTx[i] = aux_ptrTABLA[1];																i=i+1;
+    		bufferTx[i] = aux_ptrTABLA[0];																i=i+1;
+    		bufferTx[i] = ' ';																			i=i+1;
+    		stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.idx, sizeof(bufferDATOS_LEIDOS.idx)); 		i=i+sizeof(bufferDATOS_LEIDOS.idx);
+    		bufferTx[i] = ' ';				 															i=i+1;
+    		stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.tipo, sizeof(bufferDATOS_LEIDOS.tipo)); 		i=i+sizeof(bufferDATOS_LEIDOS.tipo);
+    		bufferTx[i] = ' ';			 																i=i+1;
+    		stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.date, sizeof(bufferDATOS_LEIDOS.date));		i=i+sizeof(bufferDATOS_LEIDOS.date);
+    		bufferTx[i] = ' ';			 																i=i+1;
+    		stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.chofer, sizeof(bufferDATOS_LEIDOS.chofer));	i=i+sizeof(bufferDATOS_LEIDOS.chofer);
+    		bufferTx[i] = ' ';			 																i=i+1;
+    		stringCopyN(&bufferTx[i], &bufferDATOS_LEIDOS.empty, sizeof(bufferDATOS_LEIDOS.empty));		i=i+sizeof(bufferDATOS_LEIDOS.empty);
+    		bufferTx[i++] = 0x0D;
+    		bufferTx[i++] = 0x0A;
+
+    		print_and_wait((byte*)&bufferTx, i);
+        }
+
+	}
 
 	void Escribir_BYTE_Rx (byte* Rx_data_ptr){
 				//
@@ -1049,9 +1026,6 @@
 				//if (!prim) {
 			  	//			__enable_irq();
 			  	//}
-
-
-
 /*
 				i = 0;
 				aux_TABLA = (uint32_t) ptrTABLA;
@@ -1062,9 +1036,6 @@
 				 		i++;
 				  }
 */
-
-
-
 				//leer dato
 				EEPROM_ReadBuffer(&DATOS_LEIDO, ptrTABLA, 1);
 
@@ -1078,61 +1049,50 @@
 				bufferTx[i++] = 0x0D;
 				bufferTx[i++] = 0x0A;
 
-				status = 1;
-				while(status){
-					if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
-						statusPRINT = IMPRESION_EN_PROCESO;
-						PRINT_send(bufferTx, i+1);
-						while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
-							//espera fin de transmision
-							//porque el buffer de tx esta en el stack
-							//y si vuelvo al loop principal es probable que se pise el
-							//stack mientras se transmite los datos desde la sci
-							status=0;
-						}
-					}
-				}
+				print_and_wait((byte*)&bufferTx, i);
 			}
 
 	static void borrarTABLA_REPORTES_BUFFER_Rx (byte* Rx_data_ptr){
 
-			uint32_t aux_TABLA, aux_TABLA1;
-			byte* ptr_aux_TABLA, ptr_aux_TABLA1;
-			uint8_t* Rx_ptr, Rx_ptr1 ;
-			byte aux_buffer[2], aux_buffer1[2];
+		tREG_GENERIC 	bufferDATOS_LEIDOS;
+		uint8_t 		bufferTx[2*sizeof(tREG_GENERIC)];
+		tREG_GENERIC* 	ptrTABLA;
+        byte* 			INI_TABLA_ptr; byte* auxRX_DATA_ptr;
+        uint32_t 		INI_TABLA, auxRX_DATA;
 
-		     mostrar_clear_dsplyEEPROM=1;
-			 mostrar_t_dsplyT=1;
-			 on_display_tarifa();
-			 print_display();
-/*
-			 aux_TABLA = (uint32_t) ADDR_EEPROM_REPORTE;
-			 while(aux_TABLA < FIN_EEPROM_REPORTE){
-					EEPROM_WriteByte_irqDisable(aux_TABLA, 0xff);
-					aux_TABLA++;
+        // El formato de datos de recepcion es
+
+        //    | N | CMD | DATA_1 | DATA_2 | . | . |
+
+
+		mostrar_clear_dsplyEEPROM=1;
+		mostrar_t_dsplyT=1;
+		on_display_tarifa();
+		print_display();
+
+		Rx_data_ptr++;               // salto N
+		Rx_data_ptr++;               // salto CMD
+
+		//apunto a inicio de tabla en eeprom
+		ptrTABLA = ADDR_EEPROM_REPORTE;
+		dispararTO_lazo();
+		while(ptrTABLA <= FIN_TABLA_REPORTE){
+			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+				writeREG_TABLA(ptrTABLA, 0xFF);
+				if(checkRANGE(ptrTABLA, FIN_TABLA_REPORTE, chkTO_lazo_F())){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
+				READandPRINT(&ptrTABLA, REG_generico);
 			}
-*/
-			 aux_TABLA = ADDR_EEPROM_REPORTE;
-			 ptr_aux_TABLA = &aux_TABLA;
+		}
+		detenerTO_lazo();
 
-			 aux_buffer[0] = ptr_aux_TABLA[0];
-			 aux_buffer[1] = ptr_aux_TABLA[1];
-			 Rx_ptr = (uint8_t*)&aux_buffer-2;
+		mostrar_clear_dsplyEEPROM = 0;
+		mostrar_t_dsplyT=0;
+		//indexMenu_IniTurno=0;
+		on_display_tarifa();
+		off_display();
 
-			 while(*(uint16_t*)(Rx_ptr+2) < FIN_EEPROM_REPORTE){
-
-				 convert_bigINDIAN_to_litleINDIAN (&aux_buffer, 2);
-
-				 setREGISTRO_TABLA_Rx(Rx_ptr);
-
-				 aux_TABLA += sizeof(tREG_GENERIC);
-				 aux_buffer[0] = ptr_aux_TABLA[0];
-				 aux_buffer[1] = ptr_aux_TABLA[1];
-			 }
-
-			//inicializa primer encendido
-			borrarPrimerEncendido();
-
+		//inicializa primer encendido
+		borrarPrimerEncendido();
 
 		//resetea el equipo
 		NVIC_SystemReset();
@@ -1140,84 +1100,45 @@
 
 
 	static void setREGISTRO_TABLA_Rx (byte* Rx_data_ptr){
-			//limpia tabla
-			//uint32_t prim = __get_PRIMASK();
-			//__disable_irq();
-				//clear_tabREPORTES();
 
-					uint8_t i;
-					uint32_t 	aux_TABLA;
-					uint8_t* 	aux_ptrTABLA;
+			uint8_t i,  dato;
+			uint8_t* 	ptrTABLA;
+			uint8_t* 	ptrTABLA_ptr;
+			byte* Rx_ptr = Rx_data_ptr;
 
-					byte* Rx_ptr = Rx_data_ptr;
+			Rx_data_ptr++;               // salto N
+			Rx_data_ptr++;               // salt0 CMD
+			dato = *Rx_data_ptr++;
+			ptrTABLA_ptr = &ptrTABLA;
 
-			        Rx_data_ptr++;               // salto N
-					Rx_data_ptr++;               // salt0 CMD
+			//apunto al registro de tabla que quiero escribit (con ptrTABLA)
+			ptrTABLA_ptr[0] = *(Rx_data_ptr+1);
+			ptrTABLA_ptr[1] = *(Rx_data_ptr+0);
+			ptrTABLA_ptr[2] = 0;
+			ptrTABLA_ptr[3] = 0;
+			writeREG_TABLA(ptrTABLA, dato);
 
-					aux_ptrTABLA = &aux_TABLA;
-					//apunto al registro de tabla que quiero leer (con ptrTABLA)
+			//apunto al registro de tabla que quiero leer (con ptrTABLA)
+			ptrTABLA_ptr[0] = *(Rx_data_ptr+1);
+			ptrTABLA_ptr[1] = *(Rx_data_ptr+0);
+			ptrTABLA_ptr[2] = 0;
+			ptrTABLA_ptr[3] = 0;
+			READandPRINT_regTABLA_REPORTES (ptrTABLA, REG_generico);
 
-
-					aux_ptrTABLA[0] = *Rx_data_ptr;
-					aux_ptrTABLA[1] = *(Rx_data_ptr+1);
-					aux_ptrTABLA[2] = 0;
-					aux_ptrTABLA[3] = 0;
-					//escribir dato
-					//uint32_t prim = __get_PRIMASK();
-					//__disable_irq();
-
-				 i=0;
-				 while(i < sizeof(tREG_GENERIC)){
-						//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
-						EEPROM_WriteByte_irqDisable(aux_TABLA, 0xff);
-						aux_TABLA++;
-						i++;
-				}
-
-				 Leer_REGISTRO_Rx (Rx_ptr);
-
-			//if (!prim) {
-			//	__enable_irq();
-			//}
 		}
 
-	static void clearREGISTRO_TABLA_Rx (byte* Rx_data_ptr){
-				//limpia tabla
-				//uint32_t prim = __get_PRIMASK();
-				//__disable_irq();
-					//clear_tabREPORTES();
 
-		uint8_t 	i;
-		uint32_t 	aux_TABLA;
-		uint8_t* 	aux_ptrTABLA;
 
-		byte* Rx_ptr = Rx_data_ptr;
+	static void writeREG_TABLA(byte* ptrTABLA, byte dato){
 
-					Rx_data_ptr++;               // salto N
-					Rx_data_ptr++;               // salt0 CMD
-
-					aux_ptrTABLA = &aux_TABLA;
-					//apunto al registro de tabla que quiero leer (con ptrTABLA)
-					aux_ptrTABLA[3] = 0;
-					aux_ptrTABLA[2] = 0;
-					aux_ptrTABLA[1] = *Rx_data_ptr;
-					aux_ptrTABLA[0] = *(Rx_data_ptr+1);
-
-					 i=0;
-					 while(i < sizeof(tREG_GENERIC)){
-							//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
-							EEPROM_WriteByte_irqDisable(aux_TABLA, 0x00);
-							aux_TABLA++;
-							i++;
-					}
-
-					 Leer_REGISTRO_Rx (Rx_ptr);
-
-				//if (!prim) {
-				//	__enable_irq();
-				//}
-			}
-
+		 uint8_t i=0;
+		 while(i < sizeof(tREG_GENERIC)){
+				//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
+				EEPROM_WriteByte_irqDisable(ptrTABLA, dato);
+				ptrTABLA++;
+				i++;
+		}
+	}
 
 
 
@@ -1271,21 +1192,76 @@
 					bufferTx[i++] = 0x0D;
 					bufferTx[i++] = 0x0A;
 
-					status = 1;
-					while(status){
-						if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
-							statusPRINT = IMPRESION_EN_PROCESO;
-							PRINT_send(bufferTx, i+1);
-							while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
-								//espera fin de transmision
-								//porque el buffer de tx esta en el stack
-								//y si vuelvo al loop principal es probable que se pise el
-								//stack mientras se transmite los datos desde la sci
-								status=0;
-							}
-						}
-					}
+					print_and_wait((byte*)&bufferTx, i);
+
 				}
+
+
+ static	void print_and_wait(byte* bufferTx, uint16_t i){
+
+		byte status;
+
+		status = 1;
+		while(status){
+			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+				statusPRINT = IMPRESION_EN_PROCESO;
+				PRINT_send(bufferTx, i+1);
+				while(statusPRINT !=NO_HAY_IMPRESION_EN_PROCESO){
+					//espera fin de transmision
+					//porque el buffer de tx esta en el stack
+					//y si vuelvo al loop principal es probable que se pise el
+					//stack mientras se transmite los datos desde la sci
+					status=0;
+				}
+			}
+		}
+	}
+
+
+ static void Leer_reportesTAB(byte* Rx_data_ptr){
+
+	 byte*			ptrINI_TURNO;
+	 byte* 			ptrFIN_TURNO;
+	 tREG_GENERIC*	ptrTABLA;
+	// byte* ptrFIN;
+	 byte tipo, TO_F, cantidadSESIONES;
+
+
+	 tREG_SESION*	ptrsSESION[2];
+
+	 Rx_data_ptr++;               // salto N
+	 Rx_data_ptr++;               // salt0 CMD
+	 tipo = *Rx_data_ptr++;
+
+
+	 cantidadSESIONES = REPORTES_getSesions(ptrsSESION, 2);
+	 if(cantidadSESIONES != 0xff){
+		 ptrINI_TURNO = ptrsSESION[1];
+		 ptrFIN_TURNO = ptrsSESION[0];
+
+
+		 ptrTABLA = (tREG_GENERIC*)ptrINI_TURNO;
+
+		 TO_F = 0;
+		 dispararTO_lazo();
+		 while(ptrTABLA != ptrFIN_TURNO){
+			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+				if(checkRANGE(ptrTABLA, FIN_TABLA_REPORTE, TO_F )){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
+				READandPRINT(&ptrTABLA, tipo);
+			}
+		 }
+		 READandPRINT(&ptrTABLA, tipo);
+		 detenerTO_lazo();
+	 }
+ }
+
+
+
+static void READandPRINT(byte** ptrptrTABLA, byte tipo){
+	READandPRINT_regTABLA_REPORTES (*ptrptrTABLA, tipo); 						//Lee un registro de tabla y lo manda por puerto
+	incFlashRep_ptr(ptrptrTABLA);										//ptrTABLA++;
+	HAL_Delay(50);													//da tiempo al docklight que no se me cuelque
+}
 
 
 		/* RECEPCION DE  */
@@ -1423,6 +1399,7 @@
 
 				N 	= *Rx_data_ptr++;               // Extraigo N
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
+				SaveDatGps(Rx_data_ptr, LIB);
 				if(ESTADO_RELOJ==COBRANDO || ESTADO_RELOJ==FUERA_SERVICIO){
 					Pase_a_LIBRE();
 				}else if (ESTADO_RELOJ==LIBRE){
@@ -1462,6 +1439,8 @@
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 				//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
 				tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
+				SaveDatGps(Rx_data_ptr, OCUP);
+
 
                 if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
                 //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
@@ -1545,6 +1524,7 @@
 							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
+							SaveDatGps(Rx_data_ptr, COBR);
 							Pase_a_COBRANDO();
 							Tx_Valor_VIAJE();
 						}else if(ESTADO_RELOJ==COBRANDO){
@@ -1592,7 +1572,7 @@
 						sinCONEXION_CENTRAL=1;
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
-
+							SaveDatGps(Rx_data_ptr, LIB);
 							if(ESTADO_RELOJ==COBRANDO || ESTADO_RELOJ==FUERA_SERVICIO){
 								Pase_a_LIBRE_SC();
 							}else if (ESTADO_RELOJ==LIBRE){
@@ -1632,7 +1612,7 @@
 							//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
 
 							tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
-
+							SaveDatGps(Rx_data_ptr, OCUP);
 
 							if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 								if (seleccionManualTarifas){
@@ -1707,6 +1687,7 @@
 										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 										N 	= *Rx_data_ptr++;               // Extraigo N
 										cmd = *Rx_data_ptr++;               // Extraigo CMD
+										SaveDatGps(Rx_data_ptr, COBR);
 										Pase_a_COBRANDO_SC();
 										Tx_Valor_VIAJE();
 									}else if(ESTADO_RELOJ==COBRANDO){
@@ -1863,7 +1844,7 @@
 		 #ifdef VISOR_REPORTES
 			//imprime ticket de turno o parcial ?
 			if(DATA_1 == IMPRESION_TICKET_TURNO && REPORTES_HABILITADOS){
-					print_ticket_turno();
+					print_ticket_turno(0);
 			}else if(DATA_1 == IMPRESION_TICKET_PARCIAL && REPORTES_HABILITADOS){
 					print_ticket_parcial();
 			}
@@ -2000,7 +1981,7 @@
 							}
 			               break;
 			      case subCMD_consultaTURNO:
-							cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, dataWORD, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+							cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, dataWORD, 2);        				// Obtengo punteros a todos las sesiones
 							if(cantidad_de_sesion ==0xff){
 								//no hay viajes
 								statusSESION = 1;
@@ -2150,6 +2131,24 @@
 		bufferNcopy(&buff_aux[i] ,(byte*)(&regVIAJE.dateA_PAGAR)+4  ,3); i = i + 3;
 		//fecha
 		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateA_PAGAR	    ,3); i = i + 3;
+		//Posicion libre
+		buff_aux[i++] = regVIAJE.sgnLatLonLibre;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.latitudLIBRE	    ,3); i = i + 3;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.longitudLIBRE    ,3); i = i + 3;
+		buff_aux[i++] = regVIAJE.velgpsLIBRE;
+
+		//Posicion ocupado
+		buff_aux[i++] = regVIAJE.sgnLatLonOcupado;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.latitudOCUPADO   ,3); i = i + 3;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.longitudOCUPADO   ,3); i = i + 3;
+		buff_aux[i++] = regVIAJE.velgpsOCUPADO;
+
+		//Posicion cobrando
+		buff_aux[i++] = regVIAJE.sgnLatLonCobrando;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.latitudCOBRANDO  ,3); i = i + 3;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.longitudCOBRANDO  ,3); i = i + 3;
+		buff_aux[i++] = regVIAJE.velgpsCOBRANDO;
+
 
 		return(i);
 	}

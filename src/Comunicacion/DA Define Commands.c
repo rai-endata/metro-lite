@@ -1169,6 +1169,19 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				exit = 1;
 		}
 
+		if(subCMD == MENSAJE12 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"CIERRE EL TURNO, se esta quedando sin espacio para guardar reportes.");
+				i=i+k;
+				exit = 1;
+		}
+
+		if(subCMD == MENSAJE13 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"TURNO CERRADO, por falta de espacio para reportes");
+				i=i+k;
+				exit = 1;
+		}
+
+
 
 		CMD_MENSAJE.N = N_CMD + i;
 

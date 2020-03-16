@@ -53,6 +53,11 @@ static void RELOJ_requestBKP_enFLASH (void);
 static tRELOJ_ERROR RELOJ_incGETptr_endDATA (void);
 static tTARIFA* updateTarifa (tDATE date, byte numTarifaActual);
 
+static byte* getLATITUD(byte estado);
+static byte* getLONGITUD(byte estado);
+static byte  getSgnLatLon(byte estado);
+static byte  getVELOCIDAD(byte estado);
+
 static tUPDATE_CHOFER       _CHOFER_F;
   #define CHOFER_F          _CHOFER_F.Byte
   #define CHOFER_newValue   _CHOFER_F.MergedBits.grpChofer
@@ -99,7 +104,23 @@ static uint16_t cambioRELOJ_TO_cnt;	// Contador del timer para pasar de A PAGAR 
 	tPASE_OCUPADO _status_paseOCUPADO;
 
 	byte ESTADO_RELOJ_X_PULSADOR;
-	byte     ESTADO_RELOJ_CONEXION;
+	byte ESTADO_RELOJ_CONEXION;
+
+	byte sgnLatLon_LIBRE_CEL;						//signo de latitud y longitud
+	byte latitudGPS_LIBRE_CEL[3];
+	byte longitudGPS_LIBRE_CEL[3];
+	byte velocidadGPS_LIBRE_CEL;
+
+	byte sgnLatLon_OCUPADO_CEL;						//signo de latitud y longitud
+	byte latitudGPS_OCUPADO_CEL[3];
+	byte longitudGPS_OCUPADO_CEL[3];
+	byte velocidadGPS_OCUPADO_CEL;
+
+	byte sgnLatLon_COBRANDO_CEL;						//signo de latitud y longitud
+	byte latitudGPS_COBRANDO_CEL[3];
+	byte longitudGPS_COBRANDO_CEL[3];
+	byte velocidadGPS_COBRANDO_CEL;
+
 
 static byte 	sensorAsiento;            // Indica si se ocupo por sensor de asiento y el motivo
 static tDATE  	RELOJ_dateCambio;
@@ -287,6 +308,7 @@ void Pase_a_LIBRE (void){
 		TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_ESPERA);
 		Tx_Comando_MENSAJE(ESPERA_DE_PASE_A_COBRANDO);
 	}
+	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
 
 }
 
@@ -339,7 +361,7 @@ void Pase_a_OCUPADO (void){
 		if (REPORTES_HABILITADOS){
 			uint8_t nroviaje = nroCorrelativo_INTERNO;
 			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
-			(void)REPORTE_queueLibre (libreDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_LIBRE, velMax_LIBRE, timerParado_cnt, timerMarcha_cnt, sensorAsiento, ESTADO_RELOJ_CONEXION, nroviaje);
+			(void)REPORTE_queueLibre (libreDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_LIBRE, velMax_LIBRE, timerParado_cnt, timerMarcha_cnt, sensorAsiento, ESTADO_RELOJ_CONEXION, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB),getVELOCIDAD(LIB));
 		}
 #endif
 
@@ -430,7 +452,7 @@ void Pase_a_COBRANDO (void){
 		#ifdef VISOR_REPORTES
 		if (REPORTES_HABILITADOS){
 
-		(void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt, minutosEspera, ESTADO_RELOJ_CONEXION, nroCorrelativo_INTERNO);
+		(void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt, minutosEspera, ESTADO_RELOJ_CONEXION, nroCorrelativo_INTERNO, getLATITUD(OCUP), getLONGITUD(OCUP), getSgnLatLon(OCUP), getVELOCIDAD(OCUP));
 
 		 ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
 
@@ -508,6 +530,7 @@ void Pase_a_FUERA_SERVICIO (void){
 			fuera_de_servicio();
 		}
 	}
+	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
 }
 
 static void fuera_de_servicio(void){
@@ -527,7 +550,7 @@ static void fuera_de_servicio(void){
 		uint8_t nroviaje = nroCorrelativo_INTERNO;
 		if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
 
-		(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0, CON_CONEXION_CENTRAL, nroviaje);
+		(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0, CON_CONEXION_CENTRAL, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
 		 // EDIT 04/04/2013
 		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
 		 // no inhibir las IRQs
@@ -623,7 +646,7 @@ static void fuera_de_servicio(void){
   		TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_ESPERA);
   		Tx_Comando_MENSAJE(ESPERA_DE_PASE_A_COBRANDO);
   	}
-
+  	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
   }
 
   void Pase_a_OCUPADO_SC (void){
@@ -676,7 +699,7 @@ static void fuera_de_servicio(void){
   		if (REPORTES_HABILITADOS){
   			uint8_t nroviaje = nroCorrelativo_INTERNO;
   			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
-  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento, SIN_CONEXION_CENTRAL, nroviaje);
+  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento, SIN_CONEXION_CENTRAL, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
   		}
   #endif
 
@@ -766,7 +789,7 @@ static void fuera_de_servicio(void){
   		// Guardo reporte -> datos de OCUPADO
   		#ifdef VISOR_REPORTES
   		if (REPORTES_HABILITADOS){
-  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, minutosEspera, SIN_CONEXION_CENTRAL, nroCorrelativo_INTERNO);
+  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, minutosEspera, SIN_CONEXION_CENTRAL, nroCorrelativo_INTERNO, getLATITUD(OCUP), getLONGITUD(OCUP), getSgnLatLon(OCUP), getVELOCIDAD(OCUP));
 
   		 ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
@@ -1127,8 +1150,6 @@ static void RELOJ_resetReintentos (void){
 		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
 		HAL_GPIO_Init(BANDERA_OUT_PORT, &GPIO_InitStruct);
-
-		HAL_GPIO_WritePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN, GPIO_PIN_RESET);
 	}
 
 	/* SET Puerto de Salida de Bandera */
@@ -1495,7 +1516,9 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
            // sino la equivalencia en PESOS
            // En TARIFACION NORMAL, el importe lo calculo, para que en caso de que sea FICHAS, sea la equivalencia
            importe = RELOJ_calcularImporte(TARIFACION_getFichasT(), TARIFACION_getFichasD(), 1, TARIFA.numero, NULL);
-           (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero, TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, estado_de_conexion);
+           (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero,
+        		   TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, estado_de_conexion,
+				   getLATITUD(COBR), getLONGITUD(COBR), getSgnLatLon(COBR), getVELOCIDAD(COBR));
 
            // EDIT 04/04/2013
            //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -1623,20 +1646,21 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
           // Cuando esto sucede, sólo tengo que guardar un registro del tipo de SESION,
           // sin el LIBRE como cuando hago un cambio de chofer.
           // Guardo reporte -> nueva SESION
-          byte nroChofer;
+
+        byte nroChofer;
 
           #ifdef VISOR_REPORTES
-            if (REPORTES_HABILITADOS){
-              nroChofer = RELOJ_INTERNO_getChofer();
+			kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;				// Distancia Recorrida en LIBRE (KM xxx.x)
+			velMax_INTERNO = VELOCIDAD_MAX;                         			    // Velocidad Maxima en LIBRE
 
-              (void)REPORTE_queueSesion(nroChofer);
-
-
-              CHOFER_update = 1;
-              CHOFER_newValue = nroChofer;
-
-
-            }
+			 if (REPORTES_HABILITADOS){
+			   // Guardo reporte -> nueva SESION
+				nroChofer = RELOJ_INTERNO_getChofer();
+			   (void)REPORTE_queueSesion (nroChofer);
+			 }
+			VELOCIDAD_MAX = 0;
+			RELOJ_INTERNO_resetMarchaParado();
+			Tx_Comando_MENSAJE(TURNO_CERRADO);
           #endif
         }
 
@@ -2489,3 +2513,123 @@ void cambio_de_reloj_x_sensor_asiento(void){
        }
 
 
+
+       static   byte* getLATITUD(byte estado){
+    	   if(estado == LIB){
+    		   return((byte*)&latitudGPS_LIBRE_CEL);
+    	   }else if(estado == OCUP){
+    		   return((byte*)&latitudGPS_OCUPADO_CEL);
+    	   }else if(estado == COBR){
+    		   return((byte*)&latitudGPS_COBRANDO_CEL);
+    	   }
+       }
+
+       static  byte* getLONGITUD(byte estado){
+
+    	   if(estado == LIB){
+    		   return((byte*)&longitudGPS_LIBRE_CEL);
+    	   }else if(estado == OCUP){
+    		   return((byte*)&longitudGPS_OCUPADO_CEL);
+    	   }else if(estado == COBR){
+    		   return((byte*)&longitudGPS_COBRANDO_CEL);
+    	   }
+       }
+
+
+       static byte getSgnLatLon(byte estado){
+    	   if(estado == LIB){
+    		   return(sgnLatLon_LIBRE_CEL);
+    	   }else if(estado == OCUP){
+    		   return(sgnLatLon_OCUPADO_CEL);
+    	   }else if(estado == COBR){
+    		   return(sgnLatLon_COBRANDO_CEL);
+    	   }
+
+
+       }
+
+
+       static byte  getVELOCIDAD(byte estado){
+
+    	   if(estado == LIB){
+    		   return(velocidadGPS_LIBRE_CEL);
+    	   }else if(estado == OCUP){
+    		   return(velocidadGPS_OCUPADO_CEL);
+    	   }else if(estado == COBR){
+    		   return(velocidadGPS_COBRANDO_CEL);
+    	   }
+       }
+
+
+
+
+     void  SaveDatGps(byte* data_ptr, byte estado){
+    	word vel;
+
+    	byte i=0;
+
+		vel = BCDtoHEX_2BYTES(&data_ptr[9]);
+
+		if(estado == LIB){
+			 sgnLatLon_LIBRE_CEL = *data_ptr++;
+			 while(i<3){
+				 latitudGPS_LIBRE_CEL[i]  = data_ptr[i];
+				 longitudGPS_LIBRE_CEL[i] = data_ptr[i+4];
+				 i++;
+			 }
+			 if(vel < 255){
+				 velocidadGPS_LIBRE_CEL = vel;
+			 }else{
+				 velocidadGPS_LIBRE_CEL = 255;
+			 }
+		}else if(estado == OCUP){
+			 sgnLatLon_OCUPADO_CEL = *data_ptr++;
+			 while(i<3){
+				 latitudGPS_OCUPADO_CEL[i]  = data_ptr[i];
+				 longitudGPS_OCUPADO_CEL[i] = data_ptr[i+4];
+				 i++;
+			 }
+			 if(vel < 255){
+				 velocidadGPS_OCUPADO_CEL = vel;
+			 }else{
+				 velocidadGPS_OCUPADO_CEL = 255;
+			 }
+		}else if(estado == COBR){
+			 sgnLatLon_COBRANDO_CEL = *data_ptr++;
+			 while(i<3){
+				 latitudGPS_COBRANDO_CEL[i]  = data_ptr[i];
+				 longitudGPS_COBRANDO_CEL[i] = data_ptr[i+4];
+				 i++;
+			 }
+			 if(vel < 255){
+				 velocidadGPS_COBRANDO_CEL = vel;
+			 }else{
+				 velocidadGPS_COBRANDO_CEL = 255;
+			 }
+		}
+     }
+
+
+     void  getDatGps_COBRANDO(byte* data_ptr){
+    	 word vel;
+    	 sgnLatLon_COBRANDO = *data_ptr++;
+    	 byte i=0;
+    	 while(i<3){
+    		 latitudGPS_COBRANDO_CEL[i]  = data_ptr[i];
+    		 longitudGPS_COBRANDO_CEL[i] = data_ptr[i+4];
+    		 i++;
+    	 }
+    	 vel = BCDtoHEX_2BYTES(&data_ptr[i+5]);
+    	 if(vel < 255){
+    		 velocidadGPS_COBRANDO_CEL = vel;
+    	 }else{
+    		 velocidadGPS_COBRANDO_CEL = 255;
+    	 }
+     }
+
+/*
+		    extern byte sgnLatLon;						//signo de latitud y longitud
+		    extern byte latitudGPS_CEL[4];
+		    extern byte longitudGPS_CEL[4];
+		    extern byte velocidadGPS_CEL;
+*/

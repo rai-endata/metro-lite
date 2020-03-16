@@ -14,6 +14,11 @@
 #define CON_CONEXION_CENTRAL	1
 #define SIN_CONEXION_CENTRAL	0
 
+#define LIB			0
+#define OCUP		1
+#define COBR		2
+
+
 	// ESTADOS DE RELOJ
 	typedef enum{
 		LIBRE=0x18,
@@ -140,6 +145,8 @@
 #define SESION_CERRADA_EXITOSAMENTE		MENSAJE9
 #define PASE_A_COBRANDO_NO_PERMITIDO	MENSAJE10
 #define TARIFA_AUTOMATICA				MENSAJE11
+#define CIERRE_TURNO					MENSAJE12
+#define TURNO_CERRADO					MENSAJE13
 
 
 #define CUENTA_MAX_TARIFA	4
@@ -208,6 +215,24 @@
     extern uint8_t tarifa_to_cnt;
 		#define TARIFA_TO		3;
 
+
+
+    extern byte sgnLatLon_LIBRE_CEL;						//signo de latitud y longitud
+    extern byte latitudGPS_LIBRE_CEL[3];
+    extern byte longitudGPS_LIBRE_CEL[3];
+    extern byte velocidadGPS_LIBRE_CEL;
+
+    extern byte sgnLatLon_OCUPADO_CEL;						//signo de latitud y longitud
+    extern byte latitudGPS_OCUPADO_CEL[3];
+    extern byte longitudGPS_OCUPADO_CEL[3];
+    extern byte velocidadGPS_OCUPADO_CEL;
+
+    extern byte sgnLatLon_COBRANDO;						//signo de latitud y longitud
+    extern byte latitudGPS_COBRANDO_CEL[3];
+    extern byte longitudGPS_COBRANDO_CEL[3];
+    extern byte velocidadGPS_COBRANDO_CEL;
+
+
 /*******************************************************************
 *	 	PROTOTIPOS
 ********************************************************************/
@@ -260,6 +285,8 @@
 
     extern void cobrandoDATE_enFLASH (byte forced);
     extern void ocupadoDATE_enFLASH (byte forced);
+    extern void  SaveDatGps(byte* data_ptr, byte estado);
+
     extern uint8_t tarifa_1_4;		//valor de 1 a 4 a mostrar en display
     extern uint8_t  tarifa_1_8;	//valor de 1 a 8 que sirve de indice para tomar uno de los 8 valores de tarifa programados en eeprom
 

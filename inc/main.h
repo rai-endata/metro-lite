@@ -133,6 +133,11 @@ typedef enum
     #define chkVISOR_firstBoot    ((const)VISOR_firstBoot)
 
 
+ extern  byte* ptr1;
+ extern  byte* ptr2;
+
+
+
 /* Exported constants --------------------------------------------------------*/
 /* User can use this section to tailor USARTx/UARTx instance used and associated 
    resources */
@@ -253,6 +258,7 @@ extern void checkUART_ERROR (void);
 extern void MX_RTC_Init(void);
 
 extern uint32_t cntIC_anterior;
+extern byte estaOCUPADO(void );
 
 
 #endif /* __MAIN_H */

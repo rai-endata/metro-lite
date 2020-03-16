@@ -242,7 +242,7 @@ void teclaT2_CORTA(void){
 					Tx_Conf_inicioTURNO(okINICIO);
 				}else if(mostrar_turn_dsplyIMPORTE){
 					BanderaOut_On();
-					print_ticket_turno();
+					print_ticket_turno(0);
 				}else{
 					Pase_a_LIBRE();
 				}

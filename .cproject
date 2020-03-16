@@ -18,7 +18,7 @@
 					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.1116939909." name="/" resourcePath="">
 						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.1391908501" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug">
 							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.204502721" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" value="STM32F091RCTx" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1787159143" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" value="Re-Blue" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1787159143" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" value="metroBLUE" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="fr.ac6.managedbuild.targetPlatform.gnu.cross.941748997" isAbstract="false" osList="all" superClass="fr.ac6.managedbuild.targetPlatform.gnu.cross"/>
 							<builder buildPath="${workspace_loc:/Re-Blue}/Debug" id="fr.ac6.managedbuild.builder.gnu.cross.223131226" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="fr.ac6.managedbuild.builder.gnu.cross">
 								<outputEntries>
@@ -69,6 +69,7 @@
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="STM32F091xC"/>
 								</option>
+								<option id="gnu.c.compiler.option.dialect.std.952523388" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.952900849" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.1356434593" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>
 							</tool>

@@ -44,6 +44,8 @@
   #define MENSAJE9		0x09		//SESION CERRADA EXITOSAMENTE
   #define MENSAJE10		0x0A		//cambio a cobrando no permitido
   #define MENSAJE11		0x0B		//Pase a Ocupado con Tarifa automatica
+  #define MENSAJE12		0x0C		//Se esta quedando sin espacio para guardar reportes, CIERRE EL TURNO
+  #define MENSAJE13		0x0D		//Se ha cerrado el turno, AUTOMATICAMENTE, por falta de espacio para reportes
 
   /* ESTRUCTURAS */
   /***************/  

@@ -30,7 +30,7 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
 
 
 			//cantidad_de_sesion = REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
-			(void)REPORTES_getTurno(sesion_ptrs, nroTurno, max_turnosReporte);
+			//(void)REPORTES_getTurno(sesion_ptrs, nroTurno, max_turnosReporte);
 			//inicializo punteros a sesiones
 			TICKET_TURNO_setIni(sesion_ptrs[MENU_REPORTE_TURNO_index + 1], iniTURNO_ptr);   // Puntero a inicio de turno seleccionado
 			TICKET_TURNO_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);       // Puntero a final de turno seleccionado

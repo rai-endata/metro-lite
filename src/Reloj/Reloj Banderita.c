@@ -127,10 +127,17 @@ void Ini_portBANDERITA (void){
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
 		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 		HAL_GPIO_Init(PUERTO_BANDERITA, &GPIO_InitStruct);
-		//levanta la salida de bandera
-		HAL_GPIO_WritePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN, GPIO_PIN_SET);
+		}
+
+void set_BANDERA (void){
+	//levanta la salida de bandera
+	HAL_GPIO_WritePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN, GPIO_PIN_SET);
 }
 
+void clr_BANDERA (void){
+	//levanta la salida de bandera
+	HAL_GPIO_WritePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN, GPIO_PIN_RESET);
+}
   /* CHEQUEO RELOJ BANDERITA */
   /***************************/
     void check_relojBANDERITA (void){

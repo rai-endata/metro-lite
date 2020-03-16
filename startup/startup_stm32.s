@@ -43,6 +43,14 @@
   .fpu softvfp
   .thumb
 
+/*
+'texto' es mi código, tabla de vectores más constantes.
+'datos' es para variables inicializadas, y cuenta para RAM y FLASH. El vinculador asigna los datos en FLASH que luego se copian de ROM a RAM en el código de inicio.
+'bss' es para los datos no inicializados en RAM que se inicializan con cero en el código de inicio.
+*/
+
+
+
 .global g_pfnVectors
 .global Default_Handler
 
@@ -60,27 +68,40 @@ Reset_Handler:
   mov   sp, r0          /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
-  ldr r1, =_edata
-  ldr r2, =_sidata
-  movs r3, #0
-  b LoopCopyDataInit
+  ldr 	r0, =_sdata
+  ldr 	r1, =_edata
+  ldr 	r2, =_sidata
+  movs 	r3, #0
+  b 	LoopCopyDataInit
 
+/*toma lo que esta en _sidata y lo pasa a _sdata*/
 CopyDataInit:
-  ldr r4, [r2, r3]
-  str r4, [r0, r3]
-  adds r3, r3, #4
+  ldr	r4, [r2, r3]
+  str	r4, [r0, r3]
+  adds	r3, r3, #4
 
 LoopCopyDataInit:
-  adds r4, r0, r3
-  cmp r4, r1
-  bcc CopyDataInit
+  adds	r4, r0, r3
+  cmp	r4, r1
+  bcc	CopyDataInit
+
+/****  edit by rai ********
+  bl    estaOCUPADO
+  movs  r5, #1
+  cmp   r3, r5
+  bne   SIGA_SIGA
+  bl  	SystemInit
+  bl 	__libc_init_array
+  bl 	main
+  SIGA_SIGA:
+************************/
+
 
 /* Zero fill the bss segment. */
-  ldr r2, =_sbss
-  ldr r4, =_ebss
-  movs r3, #0
-  b LoopFillZerobss
+  ldr	r2, =_sbss
+  ldr	r4, =_ebss
+  movs	r3, #0
+  b		LoopFillZerobss
 
 FillZerobss:
   str  r3, [r2]
@@ -90,10 +111,13 @@ LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
 
+
 /* Call the clock system intitialization function.*/
   bl  SystemInit
-/* Call static constructors */
+
+ /* Call static constructors */
   bl __libc_init_array
+
 /* Call the application's entry point.*/
   bl main
 

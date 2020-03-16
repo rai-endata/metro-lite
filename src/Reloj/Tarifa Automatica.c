@@ -192,7 +192,7 @@
       byte i;
       
       DDLS = determineDiaSemana(date.fecha);  // Calculo dia de la semana (DDLS)
-      
+
       dayMask = potencia(2, 8 - DDLS);        // Determino mascara en vigencia segun DDLS
       
       

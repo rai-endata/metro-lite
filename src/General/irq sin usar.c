@@ -6,6 +6,7 @@
  */
 
 
+#include "main.h"
 
 
   void  NMI_Handler(void) {
@@ -36,6 +37,10 @@
   	        volatile unsigned long _AFSR ;
   	        volatile unsigned long _BFAR ;
   	        volatile unsigned long _MMAR ;
+
+		  ptr1--;
+		  ptr2--;
+  	      NVIC_SystemReset();
 
   	        stacked_r0 = ((unsigned long)hardfault_args[0]) ;
   	        stacked_r1 = ((unsigned long)hardfault_args[1]) ;

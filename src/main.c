@@ -58,6 +58,7 @@
 #include "Bluetooth.h"
 #include "Panico.h"
 #include "Comandos sin conexion a central.h"
+#include "Reportes.h"
 
 //#include "file aux1.h"
 
@@ -70,17 +71,16 @@ void watchDOG (void);
 void set_TIMEandDATE (void);
 
 void SystemClock_Config(void);
+
 static void MX_GPIO_Init(void);
 
 static void PVD_Config(void);
 static void InterruptPVD_When_VDD_ON_Config(void);
 static void InterruptPVD_When_VDD_OFF_Config(void);
+static void clrRAM (byte* ini, byte* fin);
 
 PWR_PVDTypeDef sConfigPVD;
 
-//static void MX_USART7_UART_Init(void);
-//static void MX_USART1_UART_Init(void);
-//static void MX_TIM2_Init(void);
 
 
 RTC_HandleTypeDef	hrtc;
@@ -103,118 +103,86 @@ mainFLAGS1	_VISOR_F1;			// Variables Generales
 byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
 
 
+//#define		sbss 0x20000438
+//#define		ebss 0x20000468
 
+#define		sdata	0x20000000
+#define		edata	0x200007b8
+#define		sidata	0x80206d0
+
+#define		sbss	0x200007b8
+#define		ebss	0x2000517c
+
+
+
+
+void SystemInit_test(void);
 
 // VARIABLES DE FLASH
 #define valorPrimerEncendido      0x5555
 
 
+
+byte* ptrESTADO_RELOJ;
+byte* ptr1;
+byte* ptr2;
+
+
 int main(void)
 {
-		//while(PVD_OFF==0){
-		//espero hasta que VDD > VPDthreshold
-		//};
-		HAL_Init();
-		//TST_segmentos_display_7seg();
-		ini_display_7seg();
-		//TEST_DISPLAY_7SEG();
-		SystemClock_Config();
-		//BSP_LED_Init(LED3);
-	    //BSP_LED_Off(LED3);
-		//NVIC_SystemReset();
-		//chk_crc();
-		set_tipo_de_equipo();
+	HAL_Init();
+	ini_display_7seg();
+	SystemClock_Config();
+	set_tipo_de_equipo();
+	//ini spi
+	MX_SPIx_Init();
+	EPROM_CS_Init();
+	Ini_portBANDERITA();
+	MX_GPIO_Init();
+	//set_choice_device_uart1();
+	choice_device_uart1 = PROG_DEVICE;
+	USART1_Ini();
 
-		//ini spi
-		MX_SPIx_Init();
-		EPROM_CS_Init();
-		Ini_portBANDERITA();
-		MX_GPIO_Init();
+	USART7_Ini();
+	MX_TIM2_Init4();
+	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
+	MX_RTC_Init();
 
-		//set_choice_device_uart1();
-		choice_device_uart1 = PROG_DEVICE;
-		USART1_Ini();
+	VA_UART_ini();
+	DA_iniRx();
+	DA_iniTx();
+	PRINT_ptrIni ();												//inicializo punteros de comandos
+	buzzer_ini();
+	PROGRAMADOR_ini();
+	SOURCE_DATE_Ini();
+	levantar_variablesEEPROM();
+	ini_pulsador_cambio_reloj();
+	JUMPER_PROG_Init();
 
-		USART7_Ini();
-		MX_TIM2_Init4();
-		HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
-		MX_RTC_Init();
+	Bluetooth_Ini();
+	Panico_Ini();
+	ini_puerto_sensor_asiento();
+	BanderaOut_Ini();
+	clr_BANDERA();
 
-		VA_UART_ini();
-		DA_iniRx();
-		DA_iniTx();
-		PRINT_ptrIni ();												//inicializo punteros de comandos
-		buzzer_ini();
-		PROGRAMADOR_ini();
-		SOURCE_DATE_Ini();
-		levantar_variablesEEPROM();
-		//BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
-		ini_pulsador_cambio_reloj();
-		JUMPER_PROG_Init();
+	//inicializar asiento luego de tarifa (setea carrera_bandera)
 
-		Bluetooth_Ini();
-		Panico_Ini();
+	ASIENTO_ini();
+	determinePrimerEncendido();         //Determinar si se trata del 1er Encendido
 
-		//ini spi
-		//MX_SPIx_Init();
-		//EPROM_CS_Init();
+	//Configuración de contador de pulsos
+	DISTANCIA_setPulsosCntOld(0);
+	__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
+	PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
+	auxCNT = PULSE_ACCUM_CNT;
 
-		BanderaOut_Ini();
+	#ifdef VISOR_REPORTES
+		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
+	#endif
 
-		//inicializar asiento luego de tarifa (setea carrera_bandera)
-		ASIENTO_ini();
-		determinePrimerEncendido();         //Determinar si se trata del 1er Encendido
 
-		//Configuración de contador de pulsos
-		DISTANCIA_setPulsosCntOld(0);
-		__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
-		PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
-		auxCNT = PULSE_ACCUM_CNT;
 
-		#ifdef VISOR_REPORTES
-			iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
-		#endif
-
-		//test_backup_registers();
-		//write_backup_rtc();
-		//read_backup_registers();
-		//clean_backup_rtc();
-		//write_backup_rtc();
-		//read_backup_registers();
-
-		check_corte_alimentacion();
-
-		//test_spi();
-		//LC_EepromTest();
-
-		//test_size();
-		//read_backup_eeprom();
-		//read_progRELOJ_eeprom();
-
-		//write_backup_eeprom();
-		//corteALIMENTACION = NO_HUBO_CORTE;		//se debe reseatear luego de leer el backup de eeprom
-
-		//chk_crc_itu();
-		//HAL_PWR_PVDCallback();
-		//read_backup_eeprom();
-
-		//for(;;){
-		 //TEST_DISPLAY_7SEG();
-		//}
-		//	flash_test();
-		//test_adc();
-
-		//ConfigureADC_PA0();
-		//ADC_Config();
-
-		//if(checkTIME == 0){
-	    //	  checkTIME = 60;
-			  //RTC_actDate();
-	 		  //if(RTC_Date.fecha[2]==0x00){
-	 			// set_TIMEandDATE();
-	 			// RTC_actDate();
-	 		 //}
-	    //}
+	check_corte_alimentacion();
 
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();
@@ -225,6 +193,8 @@ int main(void)
 #ifdef RELOJ_DEBUG
 	iniPRINT_DEBUG();
 #endif
+
+LOOP:
 
 	for(;;){
 
@@ -268,32 +238,17 @@ int main(void)
 	    chkProgMode();
 	    ModoPROGRAMACION();
 
+
+
 #ifdef RELOJ_DEBUG
 	    PRINT_DEBUG_imprimir();
 #endif
 
-			//******* PRUEBAS **************************
-		/*
-	    if(auxCNT==1){Tx_Encendido_EQUIPO();}
-				if(auxCNT==2){Tx_Boton_EMERGENCIA();}
-				if(auxCNT==3){Tx_Valor_VIAJE();}
-				if(auxCNT==4){Tx_Resumen_VIAJE();}
-				if(auxCNT==5){Tx_TARIFAS();}
-				if(auxCNT==6){Tx_Status_RELOJ();}
-				if(auxCNT==7){Tx_Pase_a_LIBRE();}
-				if(auxCNT==8){Tx_Pase_a_OCUPADO();}
-				if(auxCNT==9){Tx_Pase_a_COBRANDO();}
-				if(auxCNT==10){Tx_Pase_a_FUERA_SERVICIO();}
-				if(auxCNT==11){Tx_Comando_MENSAJE();}
-				if(auxCNT==12){Tx_Comando_TRANSPARENTE();}
-				auxCNT=0;
-		*/
-			//******************************************
 
 	}
-
-
 }
+
+
 void ModoPROGRAMACION (void){
 	while(prog_mode){
 	    PROGRAMADOR_chkRx();              //Chequeo de Recepcion de datos de Programacion
@@ -829,5 +784,246 @@ void checkUART_ERROR (void){
 		DA_iniTx();
 	}
 }
+
+
+
+void SystemInit_test(void)
+{
+  /* Reset the RCC clock configuration to the default reset state ------------*/
+  /* Set HSION bit */
+  RCC->CR |= (uint32_t)0x00000001U;
+
+#if defined (STM32F051x8) || defined (STM32F058x8)
+  /* Reset SW[1:0], HPRE[3:0], PPRE[2:0], ADCPRE and MCOSEL[2:0] bits */
+  RCC->CFGR &= (uint32_t)0xF8FFB80CU;
+#else
+  /* Reset SW[1:0], HPRE[3:0], PPRE[2:0], ADCPRE, MCOSEL[2:0], MCOPRE[2:0] and PLLNODIV bits */
+  RCC->CFGR &= (uint32_t)0x08FFB80CU;
+#endif /* STM32F051x8 or STM32F058x8 */
+
+  /* Reset HSEON, CSSON and PLLON bits */
+  RCC->CR &= (uint32_t)0xFEF6FFFFU;
+
+  /* Reset HSEBYP bit */
+  RCC->CR &= (uint32_t)0xFFFBFFFFU;
+
+  /* Reset PLLSRC, PLLXTPRE and PLLMUL[3:0] bits */
+  RCC->CFGR &= (uint32_t)0xFFC0FFFFU;
+
+  /* Reset PREDIV[3:0] bits */
+  RCC->CFGR2 &= (uint32_t)0xFFFFFFF0U;
+
+#if defined (STM32F072xB) || defined (STM32F078xx)
+  /* Reset USART2SW[1:0], USART1SW[1:0], I2C1SW, CECSW, USBSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFCFE2CU;
+#elif defined (STM32F071xB)
+  /* Reset USART2SW[1:0], USART1SW[1:0], I2C1SW, CECSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFFCEACU;
+#elif defined (STM32F091xC) || defined (STM32F098xx)
+  /* Reset USART3SW[1:0], USART2SW[1:0], USART1SW[1:0], I2C1SW, CECSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFF0FEACU;
+#elif defined (STM32F030x6) || defined (STM32F030x8) || defined (STM32F031x6) || defined (STM32F038xx) || defined (STM32F030xC)
+  /* Reset USART1SW[1:0], I2C1SW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFFFEECU;
+#elif defined (STM32F051x8) || defined (STM32F058xx)
+  /* Reset USART1SW[1:0], I2C1SW, CECSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFFFEACU;
+#elif defined (STM32F042x6) || defined (STM32F048xx)
+  /* Reset USART1SW[1:0], I2C1SW, CECSW, USBSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFFFE2CU;
+#elif defined (STM32F070x6) || defined (STM32F070xB)
+  /* Reset USART1SW[1:0], I2C1SW, USBSW and ADCSW bits */
+  RCC->CFGR3 &= (uint32_t)0xFFFFFE6CU;
+  /* Set default USB clock to PLLCLK, since there is no HSI48 */
+  RCC->CFGR3 |= (uint32_t)0x00000080U;
+#else
+ #warning "No target selected"
+#endif
+
+  /* Reset HSI14 bit */
+  RCC->CR2 &= (uint32_t)0xFFFFFFFEU;
+
+  /* Disable all interrupts */
+  //RCC->CIR = 0x00000000U;
+
+}
+
+//TST_segmentos_display_7seg();
+//TEST_DISPLAY_7SEG();
+//BSP_LED_Init(LED3);
+//BSP_LED_Off(LED3);
+//NVIC_SystemReset();
+//chk_crc();
+//BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_EXTI);
+//ini spi
+//MX_SPIx_Init();
+//EPROM_CS_Init();
+
+//test_backup_registers();
+//write_backup_rtc();
+//read_backup_registers();
+//clean_backup_rtc();
+//write_backup_rtc();
+//read_backup_registers();
+
+//test_spi();
+//LC_EepromTest();
+
+//test_size();
+//read_backup_eeprom();
+//read_progRELOJ_eeprom();
+
+//write_backup_eeprom();
+//corteALIMENTACION = NO_HUBO_CORTE;		//se debe reseatear luego de leer el backup de eeprom
+
+//chk_crc_itu();
+//HAL_PWR_PVDCallback();
+//read_backup_eeprom();
+
+//for(;;){
+ //TEST_DISPLAY_7SEG();
+//}
+//	flash_test();
+//test_adc();
+
+//ConfigureADC_PA0();
+//ADC_Config();
+
+//if(checkTIME == 0){
+//	  checkTIME = 60;
+	  //RTC_actDate();
+		  //if(RTC_Date.fecha[2]==0x00){
+			// set_TIMEandDATE();
+			// RTC_actDate();
+		 //}
+//}
+
+
+	//******* PRUEBAS **************************
+/*
+if(auxCNT==1){Tx_Encendido_EQUIPO();}
+		if(auxCNT==2){Tx_Boton_EMERGENCIA();}
+		if(auxCNT==3){Tx_Valor_VIAJE();}
+		if(auxCNT==4){Tx_Resumen_VIAJE();}
+		if(auxCNT==5){Tx_TARIFAS();}
+		if(auxCNT==6){Tx_Status_RELOJ();}
+		if(auxCNT==7){Tx_Pase_a_LIBRE();}
+		if(auxCNT==8){Tx_Pase_a_OCUPADO();}
+		if(auxCNT==9){Tx_Pase_a_COBRANDO();}
+		if(auxCNT==10){Tx_Pase_a_FUERA_SERVICIO();}
+		if(auxCNT==11){Tx_Comando_MENSAJE();}
+		if(auxCNT==12){Tx_Comando_TRANSPARENTE();}
+		auxCNT=0;
+*/
+	//******************************************
+
+
+
+
+//while(PVD_OFF==0){
+	//espero hasta que VDD > VPDthreshold
+	//};
+
+
+/*
+ *
+ //static void MX_USART7_UART_Init(void);
+//static void MX_USART1_UART_Init(void);
+//static void MX_TIM2_Init(void);
+
+  if(RELOJ_OCUPADO){
+	 // __HAL_UART_ENABLE_IT(huart, UART_IT_RXNE);
+
+	  SystemInit();
+	  __libc_init_array();
+	  HAL_Init();
+	  SystemClock_Config();
+	  MX_TIM2_Init4();
+	  ini_display_7seg();
+	  choice_device_uart1 = PROG_DEVICE;
+
+	  USART1_Ini();
+	  USART7_Ini();
+
+	  	  	  ptr1 = (byte*) ebss-1;
+	 		  ptr2 = (byte*) ebss;
+	 		  while(USART1->CR1==0){
+	 			  clrRAM (ptr1, ptr2);
+	 			  USART1_Ini();
+	 			  USART7_Ini();
+	 			  ptr1--;
+	 			  ptr2--;
+	 			  if(ptr1 == (byte*)0x20002838){
+	 				  ptr1--;
+	 				  ptr2--;
+	 			  }
+
+	 			  if(ptr1< sbss){
+	 				  break;
+	 			  }
+	 		  }
+
+	  goto LOOP;
+
+	    HAL_Init();
+	    SystemClock_Config();
+
+	    MX_TIM2_Init4();
+		ini_display_7seg();
+		set_tipo_de_equipo();
+		MX_SPIx_Init();
+		EPROM_CS_Init();
+		Ini_portBANDERITA();
+		clr_BANDERA();
+		MX_GPIO_Init();
+		choice_device_uart1 = PROG_DEVICE;
+		USART1_Ini();
+		USART7_Ini();
+		HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
+		VA_UART_ini();
+		//MX_RTC_Init();
+		//VA_UART_ini();
+		Bluetooth_Ini();
+		Panico_Ini();
+		ini_puerto_sensor_asiento();
+		BanderaOut_Ini();
+		clr_BANDERA();
+		buzzer_ini();
+		ini_pulsador_cambio_reloj();
+		JUMPER_PROG_Init();
+		PVD_Config();
+		InterruptPVD_When_VDD_OFF_Config();
+		goto LOOP;
+  }
+INI:
+*/
+
+/*
+byte estaOCUPADO(void ){
+
+	byte estado;
+	estado = 0;
+
+	if(RELOJ_OCUPADO){
+		estado = 1;
+	}
+	return(estado);
+
+}
+
+static void clrRAM (byte* ini, byte* fin){
+
+	byte tmp;
+
+	while(ini < fin){
+		//tmp = *ini;
+		*ini = 0;
+		//*ini = tmp;
+		ini++;
+	}
+}
+
+*/
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

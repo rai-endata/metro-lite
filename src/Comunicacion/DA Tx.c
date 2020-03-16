@@ -162,7 +162,6 @@ uint16_t pauseTx_to_cnt;
 		}
 		i++;                              // Incremento valor
 	  }
-
 	  return(cmd);
 	}
 

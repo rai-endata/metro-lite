@@ -29,7 +29,7 @@ extern byte estadosTurno;
 
 
 #ifdef VISOR_REPORTES
-	extern void print_ticket_turno(void);
+	extern void print_ticket_turno(uint8_t nroTurno);
 	extern void TICKET_TURNO_setIni (tREG_SESION* addr_iniSESION, tREG_SESION* reg_iniSESION );
 	extern void TICKET_TURNO_setFin (tREG_SESION* addr_finSESION, tREG_SESION* reg_finSESION );
 	void REPORTES_calVarios (tREG_GENERIC* INI_ptr, tREG_GENERIC* FIN_ptr, uint32_t* datosMOV);

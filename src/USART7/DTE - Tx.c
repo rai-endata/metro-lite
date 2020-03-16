@@ -190,6 +190,5 @@ void DA_Tx (void){
     		huart->Instance->TDR = (uint8_t)(dataTx & (uint8_t)0x00FFU);
     		huart->Tx_TO_cnt = UART_TX_TIME_OUT;
     	}
-
     }
 

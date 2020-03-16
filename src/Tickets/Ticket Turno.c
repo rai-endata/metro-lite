@@ -54,7 +54,7 @@ tREG_SESION* finTURNO_ptr;      // Puntero a final de Turno del tipo SESION
 
 tREG_SESION* sesion_ptrs[max_turnosReporte];
 
-void print_ticket_turno(void){
+void print_ticket_turno(uint8_t nroTurno){
 
 	uint8_t* ptrSimple;
 	uint8_t** ptrDouble;
@@ -77,7 +77,7 @@ void print_ticket_turno(void){
    		puntoDECIMAL = 3;
    	}
 
-  if(ESTADO_RELOJ==FUERA_SERVICIO){
+  //if(ESTADO_RELOJ==FUERA_SERVICIO){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
 		statusPRINT = IMPRESION_EN_PROCESO;
 
@@ -106,7 +106,8 @@ void print_ticket_turno(void){
 		//print nombre de empresa
 		printEMPRESA(ptrDouble);
 
-		cantidad_de_sesion = REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+		//cantidad_de_sesion = REPORTES_getSesions(sesion_ptrs, 2);        				// Obtengo punteros a todos las sesiones
+		cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, nroTurno, max_turnosReporte);
 		if(cantidad_de_sesion ==0xff){
 			//no hay viajes
 			statusSESION = 1;
@@ -117,12 +118,13 @@ void print_ticket_turno(void){
 			statusSESION = 0;
 		}
 		if(REPORTE_NRO_TURNO>=1 && !statusSESION){
-			//inicializo punteros a sesiones
-			TICKET_TURNO_setIni(sesion_ptrs[MENU_REPORTE_TURNO_index + 1], iniTURNO_ptr);   // Puntero a inicio de turno seleccionado
-			TICKET_TURNO_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);       // Puntero a final de turno seleccionado
 
-			iniTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index + 1];
-	        finTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index];
+			iniTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index + 1];		 // Puntero a inicio de turno seleccionado
+	        finTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index];			// Puntero a final de turno seleccionado
+
+	        //toma datos desde eeprom del inicio y fin de sesion
+			TICKET_TURNO_setIni(iniTURNO_ptr_aux, iniTURNO_ptr);
+			TICKET_TURNO_setFin(finTURNO_ptr_aux, finTURNO_ptr);
 
 			//print numero de turno
 			string_copy_incDest(ptrDouble,"Nro Turno               ");
@@ -469,7 +471,7 @@ void print_ticket_turno(void){
 			PRINT_send(print_buffer, N_print);
 		}
 	}
-  }
+ // }
  }
 
 /* SETEAR PUNTERO DE INICIO DE TURNO */
@@ -1033,23 +1035,19 @@ void print_ticket_turno(void){
   /* EXTRAER CANTIDAD DE MOVIMIENTO SIN PULSOS DEL TURNO */
   /*******************************************************/
     uint16_t TURNO_getCantMovSinPulsos_turno(void){
-    uint16_t veces;
-  	//tREG_SESION* sesion_ptrs[max_turnosReporte];
-  	tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
-  	tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
+		uint16_t veces;
+		//tREG_SESION* sesion_ptrs[max_turnosReporte];
+		tREG_SESION* iniTURNO_ptr_aux;      // Puntero a inicio de Turno del tipo SESION
+		tREG_SESION* finTURNO_ptr_aux;      // Puntero a final de Turno del tipo SESION
 
-  	//(void)REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
-  	iniTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index + 1];
-  	finTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index];
+		//(void)REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+		iniTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index + 1];
+		finTURNO_ptr_aux = sesion_ptrs[MENU_REPORTE_TURNO_index];
 
-      veces = REPORTES_getCantidadMovSinPulsos_byRango((tREG_GENERIC*)iniTURNO_ptr_aux, (tREG_GENERIC*)finTURNO_ptr_aux);
+		veces = REPORTES_getCantidadMovSinPulsos_byRango((tREG_GENERIC*)iniTURNO_ptr_aux, (tREG_GENERIC*)finTURNO_ptr_aux);
 
-      return(veces);
+		return(veces);
     }
-
-
-
-
 
   /* CALCULAR IMPORTE PERDIDO POR DESCONEXION DE ACCESORIO EN TURNO */
   /******************************************************************/
@@ -1334,10 +1332,10 @@ void print_ticket_turno(void){
 		TO_F = 0;
 		dispararTO_lazo();
 		while ((INI_ptr != FIN_ptr)){
-			//Chequeo bandera de time out de lazo
-			TO_F = chkTO_lazo_F();
+
+			TO_F = chkTO_lazo_F();		//Chequeo bandera de time out de lazo
 			//CHECK RANGO PUNTEROS
-			if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
+			if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
 			//READ EEPROM
 			EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
 
@@ -1388,7 +1386,6 @@ void print_ticket_turno(void){
 			//Avanzo puntero
 			incFlashRep_ptr(&INI_ptr);
 		}
-
 		detenerTO_lazo();
 		datosMOV[0] = kmLIBRE;
 		datosMOV[1] = kmOCUPADO;

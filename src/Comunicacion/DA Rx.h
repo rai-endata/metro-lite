@@ -69,6 +69,7 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void Pedido_Pase_LIBRE_SC_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_OCUPADO_SC_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_COBRANDO_SC_Rx (byte* Rx_data_ptr);
+	extern void Leer_regTABLA_REPORTES (byte* ptrTABLA, byte tipo);
 
 	extern void ConsultaTarifas (byte* Rx_data_ptr);
 	extern void Inicio_EPERA_Rx (byte* Rx_data_ptr);

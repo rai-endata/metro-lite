@@ -30,7 +30,7 @@
       uint8_t    	tipo;           // Tipo de registro
       tDATE   		date;           // Date [fecha y hora]
       uint8_t    	chofer;         // Chofer
-      uint8_t    	empty[18];      // Relleno para igualar tamaños y longitud PAR
+      uint8_t    	empty[29];      // Relleno para igualar tamaños y longitud PAR
     }tREG_GENERIC;
     
   
@@ -48,7 +48,11 @@
     	uint16_t   km;             // Km recorridos con 1 decimal
     	uint16_t   segParado;      // Segundos que permanecio Detenido
     	uint16_t   segMarcha;      // Segundos que estuvo en Marcha
-    	uint8_t    empty[8];       // Relleno para longitud PAR
+    	uint8_t    sgnLatLon;	  //signo de latitud y longitud de gps
+    	uint8_t    latitud[3];  		// latitud  de GPS DEL CELULAR
+		uint8_t    longitud[3];  		// longitud de GPS DEL CELULAR
+		uint8_t	   velgps;			// velocidad de GPS DEL CELULAR
+    	uint8_t    empty[10];       // Relleno para longitud PAR
     }tREG_LIBRE;
 
 
@@ -69,7 +73,11 @@
     	uint16_t    bajadaBandera;  // valor bajada de bandera
       	uint16_t    segParado;      // Segundos que permanecio Detenido
       	uint16_t    segMarcha;      // Segundos que estuvo en Marcha
-    	uint8_t     empty[4];       // Relleno para longitud PAR
+      	uint8_t     sgnLatLon;	    //signo de latitud y longitud de gps
+      	uint8_t     latitud[3];  	// latitud  de GPS DEL CELULAR
+		uint8_t     longitud[3];  	// longitud de GPS DEL CELULAR
+		uint8_t	    velgps;		// velocidad de GPS DEL CELULAR
+      	uint8_t     empty[6];       // Relleno para longitud PAR
     }tREG_OCUPADO;    
 
 
@@ -87,7 +95,11 @@
 		uint8_t    fichasTime[3];  		// Cantidad de Fichas de Tiempo
 		uint16_t   segundosEspera; 		// Espera (SEGUNDOS)
 		uint16_t   segundosTarifacion; 	// Espera (SEGUNDOS)
-		uint8_t    empty[1];            // Relleno para longitud PAR
+		uint8_t    sgnLatLon;	  		//signo de latitud y longitud de gps
+		uint8_t    latitud[3];  		// latitud cobrando de GPS DEL CELULAR
+		uint8_t    longitud[3];  		// longitud cobrando de GPS DEL CELULAR
+		uint8_t	   velgps;			// velocidad de GPS DEL CELULAR
+		uint8_t    empty[2];            // Relleno para longitud PAR
 	}tREG_A_PAGAR;
 
 
@@ -98,12 +110,16 @@
       uint8_t   tipo;           // Tipo de registro
       tDATE   	date;           // Date [fecha y hora]
       uint8_t   chofer;         // Chofer
-      uint8_t   estadoConexion;			// comando transmitido
+      uint8_t   estadoConexion;	// comando transmitido
       uint16_t  km;             // Km recorridos con 1 decimal
       uint8_t   velMax;         // Velocidad Maxima
       uint16_t  segParado;      // Segundos que permanecio Detenido
       uint16_t  segMarcha;      // Segundos que estuvo en Marcha
-      uint8_t   empty[10];       // Relleno para longitud PAR
+      uint8_t   sgnLatLon;	   //signo de latitud y longitud de gps
+      uint8_t   latitud[3];		// latitud  de GPS DEL CELULAR
+	  uint8_t   longitud[3];	// longitud de GPS DEL CELULAR
+	  uint8_t   velgps;		// velocidad de GPS DEL CELULAR
+      uint8_t   empty[12];      // Relleno para longitud PAR
     }tREG_FSERV;
 
 
@@ -119,7 +135,7 @@
       uint8_t    tarifa;         // Tarifa
       uint8_t    fichasDist[3];  // Cantidad de Fichas de Distancia
       uint8_t    fichasTime[3];  // Cantidad de Fichas de Tiempo
-      uint8_t    empty[4];       // Relleno para longitud PAR
+      uint8_t    empty[13];       // Relleno para longitud PAR
     }tREG_DESCONEXION_ALIM;    
 
 
@@ -135,7 +151,7 @@
       uint8_t    fichasDist[3];  // Cantidad de Fichas de Distancia
       uint8_t    fichasTime[3];  // Cantidad de Fichas de Tiempo
       uint32_t   importe;        // Importe (PESOS)
-      uint8_t    empty[4];       // Relleno para longitud PAR
+      uint8_t    empty[12];       // Relleno para longitud PAR
     }tREG_DESCONEXION_ACC;        
 
     // TIPO DE REPORTE SESION
@@ -149,7 +165,7 @@
           uint8_t    	punto_decimal;  // Relleno para longitud PAR
        	  uint8_t     	fichaPesos;     // la tarifa esta en: Pesos: 1 , fichas: 2
           uint16_t    	bajadaBandera;   // valor bajada de bandera
-          uint8_t       empty[12];       // Relleno para igualar tamaños y longitud PAR
+          uint8_t       empty[22];       // Relleno para igualar tamaños y longitud PAR
         }tREG_SESION;
 
 
@@ -162,7 +178,7 @@
       uint8_t    chofer;         // Chofer
       uint8_t    movSinPulsos;   // Movimiento sin pulsos
       uint8_t    programacion;   // Programacion del equipo
-      uint8_t    empty[16];      // Relleno para igualar tamaños y longitud PAR
+      uint8_t    empty[26];      // Relleno para igualar tamaños y longitud PAR
     }tREG_VARIOS;
 
 
@@ -175,29 +191,39 @@
     	uint8_t    velMaxLIBRE;         // Velocidad Maxima
     	uint16_t   segParadoLIBRE;      // Segundos que permanecio Detenido
     	uint16_t   segMarchaLIBRE;      // Segundos que estuvo en Marcha
+    	uint8_t    sgnLatLonLibre;	  	//signo de latitud y longitud de gps
+	    uint8_t    latitudLIBRE[3];		// latitud  de GPS DEL CELULAR
+		uint8_t    longitudLIBRE[3];	// longitud de GPS DEL CELULAR
+		uint8_t    velgpsLIBRE;             // Velocidad
+		uint8_t    estadoConexion_LIBRE;       //
 
-    	tDATE       dateOCUPADO;        // Date [fecha y hora]
-    	uint16_t    kmOCUPADO;          // Km recorridos con 1 decimal
-    	uint8_t     velMaxOCUPADO;      // Velocidad Maxima
-      	uint16_t    segParadoOCUPADO;   // Segundos que permanecio Detenido
-      	uint16_t    segMarchaOCUPADO;   // Segundos que estuvo en Marcha
+    	tDATE       dateOCUPADO;           // Date [fecha y hora]
+    	uint16_t    kmOCUPADO;             // Km recorridos con 1 decimal
+    	uint8_t     velMaxOCUPADO;         // Velocidad Maxima
+      	uint16_t    segParadoOCUPADO;       // Segundos que permanecio Detenido
+      	uint16_t    segMarchaOCUPADO;       // Segundos que estuvo en Marcha
+      	uint8_t     sgnLatLonOcupado;	  //signo de latitud y longitud de gps
+      	uint8_t     latitudOCUPADO[3];		// latitud  de GPS DEL CELULAR
+		uint8_t     longitudOCUPADO[3];	    // longitud de GPS DEL CELULAR
+		uint8_t     velgpsOCUPADO;           // Velocidad
+		uint8_t     estadoConexion_OCUPADO;       //
 
-    	uint8_t    sensor;         		// Se ocupo por Sensor de Asiento
-
-		tDATE      dateA_PAGAR;         // Date [fecha y hora]
-		uint8_t    tarifa;         		// Tarifa
-		uint8_t    fichaPesos;     		// el importe esta en fichas o pesos
-		uint8_t    puntoDecimal;   		// punto decimal
-		uint8_t    fichasDist[3];  		// Cantidad de Fichas de Distancia
-		uint8_t    fichasTime[3];  		// Cantidad de Fichas de Tiempo
-		uint32_t   importe;        		// Importe (PESOS)
-	    uint16_t   segundosEspera; // Espera (SEGUNDOS)
-	    uint16_t   segundosTarifacion; // Espera (SEGUNDOS)
-	    uint8_t    minutosEspera;       // minutos espera
-	    uint8_t    estadoConexion_LIBRE;       //
-	    uint8_t    estadoConexion_OCUPADO;       //
-	    uint8_t    estadoConexion_COBRANDO;       //
-
+		tDATE      dateA_PAGAR;         	// Date [fecha y hora]
+    	uint8_t    sensor;         			// Se ocupo por Sensor de Asiento
+		uint8_t    tarifa;         			// Tarifa
+		uint8_t    fichaPesos;     			// el importe esta en fichas o pesos
+		uint8_t    puntoDecimal;   			// punto decimal
+		uint8_t    fichasDist[3];  			// Cantidad de Fichas de Distancia
+		uint8_t    fichasTime[3];  			// Cantidad de Fichas de Tiempo
+		uint32_t   importe;        			// Importe (PESOS)
+	    uint16_t   segundosEspera; 			// Espera (SEGUNDOS)
+	    uint16_t   segundosTarifacion; 		// Espera (SEGUNDOS)
+	    uint8_t    minutosEspera;       	// minutos espera
+	    uint8_t    estadoConexion_COBRANDO; //
+	    uint8_t    sgnLatLonCobrando;	  //signo de latitud y longitud de gps
+	    uint8_t    latitudCOBRANDO[3];		// latitud  de GPS DEL CELULAR
+   		uint8_t    longitudCOBRANDO[3];		// longitud de GPS DEL CELULAR
+   		uint8_t    velgpsCOBRANDO;          // Velocidad
     }tVIAJE;
 
   
@@ -228,51 +254,15 @@
       #define progTaller      1
       #define progAire        2
 
-/* CONSTANTES */
-/*************/
-#ifdef VISOR_PRINT_TICKET_FULL
- #define dim_REPORTE           500*sizeof(tREG_GENERIC)               // Cantidad de registros (eventos)
- //#define dim_REPORTE           200*sizeof(tREG_GENERIC)               // Cantidad de registros (eventos)
- //#define dim_REPORTE           10*sizeof(tREG_GENERIC)               // Cantidad de registros (eventos)
- #define FIN_TABLA_REPORTE    ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1
+#define	NUMERO_DE_REGISTROS_DE_TABLA	30
+#define NUMERO_DE_CAMPOS_DE_REGISTRO	sizeof(tREG_GENERIC)
+#define DIM_REPORTE       				(NUMERO_DE_REGISTROS_DE_TABLA*NUMERO_DE_CAMPOS_DE_REGISTRO)   //cantidad de bytes de tabla de reportes
+#define FIN_TABLA_REPORTE    			ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1
 
-#else
-  #ifdef VISOR_PRINT_TICKET
-    #define dim_REPORTE         220               // Cantidad de registros (eventos)
-  #endif
-#endif
-
-#ifndef dim_REPORTE
-    #define dim_REPORTE         500
-#endif
-
-extern tREG_GENERIC* REPORTE_PUTptr;         // Puntero de Insersion de Registros (tipo GENERICO)
-
-#ifdef VISOR_PRINT_TICKET_FULL
-  #define dim_RegQueue          5
-#else
-  #ifdef VISOR_PRINT_TICKET
-    #define dim_RegQueue        3
-  #endif
-#endif
-
-#ifndef dim_RegQueue
-    #define dim_RegQueue        5
-#endif
-
-extern tREG_LIBRE regLibre;
-extern tVIAJE regVIAJE;
-
-extern tFLASH_ERROR REPORTE_flashError;
-extern uint32_t REPORTE_PUT;
-extern uint16_t REPORTE_INDEX;
-extern uint16_t REPORTE_NRO_VIAJE;
-extern uint16_t REPORTE_NRO_TURNO;
-extern uint16_t INDEX_LAST_SESION;
+#define dim_RegQueue          5
 
 #define	ADDR_EEPROM_REPORTE 				ADDR_BASE_TABLA_REPORTE
-#define	SIZE_EEPROM_REPORTE    	    		dim_REPORTE
-#define	FIN_EEPROM_REPORTE    	    		ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE
+#define	SIZE_EEPROM_REPORTE    	    		DIM_REPORTE
 
 #define	EEPROM_REPORTE_30DIAS			    ADDR_BASE_TABLA_REPORTE_30DIAS
 #define	SIZE_EEPROM_REPORTE_30DIAS    		dim_REPORTE_30DIAS
@@ -298,18 +288,21 @@ extern uint16_t INDEX_LAST_SESION;
 #define	EEPROM_REPORTE_30DIAS_INDEX			ADDR_BASE_VAR_REPORTES + 2*sizeof(uint32_t) + 4*sizeof(uint16_t)
 #define	SIZE_REPORTE_30DIAS_INDEX  	    	sizeof(uint16_t)
 
-
-
-  /* VARIABLES */
-  /*************/
+    extern tREG_GENERIC* REPORTE_PUTptr;         // Puntero de Insersion de Registros (tipo GENERICO)
+    extern tREG_LIBRE regLibre;
+    extern tVIAJE regVIAJE;
+    extern tFLASH_ERROR REPORTE_flashError;
+    extern uint32_t REPORTE_PUT;
+    extern uint16_t REPORTE_INDEX;
+    extern uint16_t REPORTE_NRO_VIAJE;
+    extern uint16_t REPORTE_NRO_TURNO;
+    extern uint16_t INDEX_LAST_SESION;
     extern uint8_t REPORTES_HABILITADOS;
   
-  /* RUTINAS */
-  /***********/
     extern void iniREPORTES (void);
-    extern byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento, uint8_t estado_de_conexion, uint8_t nroviaje);
-    extern byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t minutosEspera, uint8_t estado_de_conexion, uint8_t nroCorrelativo_INTERNO);
-    extern byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t estado_de_conexion);
+    extern byte REPORTE_queueLibre (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, byte asiento, uint8_t estado_de_conexion, uint8_t nroviaje, byte* ptrLATITUD, byte* ptrLONGITUD,  byte sgnLatLon, byte velocidad);
+    extern byte REPORTE_queueOcupado (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t minutosEspera, uint8_t estado_de_conexion, uint8_t nroCorrelativo_INTERNO, byte* ptrLATITUD, byte* ptrLONGITUD,  byte sgnLatLon, byte velocidad);
+    extern byte REPORTE_queueAPagar (tDATE date, byte chofer, byte nroViaje, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t valorViaje, uint16_t esperaEspera, uint16_t esperaTarifacion, uint8_t estado_de_conexion, byte* ptrLATITUD, byte* ptrLONGITUD,  byte sgnLatLon, byte velocidad);
     extern byte REPORTE_queueFueraServ (tDATE date, byte chofer, uint16_t km, byte vel, uint16_t segP, uint16_t segM, uint8_t estado_de_conexion);
     extern byte REPORTE_queueSesion (byte chofer);
     extern byte REPORTE_queueDesconexionAlim (tDATE date, byte chofer, byte tarifa, uint32_t fichasD, uint32_t fichasT, uint32_t importe);
@@ -388,7 +381,7 @@ extern uint16_t INDEX_LAST_SESION;
     extern tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr);
     extern tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr);
     extern tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( nro_viaje);
-
+    extern void chkPerdidaDatosTurno (void);
 
   /* TIMER */
   /*********/
