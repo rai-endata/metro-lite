@@ -1352,7 +1352,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						if(ESTADO_RELOJ==LIBRE){
 							Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 						}else {
-							Pase_a_LIBRE();
+							Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 						}
 
 				//	}else{
@@ -1401,7 +1401,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 				SaveDatGps(Rx_data_ptr, LIB);
 				if(ESTADO_RELOJ==COBRANDO || ESTADO_RELOJ==FUERA_SERVICIO){
-					Pase_a_LIBRE();
+					Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 				}else if (ESTADO_RELOJ==LIBRE){
 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 					Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
@@ -1432,8 +1432,6 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 			sinCONEXION_CENTRAL=0;
 
-
-
 			if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 				N 	= *Rx_data_ptr++;               // Extraigo N
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
@@ -1460,7 +1458,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
                 							paseOCUPADO_APP=1;
                 							tarifa_1_4 = tarifa;
                 							setTARIFA_MANUAL();
-                							Pase_a_OCUPADO();
+                							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
                 							//envia valor de viaje para que muestre bajada de bandera
                 							Tx_Valor_VIAJE();
                 						}
@@ -1480,7 +1478,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
                 							Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
                 						}
 
-                						Pase_a_OCUPADO();
+                						Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
                 						//envia valor de viaje para que muestre bajada de bandera
                 						Tx_Valor_VIAJE();
 
@@ -1525,7 +1523,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
 							SaveDatGps(Rx_data_ptr, COBR);
-							Pase_a_COBRANDO();
+							Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 							Tx_Valor_VIAJE();
 						}else if(ESTADO_RELOJ==COBRANDO){
 							//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
@@ -1574,7 +1572,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
 							SaveDatGps(Rx_data_ptr, LIB);
 							if(ESTADO_RELOJ==COBRANDO || ESTADO_RELOJ==FUERA_SERVICIO){
-								Pase_a_LIBRE_SC();
+								Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
 							}else if (ESTADO_RELOJ==LIBRE){
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 								Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
@@ -1629,7 +1627,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 										paseOCUPADO_APP=1;
 										tarifa_1_4 = tarifa;
 										setTARIFA_MANUAL();
-										Pase_a_OCUPADO_SC();
+										Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 										//envia valor de viaje para que muestre bajada de bandera
 										Tx_Valor_VIAJE();
 									}
@@ -1649,13 +1647,13 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 										Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
 									}
 
-									Pase_a_OCUPADO();
+									Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 									//envia valor de viaje para que muestre bajada de bandera
 									Tx_Valor_VIAJE();
 								}
 							}else if (ESTADO_RELOJ==OCUPADO){
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-								Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+								//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 								Tx_Valor_VIAJE();
 							}else{
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
@@ -1688,13 +1686,13 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 										N 	= *Rx_data_ptr++;               // Extraigo N
 										cmd = *Rx_data_ptr++;               // Extraigo CMD
 										SaveDatGps(Rx_data_ptr, COBR);
-										Pase_a_COBRANDO_SC();
+										Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
 										Tx_Valor_VIAJE();
 									}else if(ESTADO_RELOJ==COBRANDO){
 										//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
 										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 										Tx_Valor_VIAJE();
-										Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+										//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
 									} else{
 										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 									}

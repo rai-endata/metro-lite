@@ -24,7 +24,7 @@ typedef union {
 t_cmdSC	_f_SC;
 	#define f_SC							_f_SC.Byte
 	#define sinCONEXION_CENTRAL				_f_SC.Bits.SC
-	#define guardarCMD_sinCONEXION_CENTRAL	_f_SC.Bits.guardar_cmdSC
+	#define acumularCMD_sinCONEXION_CENTRAL	_f_SC.Bits.guardar_cmdSC
 	#define Tx_datosSC						_f_SC.Bits.TxDatosSC
 
 extern void acumular_cmdSC(byte nro_viaje);

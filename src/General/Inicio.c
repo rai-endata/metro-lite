@@ -338,7 +338,7 @@ void check_corte_alimentacion(void){
 	  	  		//ESTADO_RELOJ=FUERA_SERVICIO;
 	  	  		ESTADO_RELOJ=LIBRE;
 
-	  	  		Pase_a_LIBRE();
+	  	  		Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 	  	  		setTEST_DISPLAY();
 	    	  }
 	      }else{
@@ -354,7 +354,7 @@ void check_corte_alimentacion(void){
 			dineroPerdido = VALOR_VIAJE;
 
 	    	ESTADO_RELOJ=LIBRE;
-	  		Pase_a_LIBRE();
+	  		Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 	  		setTEST_DISPLAY();
 	      }
 	      //leo valor de corteALIMETACION

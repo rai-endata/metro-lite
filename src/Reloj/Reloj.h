@@ -5,7 +5,7 @@
 #include "DA Communication.h"
 #include "stdint.h"
 #include "Flash.h"
-#include "driver_eeprom.h"
+#include "driver_eeprom.h"_
 /*******************************************************************
 *	 	ESTRUCTURAS
 ********************************************************************/
@@ -240,11 +240,11 @@
     byte get_sensorAsiento(void);
     extern void RELOJ_reset (void);
     extern void RELOJ_Tx (void);
-    extern void Pase_a_LIBRE (void);
+    extern void Pase_a_LIBRE (byte estado);
     extern void paseLIBRE (byte* KM_ptr);
     extern void PaseLibreFromFServ_INTERNO (void);
-    extern void Pase_a_OCUPADO (void);
-    extern void Pase_a_COBRANDO (void);
+    extern void Pase_a_OCUPADO (byte estado);
+    extern void Pase_a_COBRANDO (byte estado);
     //extern void Pase_a_FUERA_SERVICIO (void);
     extern void Pase_a_FUERA_SERVICIO (void);
     extern void paseFUERA_SERVICIO (byte* KM_ptr);

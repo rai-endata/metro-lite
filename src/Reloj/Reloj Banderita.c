@@ -270,21 +270,21 @@ void clr_BANDERA (void){
     		}
     		//paseOCUPADO_BANDERITA = 1;
     		paseOCUPADO_BOTON = 1;
-    		Pase_a_OCUPADO();
+    		Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 
         }else if (estado_nuevo == COBRANDO){
           // PASE A A PAGAR ->
-          Pase_a_COBRANDO();
+          Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 
         }else if (estado_nuevo == LIBRE){
           if (BANDERITA_ESTADO_ANTERIOR == OCUPADO){
             // Como viene de OCUPADO => Hago un pase a A PAGAR
-        	  Pase_a_COBRANDO();                   // Paso a LIBRE desde OCUPADO => Tx A PAGAR
+        	  Pase_a_COBRANDO(CON_CONEXION_CENTRAL);                   // Paso a LIBRE desde OCUPADO => Tx A PAGAR
           }
 
           // Mas alla de que venga o no de OCUPADO, el reloj debe quedar en LIBRE
           //paseLIBRE_banderita();                    // Paso a LIBRE
-          Pase_a_LIBRE();
+          Pase_a_LIBRE(CON_CONEXION_CENTRAL);
         //CambioReloj();                              // Acciones Comunes a TODOS los cambios de Reloj
       }
       BANDERITA_ESTADO_ANTERIOR = estado_nuevo;   // Actualizo estado de reloj anterior

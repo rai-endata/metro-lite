@@ -244,11 +244,11 @@ void teclaT2_CORTA(void){
 					BanderaOut_On();
 					print_ticket_turno(0);
 				}else{
-					Pase_a_LIBRE();
+					Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 				}
 			}
 	#else
-			Pase_a_LIBRE();
+			Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 	#endif
 
 	  }

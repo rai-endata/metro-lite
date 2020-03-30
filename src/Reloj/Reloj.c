@@ -257,12 +257,12 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
 
 
-void Pase_a_LIBRE (void){
+void Pase_a_LIBRE (byte estado){
 	tFLASH_ERROR error;
     byte nro_correlativo;
 	uint32_t Address;
 
-	ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
+	ESTADO_RELOJ_CONEXION = estado;
 
 	#ifdef RELOJ_DEBUG
 	timerA_PAGAR_to_LIBRE_cnt = 0;
@@ -273,7 +273,11 @@ void Pase_a_LIBRE (void){
 	}
 	if(timerA_PAGAR_to_LIBRE_cnt == 0){
 		anularReTx_RELOJ();
-		CMD_a_RESP = 0x03;
+		if(estado == CON_CONEXION_CENTRAL){
+			CMD_a_RESP = 0x03;
+		}else{
+			CMD_a_RESP = 0x23;
+		}
 		TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 
 		//if(RELOJ_INTERNO){
@@ -287,8 +291,14 @@ void Pase_a_LIBRE (void){
 		          paseLIBRE_interno_sinKM;          	  // Paso a LIBRE desde A PAGAR => no cuento KM
 			}
 
-			//envio pase a libre al celular
-			Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+
+
+			if(estado == CON_CONEXION_CENTRAL){
+				//envio pase a libre al celular
+				Tx_Pase_a_LIBRE(estado);
+			}else{
+	  			acumularCMD_sinCONEXION_CENTRAL=1;
+			}
 
 			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
 			VELOCIDAD_MAX = 0;
@@ -312,7 +322,7 @@ void Pase_a_LIBRE (void){
 
 }
 
-void Pase_a_OCUPADO (void){
+void Pase_a_OCUPADO (byte estado){
 	uint16_t km;
 
 	//if(ESTADO_RELOJ==LIBRE ){
@@ -389,19 +399,22 @@ void Pase_a_OCUPADO (void){
 
 
 
+	if(estado == CON_CONEXION_CENTRAL ){
+		//envio pase a ocupado al celular
+		Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+		ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
+	}else{
+		acumularCMD_sinCONEXION_CENTRAL=1;
+		ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
+	}
 
-	//write_backup_rtc();
-	//}
-	//envio pase a ocupado al celular
-	Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 	resetVELOCIDAD_MAX;
 	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
-	ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
 
 }
 
-void Pase_a_COBRANDO (void){
+void Pase_a_COBRANDO (byte estado){
 
 	byte nro;
 	//if(ESTADO_RELOJ==OCUPADO){
@@ -454,7 +467,7 @@ void Pase_a_COBRANDO (void){
 
 		(void)REPORTE_queueOcupado (ocupadoDATE, RELOJ_INTERNO_getChofer(),kmRecorridos_OCUPADO, velMax_OCUPADO, timerParado_cnt, timerMarcha_cnt, minutosEspera, ESTADO_RELOJ_CONEXION, nroCorrelativo_INTERNO, getLATITUD(OCUP), getLONGITUD(OCUP), getSgnLatLon(OCUP), getVELOCIDAD(OCUP));
 
-		 ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
+		 ESTADO_RELOJ_CONEXION = estado;
 
 		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
 		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
@@ -468,7 +481,7 @@ void Pase_a_COBRANDO (void){
 		 #endif
 
 		 // Guardo reporte -> datos de A PAGAR
-		 RELOJ_INTERNO_addAPagarReportes(CON_CONEXION_CENTRAL);
+		 RELOJ_INTERNO_addAPagarReportes(estado);
 
 		 // EDIT 04/04/2013
 		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
@@ -498,12 +511,17 @@ void Pase_a_COBRANDO (void){
          }
      #endif
 
-		//envio pase a cobrando al celular
-		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
-        if(guardarCMD_sinCONEXION_CENTRAL){
-          guardarCMD_sinCONEXION_CENTRAL=0;
-          acumular_cmdSC(nroCorrelativo_INTERNO);
-        }
+         if(estado==CON_CONEXION_CENTRAL){
+     		//envio pase a cobrando al celular
+     		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+             if(acumularCMD_sinCONEXION_CENTRAL){
+               acumularCMD_sinCONEXION_CENTRAL=0;
+               acumular_cmdSC(nroCorrelativo_INTERNO);
+             }
+         }else{
+             acumularCMD_sinCONEXION_CENTRAL=0;
+             acumular_cmdSC(nroCorrelativo_INTERNO);
+         }
 
          cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 
@@ -592,7 +610,7 @@ static void fuera_de_servicio(void){
     #endif
   }
 
-
+/*
   void Pase_a_LIBRE_SC (void){
   	tFLASH_ERROR error;
       byte nro_correlativo;
@@ -625,7 +643,7 @@ static void fuera_de_servicio(void){
 			ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
   			//envio pase a libre al celular
-  			guardarCMD_sinCONEXION_CENTRAL=1;
+  			acumularCMD_sinCONEXION_CENTRAL=1;
   			//Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
 
   			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
@@ -648,7 +666,7 @@ static void fuera_de_servicio(void){
   	}
   	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
   }
-
+*/
   void Pase_a_OCUPADO_SC (void){
   	uint16_t km;
 
@@ -733,7 +751,7 @@ static void fuera_de_servicio(void){
   	//envio pase a ocupado al celular
 
   	//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
-	guardarCMD_sinCONEXION_CENTRAL=1;
+	acumularCMD_sinCONEXION_CENTRAL=1;
 
   	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
   	resetVELOCIDAD_MAX;
@@ -837,7 +855,7 @@ static void fuera_de_servicio(void){
 
   		//envio pase a corando al celular
   		//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
-        guardarCMD_sinCONEXION_CENTRAL=0;
+        acumularCMD_sinCONEXION_CENTRAL=0;
         acumular_cmdSC(nroCorrelativo_INTERNO);
 
 
@@ -1721,7 +1739,7 @@ void RELOJ_INTERNO_timerMarchaParado (void){
          //(void)calcularDISTANCIA_acumulada;
     	   dist_recorrida = cal_dist();
     	   if ((dist_recorrida >= distanciaA_PAGAR_to_LIBRE) && (timerA_PAGAR_to_LIBRE_cnt == 0)){
-        	 Pase_a_LIBRE();
+        	 Pase_a_LIBRE(CON_CONEXION_CENTRAL);
          }
        }
    }
@@ -1770,7 +1788,7 @@ void cambio_de_reloj_x_pulsador(void){
     			}
     	}else if(ESTADO_RELOJ_X_PULSADOR == OCUPADO){
     			if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
-    		    	Pase_a_COBRANDO();
+    		    	Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
     		    	//TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
     		    	Buzzer_On(BEEP_TECLA_CORTA);
     			}else{
@@ -1779,7 +1797,7 @@ void cambio_de_reloj_x_pulsador(void){
     				Buzzer_On(VEHICULO_EN_MOVIMIENTO);
     			}
     	}else if(ESTADO_RELOJ_X_PULSADOR == COBRANDO){
-    	    	Pase_a_LIBRE();
+    	    	Pase_a_LIBRE(CON_CONEXION_CENTRAL);
     	    	Buzzer_On(BEEP_TECLA_CORTA);
     	    	tarifa_1_4=0;
     	}
@@ -1836,9 +1854,9 @@ void setTARIFA_MANUAL(void){
 void cambio_de_reloj_x_sensor_asiento(void){
 
 	if(ESTADO_RELOJ == LIBRE){
-    	Pase_a_OCUPADO();
+    	Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
     }else if(ESTADO_RELOJ == FUERA_SERVICIO){
-    	Pase_a_LIBRE();
+    	Pase_a_LIBRE(CON_CONEXION_CENTRAL);
     }
 }
 
@@ -2435,7 +2453,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
         if (tarifa_to_cnt == 0){
         	tarifa = tarifa_1_4;
         	paseOCUPADO_BOTON = 1;
-			Pase_a_OCUPADO();
+			Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 			Buzzer_On(BEEP_TECLA_CORTA);
         }
       }
