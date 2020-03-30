@@ -337,6 +337,7 @@ void check_corte_alimentacion(void){
 	    		  //arranco como si fuera CORTE LARGO
 	  	  		//ESTADO_RELOJ=FUERA_SERVICIO;
 	  	  		ESTADO_RELOJ=LIBRE;
+
 	  	  		Pase_a_LIBRE();
 	  	  		setTEST_DISPLAY();
 	    	  }

@@ -550,14 +550,14 @@ static void fuera_de_servicio(void){
 		uint8_t nroviaje = nroCorrelativo_INTERNO;
 		if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
 
-		(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0, CON_CONEXION_CENTRAL, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
+		(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0, ESTADO_RELOJ_CONEXION, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
 		 // EDIT 04/04/2013
 		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
 		 // no inhibir las IRQs
 		 //REPORTES_delayEEPROM_update_timer;                       // Demoro grabacion de REPORTES en FLASH
 	   }
 	 #endif
-
+	 ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
 	 paseFUERA_SERVICIO_interno;        // Paso a FUERA DE SERVICIO
 	 RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
 }
@@ -598,7 +598,6 @@ static void fuera_de_servicio(void){
       byte nro_correlativo;
   	uint32_t Address;
 
-  	ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
   	#ifdef RELOJ_DEBUG
   	timerA_PAGAR_to_LIBRE_cnt = 0;
@@ -623,6 +622,7 @@ static void fuera_de_servicio(void){
   		          (void)calcularDISTANCIA_entreEstados;   // Resetear contador de Distancia
   		          paseLIBRE_interno_sinKM;          	  // Paso a LIBRE desde A PAGAR => no cuento KM
   			}
+			ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 
   			//envio pase a libre al celular
   			guardarCMD_sinCONEXION_CENTRAL=1;
@@ -699,7 +699,7 @@ static void fuera_de_servicio(void){
   		if (REPORTES_HABILITADOS){
   			uint8_t nroviaje = nroCorrelativo_INTERNO;
   			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
-  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento, SIN_CONEXION_CENTRAL, nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
+  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento,ESTADO_RELOJ_CONEXION , nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
   		}
   #endif
 

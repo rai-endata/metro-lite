@@ -203,7 +203,9 @@ LOOP:
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
 		#endif
+
 		check_relojBANDERITA();
+		
 		check_pressPANICO();
 		check_pressTECLA();
 		//rtc__actDATE();
