@@ -257,7 +257,7 @@
 #define	NUMERO_DE_REGISTROS_DE_TABLA	30
 #define NUMERO_DE_CAMPOS_DE_REGISTRO	sizeof(tREG_GENERIC)
 #define DIM_REPORTE       				(NUMERO_DE_REGISTROS_DE_TABLA*NUMERO_DE_CAMPOS_DE_REGISTRO)   //cantidad de bytes de tabla de reportes
-#define FIN_TABLA_REPORTE    			ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1
+#define FIN_TABLA_REPORTE    			(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1)
 
 #define dim_RegQueue          5
 
@@ -311,9 +311,11 @@
     
     extern void REPORTES_grabarFlash (void);
     
-    extern void incFlashRep_ptr (tREG_GENERIC*far* ptr_ptr);
-    extern void decFlashRep_ptr (tREG_GENERIC*far* ptr_ptr);
+    extern void incFlashRep_ptr (tREG_GENERIC** ptrptr);
+    extern void decFlashRep_ptr (tREG_GENERIC** ptrptr);
     
+    extern void incFlashReportes_ptr (tREG_GENERIC*** ptr_ptr_ptr);
+
     extern byte REPORTES_determineFin (tREG_GENERIC*far* ptr_ptr);
     
     extern byte REPORTES_chkForcedReset (void);
@@ -378,9 +380,9 @@
     extern byte* LOGUEO_getChoferLogueado (void);
     byte REPORTE_chkPointer (tREG_GENERIC*far pointer);
 
-    extern tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr);
-    extern tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr);
-    extern tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( nro_viaje);
+    extern tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    extern tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    extern tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( byte nro_viaje);
     extern void chkPerdidaDatosTurno (void);
 
   /* TIMER */

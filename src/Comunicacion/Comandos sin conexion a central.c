@@ -70,13 +70,11 @@ void procesar_datosSC(void){
 
 		ptrREG_APAGAR = get_regAPAGAR_byNUMERO_VIAJE(nroVIAJE);
 		if(ptrREG_APAGAR != NULL){
-			ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR);
-			ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR);
-			if((ptrOCUPADO != NULL) && (ptrLIBRE != NULL) ){
-				i = armar_buff_viaje((uint8_t*)&buff_aux, i);
-				N = i+1;
-				Tx_cmdTRANSPARENTE(N, buff_aux );
-			}
+			ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR, nroVIAJE);
+			ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR, nroVIAJE);
+			i = armar_buff_viaje((uint8_t*)&buff_aux, i);
+			N = i+1;
+			Tx_cmdTRANSPARENTE(N, buff_aux );
 		}
 	}
 }

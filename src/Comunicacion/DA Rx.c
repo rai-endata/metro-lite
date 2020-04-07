@@ -62,7 +62,8 @@
 	static void setREGISTRO_TABLA_Rx (byte* Rx_data_ptr);
 	static void print_and_wait(byte* bufferTx, uint16_t i);
 	static void writeREG_TABLA(byte* ptrTABLA, byte dato);
-	static void Leer_reportesTAB(byte* Rx_data_ptr);
+	static void Leer_reporteTURNO(byte* Rx_data_ptr);
+	static void Leer_reporteTURNO_PARCIAL(byte* Rx_data_ptr);
 	static void READandPRINT(byte** ptrptrTABLA, byte tipo);
 	static void Print_turno (byte* Rx_data_ptr);
 
@@ -367,9 +368,9 @@
 	    Rx_comando_73,
 	    Rx_comando_74,
 	    Rx_comando_75,
-	    Rx_comando_76,
+		Leer_reporteTURNO_PARCIAL,
 	    Print_turno,
-		Leer_reportesTAB,
+		Leer_reporteTURNO,
 		setREGISTRO_TABLA_Rx,
 		borrarTABLA_REPORTES_BUFFER_Rx,
 		Escribir_BUFFER_Rx,
@@ -869,6 +870,7 @@
         byte* 			INI_TABLA_ptr; byte* auxRX_DATA_ptr;
         uint32_t 		INI_TABLA, auxRX_DATA;
         byte TO_F;
+        tREG_GENERIC* fin;
 
 		// El formato de datos de recepcion es
 
@@ -878,15 +880,17 @@
         Rx_data_ptr++;               // salto N
 		Rx_data_ptr++;               // salto CMD
 
+		fin = (tREG_GENERIC*)FIN_TABLA_REPORTE - 1;
 		//apunto a inicio de tabla en eeprom
 		ptrTABLA = ADDR_EEPROM_REPORTE;
 		dispararTO_lazo();
-		while(ptrTABLA <=FIN_TABLA_REPORTE){
+		while(ptrTABLA <= fin){
 			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
 				if(checkRANGE(ptrTABLA, FIN_TABLA_REPORTE, chkTO_lazo_F())){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
 				READandPRINT(&ptrTABLA, REG_generico);
 			}
 		}
+		READandPRINT(&ptrTABLA, REG_generico);
 		detenerTO_lazo();
 	}
 
@@ -1218,7 +1222,7 @@
 	}
 
 
- static void Leer_reportesTAB(byte* Rx_data_ptr){
+ static void Leer_reporteTURNO(byte* Rx_data_ptr){
 
 	 byte*			ptrINI_TURNO;
 	 byte* 			ptrFIN_TURNO;
@@ -1255,6 +1259,43 @@
 	 }
  }
 
+ static void Leer_reporteTURNO_PARCIAL(byte* Rx_data_ptr){
+
+	 byte*			ptrINI_TURNO;
+	 byte* 			ptrFIN_TURNO;
+	 tREG_GENERIC*	ptrTABLA;
+	// byte* ptrFIN;
+	 byte tipo, TO_F, cantidadSESIONES;
+
+
+	 tREG_SESION*	ptrsSESION[2];
+
+	 Rx_data_ptr++;               // salto N
+	 Rx_data_ptr++;               // salt0 CMD
+	 tipo = *Rx_data_ptr++;
+
+
+	   cantidadSESIONES = REPORTES_getSesions(ptrsSESION, 2);
+	 //if(cantidadSESIONES != 0xff){
+		// ptrINI_TURNO = ptrsSESION[1];
+		 //ptrFIN_TURNO = ptrsSESION[0];
+
+	     ptrINI_TURNO = ptrsSESION[0];
+	     ptrFIN_TURNO = REPORTE_PUTptr;
+		 ptrTABLA = (tREG_GENERIC*)ptrINI_TURNO;
+
+		 TO_F = 0;
+		 dispararTO_lazo();
+		 while(ptrTABLA != ptrFIN_TURNO){
+			if((NO_TXING_PRINTER && NO_RXING_PRINTER  && NO_ESTA_IMPRIMIENDO)){
+				if(checkRANGE(ptrTABLA, FIN_TABLA_REPORTE, TO_F )){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
+				READandPRINT(&ptrTABLA, tipo);
+			}
+		 }
+		 READandPRINT(&ptrTABLA, tipo);
+		 detenerTO_lazo();
+	// }
+ }
 
 
 static void READandPRINT(byte** ptrptrTABLA, byte tipo){
@@ -1964,13 +2005,11 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 							ptrREG_APAGAR = get_regAPAGAR_byNUMERO_VIAJE(dataBYTE);
 							if(ptrREG_APAGAR != NULL){
-								ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR);
-								ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR);
-								if((ptrOCUPADO != NULL) && (ptrLIBRE != NULL) ){
-									i = armar_buff_viaje((uint8_t*)&buff_aux, i);
-									N = i+1;
-					    	        Tx_cmdTRANSPARENTE(N, buff_aux );
-								}
+								ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR, dataBYTE);
+								ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR, dataBYTE);
+								i = armar_buff_viaje((uint8_t*)&buff_aux, i);
+								N = i+1;
+								Tx_cmdTRANSPARENTE(N, buff_aux );
 							}else{
 								status = 1;
 								buff_aux[i++] = status;
