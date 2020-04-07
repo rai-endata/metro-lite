@@ -11,8 +11,11 @@
 ********************************************************************/
 
 
-#define CON_CONEXION_CENTRAL	1
 #define SIN_CONEXION_CENTRAL	0
+#define CON_CONEXION_CENTRAL	1
+#define CI_ENCENDIDO_EQUIPO		3 //conexion indeterminada encendido de equipo
+
+
 
 #define LIB			0
 #define OCUP		1
@@ -286,6 +289,7 @@
     extern void cobrandoDATE_enFLASH (byte forced);
     extern void ocupadoDATE_enFLASH (byte forced);
     extern void  SaveDatGps(byte* data_ptr, byte estado);
+    extern void  ResetDatGps(byte estado);
 
     extern uint8_t tarifa_1_4;		//valor de 1 a 4 a mostrar en display
     extern uint8_t  tarifa_1_8;	//valor de 1 a 8 que sirve de indice para tomar uno de los 8 valores de tarifa programados en eeprom

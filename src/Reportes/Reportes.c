@@ -881,26 +881,39 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
   /* AVANZAR PUNTERO DE REPORTE EN FLASH */
   /***************************************/    
-    void incFlashRep_ptr (tREG_GENERIC*far* ptr_ptr){
+    void incFlashRep_ptr (tREG_GENERIC** ptrptr){
       tREG_GENERIC* ptr;
       
-      ptr = *ptr_ptr;                 // Puntero
+      ptr = *ptrptr;                 // Puntero
       ptr++;                          // Avanzo puntero
       
       if(ptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE)){
         ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
       }
       
-      *ptr_ptr = ptr;                 // Actualizo puntero REAL
+      *ptrptr = ptr;                 // Actualizo puntero REAL
     }
 
   
+    void incFlashReportes_ptr (tREG_GENERIC*** ptr_ptr_ptr){
+    	tREG_GENERIC* ptrptr;
+
+    	ptrptr = *ptr_ptr_ptr;
+    	ptrptr++;
+    	*ptr_ptr_ptr = ptrptr;
+
+       if(ptrptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE)){
+    	   *ptr_ptr_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
+       }
+     }
+
+
   /* RETROCEDER PUNTERO DE REPORTE EN FLASH */
   /******************************************/    
-    void decFlashRep_ptr (tREG_GENERIC*far* ptr_ptr){
+    void decFlashRep_ptr (tREG_GENERIC*far* ptrptr){
       tREG_GENERIC* ptr;
       
-      ptr = *ptr_ptr;                 // Puntero
+      ptr = *ptrptr;                 // Puntero
       
       if(ptr <= (tREG_GENERIC*)ADDR_EEPROM_REPORTE){
         ptr = (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE);  // Doy la vuelta al reporte
@@ -908,7 +921,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
       ptr--;                          // Retrocedo puntero
       
-      *ptr_ptr = ptr;                 // Actualizo puntero REAL
+      *ptrptr = ptr;                 // Actualizo puntero REAL
     }
 
 
@@ -2550,7 +2563,7 @@ void chkPerdidaDatosTurno (void){
 
 
 
- tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( nro_viaje){
+ tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( byte nro_viaje){
 
 	  byte TO_F;
       //tREG_GENERIC aux_INI;
@@ -2572,7 +2585,7 @@ void chkPerdidaDatosTurno (void){
           aux_INI_ptr = &aux_INI;
           if (aux_INI.tipo == REG_apagar && (((tREG_A_PAGAR*)aux_INI_ptr)->nroViaje == nro_viaje)){
             // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
-        	  cobrando_ptr = INI_ptr;
+        	  cobrando_ptr = (tREG_A_PAGAR*)INI_ptr;
         	  regVIAJE.nroViaje 	 = aux_INI.nroViaje;
         	  regVIAJE.chofer 		 = aux_INI.chofer;
         	  regVIAJE.tarifa 		 = aux_INI.tarifa;
@@ -2605,7 +2618,7 @@ void chkPerdidaDatosTurno (void){
     }
 
 
- tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr){
+ tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
 
 	 uint16_t movSinPulsos;
       byte pointer_ok;
@@ -2625,9 +2638,9 @@ void chkPerdidaDatosTurno (void){
           TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
           EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
           aux_INI_ptr = &aux_INI;
-          if (aux_INI.tipo == REG_ocupado){
+          if (aux_INI.tipo == REG_ocupado &&  aux_INI.nroViaje == nro_viaje){
             // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
-        	  ocupado_ptr = INI_ptr;
+        	  ocupado_ptr = (tREG_OCUPADO*)INI_ptr;
         	  regVIAJE.dateOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->date;
         	  regVIAJE.kmOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->km;
         	  regVIAJE.segMarchaOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segMarcha;
@@ -2646,7 +2659,6 @@ void chkPerdidaDatosTurno (void){
 			  regVIAJE.longitudOCUPADO[1] = aux_INI.longitud[1];
 			  regVIAJE.longitudOCUPADO[2] = aux_INI.longitud[2];
 			  regVIAJE.velgpsOCUPADO = aux_INI.velgps;
-
 			break;
           }
 
@@ -2654,10 +2666,38 @@ void chkPerdidaDatosTurno (void){
 
         detenerTO_lazo();                         // Detengo Time Out de Lazo
 
-      return( ocupado_ptr);
+        if((ocupado_ptr == NULL)){
+        	  ocupado_ptr = 0;
+          	  regVIAJE.dateOCUPADO.fecha[0] = 0;
+          	  regVIAJE.dateOCUPADO.fecha[1] = 0;
+          	  regVIAJE.dateOCUPADO.fecha[2] = 0;
+          	  regVIAJE.dateOCUPADO.fecha[3] = 0;
+          	  regVIAJE.dateOCUPADO.hora[0] = 0;
+          	  regVIAJE.dateOCUPADO.hora[1] = 0;
+          	  regVIAJE.dateOCUPADO.hora[2] = 0;
+          	  regVIAJE.kmOCUPADO = 0;
+          	  regVIAJE.segMarchaOCUPADO = 0;
+          	  regVIAJE.segParadoOCUPADO = 0;
+          	  regVIAJE.velMaxOCUPADO = 0;
+          	  regVIAJE.fichaPesos = 0;
+          	  regVIAJE.puntoDecimal  = 0;
+          	  regVIAJE.minutosEspera = 0;
+          	  regVIAJE.estadoConexion_OCUPADO = 0;
+          	  //posicion
+          	  regVIAJE.sgnLatLonOcupado = 0;
+  			  regVIAJE.latitudOCUPADO[0] = 0;
+  			  regVIAJE.latitudOCUPADO[1] = 0;
+  			  regVIAJE.latitudOCUPADO[2] = 0;
+  			  regVIAJE.longitudOCUPADO[0] = 0;
+  			  regVIAJE.longitudOCUPADO[1] = 0;
+  			  regVIAJE.longitudOCUPADO[2] = 0;
+  			  regVIAJE.velgpsOCUPADO = 0;
+        }
+
+        return( ocupado_ptr);
     }
 
- tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr){
+ tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
 
 	   uint16_t movSinPulsos;
        byte pointer_ok;
@@ -2677,9 +2717,11 @@ void chkPerdidaDatosTurno (void){
            TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
            EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
            aux_INI_ptr = &aux_INI;
-           if (aux_INI.tipo == REG_libre){
+           if (aux_INI.tipo == REG_libre &&
+        	   aux_INI.nroViaje == nro_viaje /*&&
+        	   (aux_INI.estadoConexion == SIN_CONEXION_CENTRAL || aux_INI.estadoConexion == CON_CONEXION_CENTRAL)*/){
              // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
-         	  libre_ptr = INI_ptr;
+         	  libre_ptr = (tREG_OCUPADO*)INI_ptr;
         	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
         	  regVIAJE.kmLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->km;
         	  regVIAJE.segMarchaLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segMarcha;
@@ -2703,8 +2745,33 @@ void chkPerdidaDatosTurno (void){
          }while ((INI_ptr != FIN_ptr));
 
          detenerTO_lazo();                         // Detengo Time Out de Lazo
+         if((libre_ptr == NULL) ){
+        	libre_ptr = 0;
+        	regVIAJE.dateLIBRE.fecha[0] = 0;
+        	regVIAJE.dateLIBRE.fecha[1] = 0;
+        	regVIAJE.dateLIBRE.fecha[2] = 0;
+        	regVIAJE.dateLIBRE.fecha[3] = 0;
+        	regVIAJE.dateLIBRE.hora[0]=0;
+        	regVIAJE.dateLIBRE.hora[1]=0;
+        	regVIAJE.dateLIBRE.hora[2]=0;
+        	regVIAJE.kmLIBRE = 0;
+			regVIAJE.segMarchaLIBRE = 0;
+			regVIAJE.segParadoLIBRE = 0;
+			regVIAJE.velMaxLIBRE = 0;
+			regVIAJE.sensor = 0;
+			regVIAJE.estadoConexion_LIBRE = 0;
+			 //posicion
+			regVIAJE.sgnLatLonLibre = 0;
+			regVIAJE.latitudLIBRE[0] = 0;
+			regVIAJE.latitudLIBRE[1] = 0;
+			regVIAJE.latitudLIBRE[2] = 0;
+			regVIAJE.longitudLIBRE[0] = 0;
+			regVIAJE.longitudLIBRE[1] = 0;
+			regVIAJE.longitudLIBRE[2] = 0;
+			regVIAJE.velgpsLIBRE = 0;
+     }
 
-       return( libre_ptr);
+         return( libre_ptr);
      }
 
  void clear_tabREPORTES (void){

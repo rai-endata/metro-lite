@@ -337,8 +337,8 @@ void check_corte_alimentacion(void){
 	    		  //arranco como si fuera CORTE LARGO
 	  	  		//ESTADO_RELOJ=FUERA_SERVICIO;
 	  	  		ESTADO_RELOJ=LIBRE;
-
-	  	  		Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+	  	  		ResetDatGps(LIB);
+	  	  		Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
 	  	  		setTEST_DISPLAY();
 	    	  }
 	      }else{
@@ -354,7 +354,8 @@ void check_corte_alimentacion(void){
 			dineroPerdido = VALOR_VIAJE;
 
 	    	ESTADO_RELOJ=LIBRE;
-	  		Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+	  		ResetDatGps(LIB);
+	    	Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
 	  		setTEST_DISPLAY();
 	      }
 	      //leo valor de corteALIMETACION

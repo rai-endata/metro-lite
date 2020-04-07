@@ -105,14 +105,13 @@ byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
 
 //#define		sbss 0x20000438
 //#define		ebss 0x20000468
-
+/*
 #define		sdata	0x20000000
 #define		edata	0x200007b8
 #define		sidata	0x80206d0
-
 #define		sbss	0x200007b8
 #define		ebss	0x2000517c
-
+*/
 
 
 

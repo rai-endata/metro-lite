@@ -293,11 +293,11 @@ void Pase_a_LIBRE (byte estado){
 
 
 
-			if(estado == CON_CONEXION_CENTRAL){
+			if(estado == CON_CONEXION_CENTRAL || estado == CI_ENCENDIDO_EQUIPO){
 				//envio pase a libre al celular
 				Tx_Pase_a_LIBRE(estado);
-			}else{
-	  			acumularCMD_sinCONEXION_CENTRAL=1;
+			}else if(estado == SIN_CONEXION_CENTRAL){
+	  			acumularCMD_sinCONEXION_CENTRAL = 1;
 			}
 
 			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
@@ -403,7 +403,7 @@ void Pase_a_OCUPADO (byte estado){
 		//envio pase a ocupado al celular
 		Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 		ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
-	}else{
+	}else if (estado == SIN_CONEXION_CENTRAL ){
 		acumularCMD_sinCONEXION_CENTRAL=1;
 		ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
 	}
@@ -666,7 +666,7 @@ static void fuera_de_servicio(void){
   	}
   	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
   }
-*/
+
   void Pase_a_OCUPADO_SC (void){
   	uint16_t km;
 
@@ -866,7 +866,7 @@ static void fuera_de_servicio(void){
   		 sensorAsiento = 0;                  // Borro Indicacion
   	//}
   }
-
+*/
 
 	void Send_Tx_Valor_VIAJE (void){
 		if(ESTADO_RELOJ==OCUPADO  ){
@@ -2626,6 +2626,38 @@ void cambio_de_reloj_x_sensor_asiento(void){
 			 }
 		}
      }
+
+
+
+     void  ResetDatGps(byte estado){
+       	word vel;
+
+       	byte i=0;
+
+   		vel = 0;
+   		if(estado == LIB){
+   			 sgnLatLon_LIBRE_CEL = 0;
+   			 while(i<3){
+   				 latitudGPS_LIBRE_CEL[i]  = 0;
+   				 longitudGPS_LIBRE_CEL[i] = 0;
+   				 i++;
+   			 }
+   		}else if(estado == OCUP){
+   			 sgnLatLon_OCUPADO_CEL = 0;
+   			 while(i<3){
+   				 latitudGPS_OCUPADO_CEL[i]  = 0;
+   				 longitudGPS_OCUPADO_CEL[i] = 0;
+   				 i++;
+   			 }
+   		}else if(estado == COBR){
+   			 sgnLatLon_COBRANDO_CEL = 0;
+   			 while(i<3){
+   				 latitudGPS_COBRANDO_CEL[i]  = 0;
+   				 longitudGPS_COBRANDO_CEL[i] = 0;
+   				 i++;
+   			 }
+   		}
+ }
 
 
      void  getDatGps_COBRANDO(byte* data_ptr){
