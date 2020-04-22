@@ -254,7 +254,7 @@
       #define progTaller      1
       #define progAire        2
 
-#define	NUMERO_DE_REGISTROS_DE_TABLA	30
+#define	NUMERO_DE_REGISTROS_DE_TABLA	1000
 #define NUMERO_DE_CAMPOS_DE_REGISTRO	sizeof(tREG_GENERIC)
 #define DIM_REPORTE       				(NUMERO_DE_REGISTROS_DE_TABLA*NUMERO_DE_CAMPOS_DE_REGISTRO)   //cantidad de bytes de tabla de reportes
 #define FIN_TABLA_REPORTE    			(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1)
