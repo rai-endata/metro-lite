@@ -362,16 +362,6 @@
       uint16_t finDATA;     // chksum recibido por aire (igual a suma desde el comando hasta CP2 incluidos estos)
     }tPARAM_RELOJ_COMUNES;
 
-    typedef struct{
-    	 uint8_t hab;                   // Habilitacion
-         tEQPESOS diurna;            	// Equivalencia Diurna
-         tEQPESOS nocturna;          	// Equivalencia Nocturna
-         uint16_t checksum;     		//
-         uint16_t finDATA;     		//
-         byte empty[3];        		// tamaño multiplo de 4
-       }tPARAM_RELOJ_EQPESOS;
-
-    
     // TIPO DE DATOS DE PARAMETROS DE RELOJ TARIFA
     // debe tener un tamaño total multiplo de 4
     //
@@ -390,6 +380,7 @@
     // - vtFihca ---> VALOR FICHA TIEMPO
     // - horaIni ---> HORA DE INICIO
     // - vg --------> VIGENCIA
+
     typedef struct{
       tTARIFA tarifa;       // Tarifa
       uint16_t checksum;     //
@@ -410,6 +401,14 @@
     // - v.Ficha ---> VALOR FICHA
     // - t.Ficha ---> TIEMPO FICHA
     
+    typedef struct{
+     	 uint8_t hab;                   // Habilitacion
+          tEQPESOS diurna;            	// Equivalencia Diurna
+          tEQPESOS nocturna;          	// Equivalencia Nocturna
+          uint16_t checksum;     		//
+          uint16_t finDATA;     		//
+          byte empty[3];        		// tamaño multiplo de 4
+        }tPARAM_RELOJ_EQPESOS;
 
     
     // TIPO DE DATOS DE PARAMETROS DE RELOJ CALENDARIO

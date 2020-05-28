@@ -164,14 +164,14 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
 
 	// Comando LIBRE
-	#define N_DATOS_Pase_a_LIBRE           32               //7 con posicion
+	#define N_DATOS_Pase_a_LIBRE           40             //7 con posicion
 	#define N_Pase_a_LIBRE									(N_CMD + N_DATOS_Pase_a_LIBRE)
 	static byte Pase_a_LIBRE_Buffer[N_DATOS_Pase_a_LIBRE + 2];       // Sumo DF + 0A
 	typeTxCMD   CMD_Pase_a_LIBRE={0,CMD_RELOJ_Pase_a_LIBRE,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
 	typeTxCMD   CMD_Pase_a_LIBRE_SC={0,CMD_RELOJ_Pase_a_LIBRE_SC,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
 
 	// Comando OCUPADO
-    #define N_DATOS_Pase_a_OCUPADO         34				//12
+    #define N_DATOS_Pase_a_OCUPADO         42				//12
     #define N_Pase_a_OCUPADO               (N_CMD + N_DATOS_Pase_a_OCUPADO)
     static byte Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_OCUPADO={0,CMD_RELOJ_Pase_a_OCUPADO,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
@@ -179,27 +179,26 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
 
     // Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_SA         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_SA         42				//12
         #define N_Pase_a_OCUPADO_SA               (N_CMD + N_DATOS_Pase_a_OCUPADO_SA)
        // static byte Pase_a_OCUPADO_SA_Buffer[N_DATOS_Pase_a_OCUPADO_SA + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_SA={0,CMD_RELOJ_Pase_a_OCUPADO_SA,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
         typeTxCMD   CMD_Pase_a_OCUPADO_SA_SC={0,CMD_RELOJ_Pase_a_OCUPADO_SA_SC,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
 
     	// Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_APP         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_APP         42				//12
         #define N_Pase_a_OCUPADO_APP               (N_CMD + N_DATOS_Pase_a_OCUPADO_APP)
         //static byte Pase_a_OCUPADO_APP_Buffer[N_DATOS_Pase_a_OCUPADO_APP + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_APP={0,CMD_RELOJ_Pase_a_OCUPADO_APP,0,timeReint_rapido,N_Pase_a_OCUPADO_APP,Pase_a_OCUPADO_Buffer};
 
     	// Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_BANDERA         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_BANDERA         42				//12
         #define N_Pase_a_OCUPADO_BANDERA               (N_CMD + N_DATOS_Pase_a_OCUPADO)
         //static byte Pase_a_OCUPADO_BANDERA_Buffer[N_DATOS_Pase_a_OCUPADO_BANDERA + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_BANDERA = {0,CMD_RELOJ_Pase_a_OCUPADO_BANDERA,0,timeReint_rapido,N_Pase_a_OCUPADO_BANDERA,Pase_a_OCUPADO_Buffer};
 
-
 	// Comando COBRANDO
-    #define N_DATOS_Pase_a_COBRANDO         34				//12
+    #define N_DATOS_Pase_a_COBRANDO         42				//12
     #define N_Pase_a_COBRANDO               (N_CMD + N_DATOS_Pase_a_COBRANDO)
     static byte Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_COBRANDO={0,CMD_RELOJ_Pase_a_COBRANDO,0,timeReint_rapido,N_Pase_a_COBRANDO,Pase_a_COBRANDO_Buffer};
@@ -273,7 +272,7 @@ void Pase_a_LIBRE (byte estado){
 	}
 	if(timerA_PAGAR_to_LIBRE_cnt == 0){
 		anularReTx_RELOJ();
-		if(estado == CON_CONEXION_CENTRAL){
+		if(estado == CON_CONEXION_CENTRAL || estado == CI_ENCENDIDO_EQUIPO){
 			CMD_a_RESP = 0x03;
 		}else{
 			CMD_a_RESP = 0x23;
@@ -2061,7 +2060,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		ptrVALOR_VIAJE = &VALOR_VIAJE;
  		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;
 
-		if(tipo == CON_CONEXION_CENTRAL){
+		if(tipo == CON_CONEXION_CENTRAL || tipo == CI_ENCENDIDO_EQUIPO){
 			//BANDERA DE TRANSMISION
 			CMD_Pase_a_LIBRE.Tx_F = 1;                      // Levanto Bandera de Tx
 			CMD_Pase_a_LIBRE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
@@ -2143,6 +2142,12 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_LIBRE_Buffer[29]  = PUNTO_DECIMAL;  						//opcional1
  		Pase_a_LIBRE_Buffer[30]  = nroChofer;  						//numero de chofer
  		Pase_a_LIBRE_Buffer[31]  = nroCorrelativo_INTERNO;  					//numero correlativo
+
+		//Posicion libre
+ 		Pase_a_LIBRE_Buffer[32] = sgnLatLon_LIBRE_CEL;
+		bufferNcopy(&Pase_a_LIBRE_Buffer[33] ,(byte*)&latitudGPS_LIBRE_CEL,3);
+		bufferNcopy(&Pase_a_LIBRE_Buffer[36] ,(byte*)&longitudGPS_LIBRE_CEL, 3);
+		Pase_a_LIBRE_Buffer[39] = velocidadGPS_LIBRE_CEL;
 
  		//FIN
  		Pase_a_LIBRE_Buffer[N_DATOS_Pase_a_LIBRE] = fin_datos_msb;  	// Fin Datos
@@ -2289,6 +2294,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_OCUPADO_Buffer[32] = *(ptrFichasTiempo+1);             //
  		Pase_a_OCUPADO_Buffer[33] = *(ptrFichasTiempo+0);             //
 
+		//Posicion ocupado
+ 		Pase_a_OCUPADO_Buffer[34] = sgnLatLon_OCUPADO_CEL;
+		bufferNcopy(&Pase_a_OCUPADO_Buffer[35] ,(byte*)&latitudGPS_OCUPADO_CEL   ,3);
+		bufferNcopy(&Pase_a_OCUPADO_Buffer[38] ,(byte*)&longitudGPS_OCUPADO_CEL   ,3);
+		Pase_a_OCUPADO_Buffer[41] = velocidadGPS_OCUPADO_CEL;
+
+
  		Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO]  = fin_datos_msb;  // Fin Datos
  		Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO+1] = fin_datos_lsb;// Fin Datos
     }
@@ -2417,6 +2429,12 @@ void cambio_de_reloj_x_sensor_asiento(void){
   		Pase_a_COBRANDO_Buffer[31] = *(ptrFichasTiempo+2);             		//
   		Pase_a_COBRANDO_Buffer[32] = *(ptrFichasTiempo+1);             		//
   		Pase_a_COBRANDO_Buffer[33] = *(ptrFichasTiempo+0);             		//
+
+		//Posicion cobrando
+  		Pase_a_COBRANDO_Buffer[34] = sgnLatLon_COBRANDO_CEL;
+		bufferNcopy(&Pase_a_COBRANDO_Buffer[35] ,(byte*)&latitudGPS_COBRANDO_CEL  ,3);
+		bufferNcopy(&Pase_a_COBRANDO_Buffer[38] ,(byte*)&longitudGPS_COBRANDO_CEL  ,3);
+		Pase_a_COBRANDO_Buffer[41] = velocidadGPS_COBRANDO_CEL;
 
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO]  = fin_datos_msb;  // Fin Datos
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO+1] = fin_datos_lsb;// Fin Datos
