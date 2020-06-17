@@ -17,8 +17,8 @@
 //char versionFIRMWARE[] =  "v1.3.1";
 //char fechaFIRMWARE[] =  " (13/11/2019)";
 
-char versionFIRMWARE[] =  "v1.4.7";
-char fechaFIRMWARE[] =  " (28/05/2020)";
+char versionFIRMWARE[] =  "v1.4.8";
+char fechaFIRMWARE[] =  " (12/06/2020)";
 
 
 

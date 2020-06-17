@@ -197,6 +197,12 @@ LOOP:
 
 	for(;;){
 
+		//prueba
+		//read_progRELOJ_eeprom();
+		//read_backup_eeprom();
+		//grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET);
+		//chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
+
 		procesar_datosSC();
 		// REPORTES
 		#ifdef VISOR_REPORTES

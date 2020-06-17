@@ -1854,8 +1854,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
 
 	if(ESTADO_RELOJ == LIBRE){
     	Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-    }else if(ESTADO_RELOJ == FUERA_SERVICIO){
+		//parce para la app para que no se trabe cuando esta sin conexion
+    	CMD_a_RESP = 0x24;
+		TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+
+	}else if(ESTADO_RELOJ == FUERA_SERVICIO){
     	Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+
     }
 }
 

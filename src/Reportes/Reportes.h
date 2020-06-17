@@ -98,7 +98,7 @@
 		uint8_t    sgnLatLon;	  		//signo de latitud y longitud de gps
 		uint8_t    latitud[3];  		// latitud cobrando de GPS DEL CELULAR
 		uint8_t    longitud[3];  		// longitud cobrando de GPS DEL CELULAR
-		uint8_t	   velgps;			// velocidad de GPS DEL CELULAR
+		uint8_t	   velgps;			    // velocidad de GPS DEL CELULAR
 		uint8_t    empty[2];            // Relleno para longitud PAR
 	}tREG_A_PAGAR;
 
