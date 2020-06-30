@@ -213,18 +213,18 @@
    extern tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask);
    extern tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
 
-  void read_backup_eeprom(void);
- void write_backup_eeprom(void);
- extern void test_size(void);
- extern void testEEPROM(void );
- extern void levantar_variablesEEPROM (void);
+	 void read_backup_eeprom(void);
+	 void write_backup_eeprom(void);
+	 extern void test_size(void);
+	 extern void testEEPROM(void );
+	 extern void levantar_variablesEEPROM (void);
 
 
- uint32_t EEPROM_readDouble (uint32_t* EEPROM_ptr);
- tEEPROM_ERROR EEPROM_writeDouble (uint32_t* EEPROM_ptr, uint32_t dato);
- tEEPROM_ERROR EEPROM_write (word* EEPROM_ptr, word dato);
- tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr);
+	 uint32_t EEPROM_readDouble (uint32_t* EEPROM_ptr);
+	 tEEPROM_ERROR EEPROM_writeDouble (uint32_t* EEPROM_ptr, uint32_t dato);
+	 tEEPROM_ERROR EEPROM_write (word* EEPROM_ptr, word dato);
+	 tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr);
 
-
+	 extern void borrar_EEPROM (void);
 
 #endif /* EEPROM_EEPROM_H_ */

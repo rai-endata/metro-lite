@@ -619,3 +619,28 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
     	nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();
     	nroTICKET = EEPROM_readDouble ((uint32_t*) EEPROM_NRO_TICKET);
     }
+
+
+    void borrar_EEPROM (void){
+    	 uint32_t aux_TABLA;
+    	 uint32_t i, k;
+         byte dato;
+    		i = 0;
+    		k = 20;
+    		 aux_TABLA = (uint32_t) 0x0000;
+    		 while(i < 64*1024){
+    		 		//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
+    		 		EEPROM_WriteByte(aux_TABLA, 0xff);
+    		 		dato = EEPROM_ReadByte(aux_TABLA);
+    		 		if(dato != 0xff){
+    		 			__NOP();
+    		 		}
+    		 		aux_TABLA++;
+    		 		i++;
+    		 		if(i == k){
+    		 			k = i +20;
+    		 			HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+    		 		}
+    		  }
+      }
+

@@ -127,6 +127,7 @@ byte* ptr1;
 byte* ptr2;
 
 
+
 int main(void)
 {
 	HAL_Init();
@@ -203,10 +204,10 @@ LOOP:
 		//grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET);
 		//chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
 
-		procesar_datosSC();
+		procesar_datosSC();				//procesa datos sin conexion
 		// REPORTES
 		#ifdef VISOR_REPORTES
-		  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
+		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
 		#endif
 
 		check_relojBANDERITA();
@@ -226,14 +227,16 @@ LOOP:
 
 		firstDATE();
 		tarifarRELOJ();
-		//RECEPCION DE DA
+
+		//RECEPCION DE DA ************
 		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
 		RxDA_BaxFORMAT_toAIR_RxBuffer();	//toma datos de rxDA_baxFORMAT.RxBuffer con protocolo BAX y los guarda AIR_RxBuffer
-
 		RxDA_process();					     //toma datos de AIR_RxBuffer y los procesa
 		//TRANSMISION A DA
 		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
 		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
+		//****************************
+
 		ASIENTO_consultaSensor();       	// Consulta sensor presionado o no
 		RELOJ_a_pagar_to_libre();
 		//grabar_enFLASH();
@@ -263,8 +266,19 @@ void ModoPROGRAMACION (void){
 	    PROGRAMADOR_fin();                //Fin de Programacion de Parametros aka Fin Grabacion EEPROM
 	    EEPROM_chkRequest(1);			  //
 	    TMR_GRAL_LOOP();
+
+		//RECEPCION DE DA ************
+		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
+		RxDA_BaxFORMAT_toAIR_RxBuffer();	//toma datos de rxDA_baxFORMAT.RxBuffer con protocolo BAX y los guarda AIR_RxBuffer
+		RxDA_process();					     //toma datos de AIR_RxBuffer y los procesa
+		//TRANSMISION A DA
+		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
+		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
+		//****************************
 	}
 }
+
+
 
 void set_TIMEandDATE (void){
 

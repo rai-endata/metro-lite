@@ -202,7 +202,12 @@
          // BUZZER_play(RING_error);
         }*/
   	  //Buzzer_On(BEEP_PROGRAMCION_ERROR);
-  	  error_eepromDATA=1;
+     error_eepromDATA=1;
+  	 prog_mode=1;
+
+  	  EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
+      HORA_source = 1;		//para que cuando este borrado toda la eeprom pueda inicializar reportes
+
     }
 }
            

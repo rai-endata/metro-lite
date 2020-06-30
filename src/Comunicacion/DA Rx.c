@@ -66,6 +66,7 @@
 	static void Leer_reporteTURNO_PARCIAL(byte* Rx_data_ptr);
 	static void READandPRINT(byte** ptrptrTABLA, byte tipo);
 	static void Print_turno (byte* Rx_data_ptr);
+	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr);
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -367,7 +368,7 @@
 	    Rx_comando_72,
 	    Rx_comando_73,
 	    Rx_comando_74,
-	    Rx_comando_75,
+	    Rx_Borrar_toda_la_eeprom,
 		Leer_reporteTURNO_PARCIAL,
 	    Print_turno,
 		Leer_reporteTURNO,
@@ -951,6 +952,24 @@
 
 				print_ticket_turno(nroTURNO);
 			}
+
+
+
+	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr){
+					//
+					// El formato de datos de recepcion es
+					//
+					//    | N | CMD | DATA_1 | DATA_2 | . | . |
+					//
+					//
+					// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+					// cantidad maxima de FICHAS/PESOS.
+
+			        Rx_data_ptr++;               // Extraigo N
+					Rx_data_ptr++;               // Extraigo CMD
+
+					borrar_EEPROM();
+				}
 
 	void READandPRINT_regTABLA_REPORTES (byte* ptrTABLA, byte tipo){
 

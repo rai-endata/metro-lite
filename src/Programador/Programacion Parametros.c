@@ -223,7 +223,17 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       
       if (/*!OVF_F &&*/ !TO_F){
 
-
+    	  //prueba
+    	  /*
+    	  buffer[2] = 0x01;
+		  buffer[3] = 0x02;
+		  buffer[4] = 0x3;
+		  buffer[5] = 0x4;
+		  buffer[6] = 0x5;
+		  buffer[7] = 0x6;
+		  buffer[8] = 0x7;
+		  buffer[9] = 0x8;
+    	   */
         *ptr++ = finSCI_H;              // Agrego finSCI_H
         *ptr++ = finSCI_L;              // Agrego finSCI_H
 

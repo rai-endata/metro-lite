@@ -56,10 +56,12 @@
 
             if (!TIPO_RELOJ_VALIDO){
             	error_eepromDATA=1;
+            	prog_mode=1;
             }
 
       	}else{
       		error_eepromDATA=1;
+      		prog_mode=1;
       	}
     }
 

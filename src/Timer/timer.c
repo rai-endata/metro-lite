@@ -240,6 +240,11 @@
         /* Timer 1seg LOOP */
         /*******************/
           static void tmr_1seg (void){
+
+        	  if(prog_mode){
+            		  HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+           	  }
+
         	  Send_Tx_Valor_VIAJE();
         	  Toggle_BANDERA ();
         	  ini_cnt--;
