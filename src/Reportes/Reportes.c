@@ -2540,7 +2540,9 @@ void chkPerdidaDatosTurno (void){
         if ((numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 15)) && (numero_reg_del_turno < (NUMERO_DE_REGISTROS_DE_TABLA - 6))){
           // Quedan menos de 10 y mas de 5 indices para alcanzar a la ultima sesion => Muestro aviso
         	if (RELOJ_LIBRE || RELOJ_FUERA_SERVICIO){
-        		Tx_Comando_MENSAJE(CIERRE_TURNO);
+       			if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+        				Tx_Comando_MENSAJE(CIERRE_TURNO);
+        			}
         	}
 
         }else if (numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 6)){

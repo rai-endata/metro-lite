@@ -1349,8 +1349,10 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				aux16 = getViajes_Parcial();
 				if(aux16 != 0){
 					RELOJ_INTERNO_newSesion(nroChofer);
-					Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
-				}else{
+					if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+						Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
+					}
+			}else{
 					Tx_Comando_MENSAJE(DEBE_REALIZAR_UN_VIAJE);
 					//RELOJ_INTERNO_newSesion(nroChofer);
 				}

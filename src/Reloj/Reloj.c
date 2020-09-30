@@ -1677,7 +1677,9 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
 			 }
 			VELOCIDAD_MAX = 0;
 			RELOJ_INTERNO_resetMarchaParado();
-			Tx_Comando_MENSAJE(TURNO_CERRADO);
+			if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+				Tx_Comando_MENSAJE(TURNO_CERRADO);
+			}
           #endif
         }
 
