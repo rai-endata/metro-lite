@@ -56,10 +56,12 @@
 
             if (!TIPO_RELOJ_VALIDO){
             	error_eepromDATA=1;
+            	prog_mode=1;
             }
 
       	}else{
       		error_eepromDATA=1;
+      		prog_mode=1;
       	}
     }
 
@@ -307,11 +309,18 @@
     	uint32_t address_eeprom;
 
     	uint32_t size;
-    	size = SIZE_PROG_MOVIL;
+    	size = 88;
 
     	address_eeprom = ADDRESS_PROG_MOVIL;
     		//me fijo si hubo corte de alimentacion
     	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_MOVIL);
+
+    	//size = SIZE_PROG_MOVIL-88;
+    	//address_eeprom = ADDRESS_PROG_MOVIL+88;
+    	//me fijo si hubo corte de alimentacion
+       	//EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_MOVIL);
+
+
     }
 
 /*********************************************************************************************/

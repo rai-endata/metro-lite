@@ -456,6 +456,11 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
       uint16_t EEPROMsize_max;
       byte fin_datos;
       byte* fin_ptr;
+      //byte page;
+      //uint16_t copia[300];
+      //word j;
+
+
 
       error = EEPROM_OK;                            // Asumo que no hay error
 
@@ -472,9 +477,13 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
             fin_datos = 1;                          // Llegue al fin => Lo grabo y salgo
           }
 
-          error = EEPROM_clear(EEPROM_ptr);                 // Borro Direccion de EEPROM donde voy a grabar los datos. Borro 2 WORDS
-
+          //error = EEPROM_clear(EEPROM_ptr);                 // Borro Direccion de EEPROM donde voy a grabar los datos. Borro 2 WORDS
+          //page = (word)EEPROM_ptr/128;
           error = EEPROM_write(EEPROM_ptr, *data_buffer);   // Grabar Word en EEPROM
+
+          //j = ((word)EEPROM_ptr - (128*3 + 172))/2;
+          //copia[j] = *data_buffer;
+
           EEPROM_ptr++;                             		// Avanzo puntero de EEPROM
           data_buffer++;                            		// Avanzo Puntero de Datos
 
@@ -492,6 +501,10 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
               fin_datos = 1;                        // Llegue al fin => Lo grabo y salgo
             }
             error = EEPROM_write(EEPROM_ptr, *data_buffer); // Grabar Word en EEPROM
+
+            //j = ((word)EEPROM_ptr - (128*3 + 172))/2;
+            //copia[j] = *data_buffer;
+
             EEPROM_ptr++;                           // Avanzo puntero de EEPROM
             data_buffer++;                          // Avanzo Puntero de Datos
 
@@ -509,11 +522,42 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
             // Si llegue al fin de datos, en el word anterior, ahora graba CEROS para rellenar el
             // word que falta para completar los 4 bytes
             error = EEPROM_write(EEPROM_ptr,(word) 0x0000); // Grabar Word en EEPROM
+
+           // j = (((word)EEPROM_ptr - (128*3 + 172)))/2;
+           // copia[j] = *data_buffer;
+
           }
         }
 
+        __NOP();
+        __NOP();
+        __NOP();
       return(error);
     }
+
+
+    /* GRABACION DE UN BUFFER EN EEPROM */
+      /************************************/
+        tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size){
+          // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
+          // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
+          // Esta cantidad debe ser multiplo de 4
+          tEEPROM_ERROR error;
+          //uint16_t EEPROMsize_max;
+          //byte fin_datos;
+          //byte* fin_ptr;
+          //byte page;
+          //uint16_t copia[300];
+          //word j;
+
+
+
+			error = EEPROM_WriteBuffer((uint8_t*) data_buffer, EEPROM_ptr, max_size);
+			error = EEPROM_OK;                            // Asumo que no hay error
+
+
+			return(error);
+        }
 
 /*********************************************************************************************/
 /* RUTINAS INTERNAS */
@@ -534,7 +578,7 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
   		buffer_backup[0] = dato;
   		address_eeprom = EEPROM_ptr;
 
-  		err = EEPROM_WriteBuffer((uint8_t*) &buffer_backup,address_eeprom,(uint16_t)2);
+  		err = EEPROM_WriteBuffer((uint8_t*) &buffer_backup, address_eeprom, (uint16_t)2);
         if(err != errNone){
         	//para debug
        // 	uint8_t stop=1;
@@ -576,6 +620,10 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
     tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr){
       // Borra cuatro bytes de la EEPROM
       tEEPROM_ERROR error;
+      uint16_t buffer_backup[1];
+
+  	  buffer_backup[0] = 0xffff;
+      error = EEPROM_WriteBuffer((uint8_t*) &buffer_backup, EEPROM_ptr, (uint16_t)2);
 
       error = EEPROM_OK;                // Asumo que no hay error
 
@@ -619,3 +667,28 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
     	nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();
     	nroTICKET = EEPROM_readDouble ((uint32_t*) EEPROM_NRO_TICKET);
     }
+
+
+    void borrar_EEPROM (void){
+    	 uint32_t aux_TABLA;
+    	 uint32_t i, k;
+         byte dato;
+    		i = 0;
+    		k = 20;
+    		 aux_TABLA = (uint32_t) 0x0000;
+    		 while(i < 64*1024){
+    		 		//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
+    		 		EEPROM_WriteByte(aux_TABLA, 0xff);
+    		 		dato = EEPROM_ReadByte(aux_TABLA);
+    		 		if(dato != 0xff){
+    		 			__NOP();
+    		 		}
+    		 		aux_TABLA++;
+    		 		i++;
+    		 		if(i == k){
+    		 			k = i +20;
+    		 			HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+    		 		}
+    		  }
+      }
+

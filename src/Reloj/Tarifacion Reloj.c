@@ -17,6 +17,7 @@
 //	#include "- Reloj-Blue Config -.h"
 	#include "- metroBLUE Config -.h"
 	#include "display-7seg.h"
+	#include "tipo de equipo.h"
 	//#include "Parametros Reloj.h"
 	//#include "Grabaciones en EEPROM.h"
 
@@ -465,11 +466,13 @@
         // me va a tildar, xq no puede mostrar ese importe en pantalla
 
       if(TARIFA_PESOS){
-    	  //valor en pesos
-          while (VALOR_VIAJE > 99999){
-              // Si me voy de rango, sigo contando, llevando la diferencia
-              VALOR_VIAJE -= 100000;
-            }
+    	  if(EQUIPO_METRO_BLUE){
+        	  //valor en pesos
+              while (VALOR_VIAJE > 99999){
+                  // Si me voy de rango, sigo contando, llevando la diferencia
+                  VALOR_VIAJE -= 100000;
+                }
+    	  }
       }else{
     	  //valor en fichas
           //while (VALOR_VIAJE > 99999){
@@ -493,6 +496,8 @@
 
       //para que actualice apenas cambia una ficha(y no espere a que se cumpla el timer)
       Tx_Valor_VIAJE();
+      cntSendValorViaje=3; //para que espere 3 segundos para enviar desde el timer
+
       //actualizarRELOJ;                // Actualizar zona del display donde va el importe
       }
     }

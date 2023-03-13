@@ -85,5 +85,7 @@
 	#define cmdPedido_Pase_OCUPADO_SC			0x24
 	#define cmdPedido_Pase_COBRANDO_SC			0x25
 
+	#define cmdAsignado							0x30
+
 
 #endif

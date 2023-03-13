@@ -24,6 +24,7 @@
 #include "DA Define Commands.h"
 #include "Display-7seg.h"
 #include "Reportes.h"
+#include ".\Cx - Visor Android\Rx-VA.h"
 
 
 
@@ -66,6 +67,7 @@
 	static void Leer_reporteTURNO_PARCIAL(byte* Rx_data_ptr);
 	static void READandPRINT(byte** ptrptrTABLA, byte tipo);
 	static void Print_turno (byte* Rx_data_ptr);
+	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr);
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -294,8 +296,8 @@
 		Rx_comando_2E,
 		Rx_comando_2F,
 
-		Rx_comando_30,
-		Rx_comando_31,
+		ASIGNAR_Rx,
+		quitarASIGNADO_Rx,
 	    Rx_comando_32,
 		Rx_comando_33,
 		Rx_comando_34,
@@ -367,7 +369,7 @@
 	    Rx_comando_72,
 	    Rx_comando_73,
 	    Rx_comando_74,
-	    Rx_comando_75,
+	    Rx_Borrar_toda_la_eeprom,
 		Leer_reporteTURNO_PARCIAL,
 	    Print_turno,
 		Leer_reporteTURNO,
@@ -559,6 +561,8 @@
 					Rx_cmd = RxDA_buffer[1];        								//Extraigo comando
 					if(EQUIPO_METRO_LITE_RELOJ_INTERNO ||
 					  (((EQUIPO_METRO_BLUE) || (EQUIPO_METRO_LITE_RELOJ_BANDERITA)) && !CMD_ACTIONS)){
+						//prueba (envia comandos recibidos por puerto serie)
+						//Enviar_BUFFER_Rx_porPuertoSerie ((byte*) RxDA_buffer, N_Rx_App);
 						  if (Rx_cmd < 0x80){
 							  // Recibí un comando de la Central -> Debo Transmitir Respuesta
 							  // Asumo Rta Simple (sin datos) => Seteo N y Buffer.
@@ -952,6 +956,24 @@
 				print_ticket_turno(nroTURNO);
 			}
 
+
+
+	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr){
+					//
+					// El formato de datos de recepcion es
+					//
+					//    | N | CMD | DATA_1 | DATA_2 | . | . |
+					//
+					//
+					// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+					// cantidad maxima de FICHAS/PESOS.
+
+			        Rx_data_ptr++;               // Extraigo N
+					Rx_data_ptr++;               // Extraigo CMD
+
+					borrar_EEPROM();
+				}
+
 	void READandPRINT_regTABLA_REPORTES (byte* ptrTABLA, byte tipo){
 
 		uint8_t 		i;
@@ -1200,6 +1222,13 @@
 
 				}
 
+	void Enviar_BUFFER_Rx_porPuertoSerie (byte* Rx_data_ptr, byte N){
+
+						print_and_wait(Rx_data_ptr, N);
+
+	}
+
+
 
  static	void print_and_wait(byte* bufferTx, uint16_t i){
 
@@ -1330,7 +1359,9 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				aux16 = getViajes_Parcial();
 				if(aux16 != 0){
 					RELOJ_INTERNO_newSesion(nroChofer);
-					Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
+					if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+						Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
+					}
 				}else{
 					Tx_Comando_MENSAJE(DEBE_REALIZAR_UN_VIAJE);
 					//RELOJ_INTERNO_newSesion(nroChofer);
@@ -1384,6 +1415,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 					//nroChofer = 0;
 				    //apago bandera
 					nroChofer = *Rx_data_ptr++;            // Extraigo DATA_1
+					quitar_asignado;
 
 					//if(ESTADO_RELOJ == FUERA_SERVICIO){
 						//BanderaOut_Off();
@@ -1526,10 +1558,14 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
                 	}
 
-                }else if(ESTADO_RELOJ==OCUPADO){
+                }else if(ESTADO_RELOJ==COBRANDO){
 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+					Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 					Tx_Valor_VIAJE();
+                }else if(ESTADO_RELOJ==OCUPADO){
+ 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+ 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+ 					Tx_Valor_VIAJE();
                 }else if (ESTADO_RELOJ==LIBRE){
 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 					Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
@@ -1566,6 +1602,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							SaveDatGps(Rx_data_ptr, COBR);
 							Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 							Tx_Valor_VIAJE();
+
 						}else if(ESTADO_RELOJ==COBRANDO){
 							//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
 							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
@@ -1616,7 +1653,11 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
 							}else if (ESTADO_RELOJ==LIBRE){
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-								Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
+								//Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
+							}else if (ESTADO_RELOJ==OCUPADO){
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								Tx_Valor_VIAJE();
+								//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 							}else{
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 							}
@@ -1696,6 +1737,10 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 								//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 								Tx_Valor_VIAJE();
+							}else if (ESTADO_RELOJ==COBRANDO){
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+								Tx_Valor_VIAJE();
 							}else{
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 							}
@@ -1734,6 +1779,10 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 										Tx_Valor_VIAJE();
 										//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+									}else if(ESTADO_RELOJ==LIBRE){
+										//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
+										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+										//Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
 									} else{
 										TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 									}
@@ -1913,6 +1962,55 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			}
 
 
+		}
+
+
+
+		/* RECEPCION DE PASE A ASIGNADO*/
+		/*******************************/
+		void ASIGNAR_Rx (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+			byte N;
+			byte cmd;
+
+			N 	= *Rx_data_ptr++;               // Extraigo N
+			cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+			BanderaOut_Off();					//apago bandera
+			if(RELOJ_LIBRE){
+				asignar_libre;
+			}else if(RELOJ_OCUPADO || RELOJ_COBRANDO){
+				asignar_ocupado;
+			}
+		}
+
+
+		/* RECEPCION DE PASE A ASIGNADO*/
+		/*******************************/
+		void quitarASIGNADO_Rx (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+			byte N;
+			byte cmd;
+
+			N 	= *Rx_data_ptr++;               // Extraigo N
+			cmd = *Rx_data_ptr++;               // Extraigo CMD
+
+			BanderaOut_On();					//apago bandera
+			quitar_asignado;
 		}
 
 		//PROCESO DE COMANDOS TRANSPARENTES

@@ -1101,49 +1101,55 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		if(subCMD == MENSAJE7 && !exit){
 
 			uint16_t aux16; uint32_t aux32; uint8_t buffer_aux[20];
+            uint8_t existe_sesion_iniciada;
 
 				iniTURNO_ptr = &iniTURNO;	finTURNO_ptr = &finTURNO;
 
-				REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
-				TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
-
-				//Nro Turno
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nTurno: "); //7 espacios
-				i=i+k;
-				preparar_print (finTURNO_ptr->nroTurno, 0, &buffer_aux, 0);
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
-				i=i+k;
-
-				//viajes
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nViajes: "); //15 espacios
-				i=i+k;
-				aux16 = getViajes_Parcial();
-				//aux16 = aux16 + 1;
-				preparar_print (aux16, 0, &buffer_aux, 0);
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
-				i=i+k;
-
-				//REC PARCIAL
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nRecaud: ");
-				i=i+k;
-				aux32 = getRecaudacion_Parcial();
-				if(ESTADO_RELOJ == COBRANDO){
-					//solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
-					//aux32 = aux32 + VALOR_VIAJE;
-				}
-				uint8_t puntoDECIMAL;
-				if(TARIFA_PESOS){
-					//muestra importe
-					puntoDECIMAL = PUNTO_DECIMAL;
+				existe_sesion_iniciada = REPORTES_getSesions(sesion_ptrs, max_turnosReporte);        				// Obtengo punteros a todos las sesiones
+				if(existe_sesion_iniciada == 0xff){
+						k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Aun no tiene viajes en este turno");
+						i=i+k;
+						exit = 1;
 				}else{
-					//muestra ficha
-					puntoDECIMAL = 3;
+					TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
+					//Nro Turno
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nTurno: "); //7 espacios
+					i=i+k;
+					preparar_print (finTURNO_ptr->nroTurno, 0, &buffer_aux, 0);
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+
+					//viajes
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nViajes: "); //15 espacios
+					i=i+k;
+					aux16 = getViajes_Parcial();
+					//aux16 = aux16 + 1;
+					preparar_print (aux16, 0, &buffer_aux, 0);
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+
+					//REC PARCIAL
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nRecaud: ");
+					i=i+k;
+					aux32 = getRecaudacion_Parcial();
+					if(ESTADO_RELOJ == COBRANDO){
+						//solo si se llama en cobrando se le suma valor de viaje(porq. todavia no se guardo en la tabla)
+						//aux32 = aux32 + VALOR_VIAJE;
+					}
+					uint8_t puntoDECIMAL;
+					if(TARIFA_PESOS){
+						//muestra importe
+						puntoDECIMAL = PUNTO_DECIMAL;
+					}else{
+						//muestra ficha
+						puntoDECIMAL = 3;
+					}
+					preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+					exit = 1;
 				}
-				preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
-				i=i+k;
-				exit = 1;
-		}
+			}
 
 		if(subCMD == MENSAJE8 && !exit){
 			k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Debe realizar al menos un viaje en este turno, para poder finalizarlo");

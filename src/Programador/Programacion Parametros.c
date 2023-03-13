@@ -223,7 +223,17 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       
       if (/*!OVF_F &&*/ !TO_F){
 
-
+    	  //prueba
+    	  /*
+    	  buffer[2] = 0x01;
+		  buffer[3] = 0x02;
+		  buffer[4] = 0x3;
+		  buffer[5] = 0x4;
+		  buffer[6] = 0x5;
+		  buffer[7] = 0x6;
+		  buffer[8] = 0x7;
+		  buffer[9] = 0x8;
+    	   */
         *ptr++ = finSCI_H;              // Agrego finSCI_H
         *ptr++ = finSCI_L;              // Agrego finSCI_H
 
@@ -298,10 +308,11 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       
       GETptr = BAX_SCI_ptr->RxGPA[BAX_SCI_ptr->RxGPA_GETidx];       // Extraigo puntero GET, para poder tomar su direccion
       N = get_byte (&GETptr, BAX_SCI_ptr->RxBuffer, dim_BAX);       // Extraigo N
-
+      N--;                                                        // Decremento longitud de datos
       CMD = get_byte (&GETptr, BAX_SCI_ptr->RxBuffer, dim_BAX);     // Extraigo Comando
+      N--;                                                        // Decremento longitud de datos
       subCMD = get_byte (&GETptr, BAX_SCI_ptr->RxBuffer, dim_BAX);  // Extraigo Sub-Comando
-      
+      N--;                                                        // Decremento longitud de datos
       TO_F = 0;                                                     // Limpio Bandera
       dispararTO_lazo();                                            // Disparo TimeOut Lazo
       while ((N > 0) && (!TO_F)){

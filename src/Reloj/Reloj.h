@@ -31,6 +31,13 @@
 		DESCONECTADO=0x27
 	}tRELOJ;
 
+	// ESTADOS DE ASIGNACION
+	 typedef enum{
+	    NO_ASIGNADO = 0,
+	    ASIGNADO_LIBRE = 1,
+		ASIGNADO_OCUPADO=2,
+	  }tASIGNACION;
+
 
 	// ERRORES DE RELOJ
 	typedef enum{
@@ -95,9 +102,17 @@
 //#define	ADDR_EEPROM_CHOFER					ADDR_BASE_VAR_REPORTES + sizeof(uint32_t)
 #define	SIZE_EEPROM_CHOFER					sizeof(uint16_t)
 
+
+  // Estado Asignacion
+  extern tASIGNACION       	  ESTADO_ASIGNACION;
+	#define asignar_libre     (ESTADO_ASIGNACION = ASIGNADO_LIBRE)
+	#define asignar_ocupado   (ESTADO_ASIGNACION = ASIGNADO_OCUPADO)
+	#define quitar_asignado   (ESTADO_ASIGNACION = NO_ASIGNADO)
+
 /*******************************************************************
 *	 	MACROS
 ********************************************************************/
+
 
 	#define dim_Tabla_CMD_Reloj			11
 
@@ -108,6 +123,9 @@
 	#define RELOJ_COBRANDO                  (ESTADO_RELOJ == COBRANDO)
 	#define RELOJ_FUERA_SERVICIO            (ESTADO_RELOJ == FUERA_SERVICIO)
 	#define RELOJ_DESCONECTADO              (ESTADO_RELOJ == DESCONECTADO)
+	#define	RELOJ_NO_ASIGNADO				(ESTADO_ASIGNACION == NO_ASIGNADO)
+	#define	RELOJ_ASIGNADO_LIBRE			(ESTADO_ASIGNACION == ASIGNADO_LIBRE)
+	#define	RELOJ_ASIGNADO_OCUPADO			(ESTADO_ASIGNACION == ASIGNADO_OCUPADO)
 
     extern void RELOJ_INTERNO_setAsiento(byte causa);
       #define sensorAsiento_pressed     1 // Ocupado por sensor de asiento presionado (funcionamiento normal)
@@ -297,5 +315,6 @@
     const tDATE_flash FLASH_ocupadoDATE;
     const tDATE_flash FLASH_cobrandoDATE;
     const uint16_t FLASH_PULSOS_x_KM;
+    extern uint8_t cntSendValorViaje;
 
 #endif

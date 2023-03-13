@@ -138,6 +138,10 @@ void clr_BANDERA (void){
 	//levanta la salida de bandera
 	HAL_GPIO_WritePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN, GPIO_PIN_RESET);
 }
+
+
+
+
   /* CHEQUEO RELOJ BANDERITA */
   /***************************/
     void check_relojBANDERITA (void){

@@ -100,12 +100,15 @@
   }
 */
 
+  /*
   void  WWDG_IRQHandler(void)
   {
   	while(1){
   		__asm volatile ("nop");
   	}
   }
+
+*/
 
 /*
   void  PVD_VDDIO2_IRQHandler(void)

@@ -3802,6 +3802,12 @@ typedef struct
 #define  IWDG_PR_PR_1                        ((uint32_t)0x02)              /*!< Bit 1 */
 #define  IWDG_PR_PR_2                        ((uint32_t)0x04)              /*!< Bit 2 */
 
+#define  IWDG_PR_PR_4                        ((uint32_t)0x00)              /* */
+#define  IWDG_PR_PR_8                        ((uint32_t)0x01)              /*!< Bit 0 */
+#define  IWDG_PR_PR_16                       ((uint32_t)0x02)              /*!< Bit 1 */
+#define  IWDG_PR_PR_64                       ((uint32_t)0x04)              /*!< Bit 2 */
+#define  IWDG_PR_PR_256                      ((uint32_t)0x07)              /* */
+
 /*******************  Bit definition for IWDG_RLR register  ******************/
 #define  IWDG_RLR_RL                         ((uint32_t)0x0FFF)            /*!< Watchdog counter reload value */
 

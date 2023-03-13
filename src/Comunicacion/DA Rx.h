@@ -59,6 +59,7 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void Leer_REGISTRO_Rx (byte* Rx_data_ptr);
 	extern void Escribir_BYTE_Rx (byte* Rx_data_ptr);
 	extern void Escribir_BUFFER_Rx (byte* Rx_data_ptr);
+	extern void Enviar_BUFFER_Rx_porPuertoSerie (byte* Rx_data_ptr, byte N);
 
 	extern void Inicio_TURNO_Rx (byte* Rx_data_ptr);
 	extern void Entra_DESCANSO_Rx (byte* Rx_data_ptr);
@@ -80,6 +81,9 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern uint8_t armar_buff_viaje(uint8_t* buff_aux, uint8_t i);
 
 	extern void Pedido_reportePARCIAL_Rx (byte* Rx_data_ptr);
+
+	extern void ASIGNAR_Rx (byte* Rx_data_ptr);
+	extern void quitarASIGNADO_Rx (byte* Rx_data_ptr);
 
 
 #endif

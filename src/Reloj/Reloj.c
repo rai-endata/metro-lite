@@ -96,7 +96,9 @@ static uint16_t cambioRELOJ_TO_cnt;	// Contador del timer para pasar de A PAGAR 
 /* VARIABLES */
 /*************/
 // Variables de Informe de Comandos
-	uint16_t kmRecorridos_INTERNO;            // KM Recorridos segun el reloj interno
+	uint8_t cntSendValorViaje = 3;
+
+    uint16_t kmRecorridos_INTERNO;            // KM Recorridos segun el reloj interno
 	uint8_t velMax_INTERNO;                  // Velocidad Maxima segun el reloj interno
 	uint8_t nroCorrelativo_INTERNO;          // Nro Correlativo de Viaje segun el reloj interno
 	//uint8_t minutosEspera_INTERNO;           // Minutos de Espera del Reloj Interno segun el reloj interno
@@ -121,6 +123,7 @@ static uint16_t cambioRELOJ_TO_cnt;	// Contador del timer para pasar de A PAGAR 
 	byte longitudGPS_COBRANDO_CEL[3];
 	byte velocidadGPS_COBRANDO_CEL;
 
+	tASIGNACION  	ESTADO_ASIGNACION = NO_ASIGNADO;
 
 static byte 	sensorAsiento;            // Indica si se ocupo por sensor de asiento y el motivo
 static tDATE  	RELOJ_dateCambio;
@@ -164,14 +167,14 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
 
 	// Comando LIBRE
-	#define N_DATOS_Pase_a_LIBRE           32               //7 con posicion
+	#define N_DATOS_Pase_a_LIBRE           40             //7 con posicion
 	#define N_Pase_a_LIBRE									(N_CMD + N_DATOS_Pase_a_LIBRE)
 	static byte Pase_a_LIBRE_Buffer[N_DATOS_Pase_a_LIBRE + 2];       // Sumo DF + 0A
 	typeTxCMD   CMD_Pase_a_LIBRE={0,CMD_RELOJ_Pase_a_LIBRE,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
 	typeTxCMD   CMD_Pase_a_LIBRE_SC={0,CMD_RELOJ_Pase_a_LIBRE_SC,0,timeReint_rapido,N_Pase_a_LIBRE,Pase_a_LIBRE_Buffer};
 
 	// Comando OCUPADO
-    #define N_DATOS_Pase_a_OCUPADO         34				//12
+    #define N_DATOS_Pase_a_OCUPADO         42				//12
     #define N_Pase_a_OCUPADO               (N_CMD + N_DATOS_Pase_a_OCUPADO)
     static byte Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_OCUPADO={0,CMD_RELOJ_Pase_a_OCUPADO,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
@@ -179,27 +182,26 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
 
 
     // Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_SA         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_SA         42				//12
         #define N_Pase_a_OCUPADO_SA               (N_CMD + N_DATOS_Pase_a_OCUPADO_SA)
        // static byte Pase_a_OCUPADO_SA_Buffer[N_DATOS_Pase_a_OCUPADO_SA + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_SA={0,CMD_RELOJ_Pase_a_OCUPADO_SA,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
         typeTxCMD   CMD_Pase_a_OCUPADO_SA_SC={0,CMD_RELOJ_Pase_a_OCUPADO_SA_SC,0,timeReint_rapido,N_Pase_a_OCUPADO,Pase_a_OCUPADO_Buffer};
 
     	// Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_APP         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_APP         42				//12
         #define N_Pase_a_OCUPADO_APP               (N_CMD + N_DATOS_Pase_a_OCUPADO_APP)
         //static byte Pase_a_OCUPADO_APP_Buffer[N_DATOS_Pase_a_OCUPADO_APP + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_APP={0,CMD_RELOJ_Pase_a_OCUPADO_APP,0,timeReint_rapido,N_Pase_a_OCUPADO_APP,Pase_a_OCUPADO_Buffer};
 
     	// Comando OCUPADO
-        #define N_DATOS_Pase_a_OCUPADO_BANDERA         34				//12
+        #define N_DATOS_Pase_a_OCUPADO_BANDERA         42				//12
         #define N_Pase_a_OCUPADO_BANDERA               (N_CMD + N_DATOS_Pase_a_OCUPADO)
         //static byte Pase_a_OCUPADO_BANDERA_Buffer[N_DATOS_Pase_a_OCUPADO_BANDERA + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_BANDERA = {0,CMD_RELOJ_Pase_a_OCUPADO_BANDERA,0,timeReint_rapido,N_Pase_a_OCUPADO_BANDERA,Pase_a_OCUPADO_Buffer};
 
-
 	// Comando COBRANDO
-    #define N_DATOS_Pase_a_COBRANDO         34				//12
+    #define N_DATOS_Pase_a_COBRANDO         42				//12
     #define N_Pase_a_COBRANDO               (N_CMD + N_DATOS_Pase_a_COBRANDO)
     static byte Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO + 2];   // Sumo DF + 0A
     typeTxCMD   CMD_Pase_a_COBRANDO={0,CMD_RELOJ_Pase_a_COBRANDO,0,timeReint_rapido,N_Pase_a_COBRANDO,Pase_a_COBRANDO_Buffer};
@@ -273,7 +275,7 @@ void Pase_a_LIBRE (byte estado){
 	}
 	if(timerA_PAGAR_to_LIBRE_cnt == 0){
 		anularReTx_RELOJ();
-		if(estado == CON_CONEXION_CENTRAL){
+		if(estado == CON_CONEXION_CENTRAL || estado == CI_ENCENDIDO_EQUIPO){
 			CMD_a_RESP = 0x03;
 		}else{
 			CMD_a_RESP = 0x23;
@@ -310,8 +312,14 @@ void Pase_a_LIBRE (byte estado){
 			on_display_tarifa();
 			//mostrar_ini_dsplyIMPORTE=0;
 
-			//enciendo bandera
-			BanderaOut_On();
+			//enciendo bandera ? (en asignado doble queda apagada)
+			if(RELOJ_NO_ASIGNADO || RELOJ_ASIGNADO_LIBRE){
+				BanderaOut_On();
+				quitar_asignado;
+			}else{
+				BanderaOut_Off();
+			}
+
 			cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
 		//}
 	}else{
@@ -344,6 +352,8 @@ void Pase_a_OCUPADO (byte estado){
 		guardar_tarifa_backup();
 
 		BanderaOut_Off(); 					//apago bandera
+		quitar_asignado;
+
 		ocupadoDATE  = getDate();
 		RELOJ_dateCambio = ocupadoDATE;
 
@@ -870,7 +880,11 @@ static void fuera_de_servicio(void){
 
 	void Send_Tx_Valor_VIAJE (void){
 		if(ESTADO_RELOJ==OCUPADO  ){
-			Tx_Valor_VIAJE ();
+			//cntSendValorViaje--;
+			//if(cntSendValorViaje == 0){
+				//cntSendValorViaje=3;		//refresca cada tres segundos
+				Tx_Valor_VIAJE ();
+			//}
 		}
 	}
 
@@ -1556,6 +1570,8 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
           #ifdef VISOR_REPORTES
             if (REPORTES_HABILITADOS){
               (void)REPORTE_queueSesion(1);   // Inicio de Sesion con chofer 1
+              //parche
+              (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(), 0, 0, 0, 0, SIN_CONEXION_CENTRAL);
             }
           #endif
         }
@@ -1678,7 +1694,9 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
 			 }
 			VELOCIDAD_MAX = 0;
 			RELOJ_INTERNO_resetMarchaParado();
-			Tx_Comando_MENSAJE(TURNO_CERRADO);
+			if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+				Tx_Comando_MENSAJE(TURNO_CERRADO);
+			}
           #endif
         }
 
@@ -1855,8 +1873,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
 
 	if(ESTADO_RELOJ == LIBRE){
     	Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-    }else if(ESTADO_RELOJ == FUERA_SERVICIO){
+		//parce para la app para que no se trabe cuando esta sin conexion
+    	CMD_a_RESP = 0x24;
+		TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+
+	}else if(ESTADO_RELOJ == FUERA_SERVICIO){
     	Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+
     }
 }
 
@@ -2061,7 +2084,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		ptrVALOR_VIAJE = &VALOR_VIAJE;
  		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;
 
-		if(tipo == CON_CONEXION_CENTRAL){
+		if(tipo == CON_CONEXION_CENTRAL || tipo == CI_ENCENDIDO_EQUIPO){
 			//BANDERA DE TRANSMISION
 			CMD_Pase_a_LIBRE.Tx_F = 1;                      // Levanto Bandera de Tx
 			CMD_Pase_a_LIBRE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
@@ -2143,6 +2166,12 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_LIBRE_Buffer[29]  = PUNTO_DECIMAL;  						//opcional1
  		Pase_a_LIBRE_Buffer[30]  = nroChofer;  						//numero de chofer
  		Pase_a_LIBRE_Buffer[31]  = nroCorrelativo_INTERNO;  					//numero correlativo
+
+		//Posicion libre
+ 		Pase_a_LIBRE_Buffer[32] = sgnLatLon_LIBRE_CEL;
+		bufferNcopy(&Pase_a_LIBRE_Buffer[33] ,(byte*)&latitudGPS_LIBRE_CEL,3);
+		bufferNcopy(&Pase_a_LIBRE_Buffer[36] ,(byte*)&longitudGPS_LIBRE_CEL, 3);
+		Pase_a_LIBRE_Buffer[39] = velocidadGPS_LIBRE_CEL;
 
  		//FIN
  		Pase_a_LIBRE_Buffer[N_DATOS_Pase_a_LIBRE] = fin_datos_msb;  	// Fin Datos
@@ -2289,6 +2318,13 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_OCUPADO_Buffer[32] = *(ptrFichasTiempo+1);             //
  		Pase_a_OCUPADO_Buffer[33] = *(ptrFichasTiempo+0);             //
 
+		//Posicion ocupado
+ 		Pase_a_OCUPADO_Buffer[34] = sgnLatLon_OCUPADO_CEL;
+		bufferNcopy(&Pase_a_OCUPADO_Buffer[35] ,(byte*)&latitudGPS_OCUPADO_CEL   ,3);
+		bufferNcopy(&Pase_a_OCUPADO_Buffer[38] ,(byte*)&longitudGPS_OCUPADO_CEL   ,3);
+		Pase_a_OCUPADO_Buffer[41] = velocidadGPS_OCUPADO_CEL;
+
+
  		Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO]  = fin_datos_msb;  // Fin Datos
  		Pase_a_OCUPADO_Buffer[N_DATOS_Pase_a_OCUPADO+1] = fin_datos_lsb;// Fin Datos
     }
@@ -2417,6 +2453,12 @@ void cambio_de_reloj_x_sensor_asiento(void){
   		Pase_a_COBRANDO_Buffer[31] = *(ptrFichasTiempo+2);             		//
   		Pase_a_COBRANDO_Buffer[32] = *(ptrFichasTiempo+1);             		//
   		Pase_a_COBRANDO_Buffer[33] = *(ptrFichasTiempo+0);             		//
+
+		//Posicion cobrando
+  		Pase_a_COBRANDO_Buffer[34] = sgnLatLon_COBRANDO_CEL;
+		bufferNcopy(&Pase_a_COBRANDO_Buffer[35] ,(byte*)&latitudGPS_COBRANDO_CEL  ,3);
+		bufferNcopy(&Pase_a_COBRANDO_Buffer[38] ,(byte*)&longitudGPS_COBRANDO_CEL  ,3);
+		Pase_a_COBRANDO_Buffer[41] = velocidadGPS_COBRANDO_CEL;
 
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO]  = fin_datos_msb;  // Fin Datos
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO+1] = fin_datos_lsb;// Fin Datos

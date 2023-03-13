@@ -17,7 +17,7 @@
 #define fin_datos_msb     0xDF
 #define fin_datos_lsb     0x0A
 
-
+extern unsigned char N_Rx_App;
 extern void guardarRxDA_BaxFORMAT (void);
 extern void RxDA_BaxFORMAT_toAIR_RxBuffer (void);
 

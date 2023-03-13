@@ -59,6 +59,9 @@
 #include "Panico.h"
 #include "Comandos sin conexion a central.h"
 #include "Reportes.h"
+//#include "watchdog.h"
+#include "DA Define Commands.h"
+
 
 //#include "file aux1.h"
 
@@ -77,7 +80,7 @@ static void MX_GPIO_Init(void);
 static void PVD_Config(void);
 static void InterruptPVD_When_VDD_ON_Config(void);
 static void InterruptPVD_When_VDD_OFF_Config(void);
-static void clrRAM (byte* ini, byte* fin);
+//static void clrRAM (byte* ini, byte* fin);
 
 PWR_PVDTypeDef sConfigPVD;
 
@@ -118,7 +121,7 @@ byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
 void SystemInit_test(void);
 
 // VARIABLES DE FLASH
-#define valorPrimerEncendido      0x5555
+//#define valorPrimerEncendido      0x5555
 
 
 
@@ -127,17 +130,19 @@ byte* ptr1;
 byte* ptr2;
 
 
+
 int main(void)
 {
-	HAL_Init();
+	HAL_Init();				//definiciones necesarias para el uso del HAL
 	ini_display_7seg();
 	SystemClock_Config();
 	set_tipo_de_equipo();
-	//ini spi
-	MX_SPIx_Init();
+	//IWDG_Config();		// Configurar el módulo IWDG
+	MX_SPIx_Init();		//ini spi
 	EPROM_CS_Init();
 	Ini_portBANDERITA();
 	MX_GPIO_Init();
+
 	//set_choice_device_uart1();
 	choice_device_uart1 = PROG_DEVICE;
 	USART1_Ini();
@@ -162,7 +167,9 @@ int main(void)
 	Panico_Ini();
 	ini_puerto_sensor_asiento();
 	BanderaOut_Ini();
+
 	clr_BANDERA();
+
 
 	//inicializar asiento luego de tarifa (setea carrera_bandera)
 
@@ -179,8 +186,6 @@ int main(void)
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
 	#endif
 
-
-
 	check_corte_alimentacion();
 
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
@@ -193,14 +198,25 @@ int main(void)
 	iniPRINT_DEBUG();
 #endif
 
-LOOP:
+	DISTANCIA_iniCalculo_PULSE_ACCUM();
 
+LOOP:
+	//borrar_EEPROM();
 	for(;;){
 
-		procesar_datosSC();
+		//prueba
+		//read_progRELOJ_eeprom();
+		//read_backup_eeprom();
+		//grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET);
+		//chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
+
+
+		//IWDG->KR = IWDG_KEY_RELOAD;	// Realizar la recarga del contador del IWDG
+
+		procesar_datosSC();				//procesa datos sin conexion
 		// REPORTES
 		#ifdef VISOR_REPORTES
-		  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
+		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
 		#endif
 
 		check_relojBANDERITA();
@@ -220,14 +236,16 @@ LOOP:
 
 		firstDATE();
 		tarifarRELOJ();
-		//RECEPCION DE DA
+
+		//RECEPCION DE DA ************
 		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
 		RxDA_BaxFORMAT_toAIR_RxBuffer();	//toma datos de rxDA_baxFORMAT.RxBuffer con protocolo BAX y los guarda AIR_RxBuffer
-
 		RxDA_process();					     //toma datos de AIR_RxBuffer y los procesa
 		//TRANSMISION A DA
 		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
 		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
+		//****************************
+
 		ASIENTO_consultaSensor();       	// Consulta sensor presionado o no
 		RELOJ_a_pagar_to_libre();
 		//grabar_enFLASH();
@@ -257,8 +275,19 @@ void ModoPROGRAMACION (void){
 	    PROGRAMADOR_fin();                //Fin de Programacion de Parametros aka Fin Grabacion EEPROM
 	    EEPROM_chkRequest(1);			  //
 	    TMR_GRAL_LOOP();
+
+		//RECEPCION DE DA ************
+		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
+		RxDA_BaxFORMAT_toAIR_RxBuffer();	//toma datos de rxDA_baxFORMAT.RxBuffer con protocolo BAX y los guarda AIR_RxBuffer
+		RxDA_process();					     //toma datos de AIR_RxBuffer y los procesa
+		//TRANSMISION A DA
+		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
+		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
+		//****************************
 	}
 }
+
+
 
 void set_TIMEandDATE (void){
 

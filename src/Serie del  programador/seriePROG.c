@@ -123,6 +123,10 @@
   /*************************************************/
     void UART_Rx_PRG (byte dato){
       
+	  if(prog_mode){
+		//indica que esta programando con el led de salida de bandera
+		HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+	  }
       
       BAX_Rx_data (dato, &PRG_protBAX_STAGE, &BAX_SCI_PROG);
       
@@ -134,11 +138,6 @@
     	  prog_mode=1;
 	    }
 
-    	if(prog_mode){
-        	//indica que esta programando con el led de salida de bandera
-        	HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
-    	}
-
         BAX_SCI_PROG.Rx_fin = 0;				// Bajo Bandera
         
       }
@@ -147,6 +146,13 @@
 
     void UART_Tx_PRG(UART_HandleTypeDef *huart){
     	word newData;
+
+		if(prog_mode){
+			//indica que esta programando con el led de salida de bandera
+			HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
+		}
+
+
     	// Extraigo nuevo dato y determino si debo finalizar Tx
         newData = PRG_UART_TxNewData();
         if ((newData & seriePROG_endTx) == seriePROG_endTx){

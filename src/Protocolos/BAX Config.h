@@ -9,6 +9,8 @@
     //#include "- Visor Config -.h"
 
     #define dim_BAX         230
+	#define dim_BAX         230
+
     #define dim_BAX_GPA     3
 
 #endif

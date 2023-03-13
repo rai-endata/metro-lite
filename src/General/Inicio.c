@@ -41,6 +41,8 @@ void SOURCE_DATE_Ini (void){
     }else if (HORA_RTC){
       DATE_ptr = &RTC_Date;
     }
+    __NOP();
+    __NOP();
   }
 
 /* DETERMINAR FECHA VALIDA */
@@ -329,17 +331,20 @@ void check_corte_alimentacion(void){
 		    	  ini_pulsador_impresion();
 
 	    	  }else{
-					//viaje perdido
-					tarifaPerdida = 0;
-					fichasDPerdida = 0;
-					fichasTPerdida = 0;
-					dineroPerdido = 0;
-	    		  //arranco como si fuera CORTE LARGO
+
+	    	    /* modificado 15/02/2023 previo a esta fecha no estaba comentada las linea de abajo
+	    		//viaje perdido
+				tarifaPerdida = 0;
+				fichasDPerdida = 0;
+				fichasTPerdida = 0;
+				dineroPerdido = 0;
+	    		 //arranco como si fuera CORTE LARGO
 	  	  		//ESTADO_RELOJ=FUERA_SERVICIO;
 	  	  		ESTADO_RELOJ=LIBRE;
 	  	  		ResetDatGps(LIB);
 	  	  		Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
 	  	  		setTEST_DISPLAY();
+				*/
 	    	  }
 	      }else{
 	        // CORTE LARGO

@@ -97,6 +97,9 @@
   static tREG_GENERIC* newReg_GETptr;             // Puntero de extraccion de cola
   static byte newReg_queue_cnt;                   // Contador de registros encolados
   
+  static tREG_GENERIC* newReg_GETptr_prueba;             // solo para prueba borrarlo
+  static tREG_GENERIC newRegistro_prueba[dim_RegQueue];		//solo para prueba borrarlo
+
   tFLASH_ERROR REPORTE_flashError;
   
   static byte REPORTES_forcedReset;               // Reset Forzado de Reportes
@@ -753,7 +756,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
     //  tREG_GENERIC Registro_En_EEPROM[1];
     //  tREG_GENERIC* newReg_GETptrEEPROM;
 
-      #ifdef VISOR_REPORTES
+#ifdef VISOR_REPORTES
 
       //addressEEPROM_REPORTE_NRO_VIAJE = (uint16_t*)ADDR_EEPROM_REPORTE_NRO_VIAJE;
       //addressEEPROM_REPORTE_NRO_TURNO = (uint16_t*)ADDR_EEPROM_REPORTE_NRO_TURNO;
@@ -800,9 +803,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         newReg_GETptr->idx = indice;        							// Agrego INDICE a registro a grabar
     	(void)EEPROM_WriteBuffer( (uint8_t*)newReg_GETptr, (uint32_t)REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
 
-/*
     	//prueba
-    	EEPROM_ReadBuffer((uint8_t*)&reg_reloj, (uint32_t) REPORTE_PUTptr,sizeof(tREG_GENERIC));
+    	newReg_GETptr_prueba = newRegistro_prueba;
+    	(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
+
+    	/*
+    	//prueba
+    	// tREG_GENERIC reg_reloj;
+    	//EEPROM_ReadBuffer((uint8_t*)&reg_reloj, (uint32_t) REPORTE_PUTptr,sizeof(tREG_GENERIC));
 
     	if (reg_reloj.tipo == REG_ocupado){
 			 reg_ocupado =  (tREG_OCUPADO*)&reg_reloj;
@@ -814,26 +822,26 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 */
 
     	#ifdef RELOJ_DEBUG
-        //imprime direccion de tabla
-		newReg_GETptrEEPROM = &Registro_En_EEPROM;
-		EEPROM_ReadBuffer(newReg_GETptrEEPROM,REPORTE_PUTptr,sizeof(tREG_GENERIC));
-		printDIR_REPORTES(&bufferPRINT);
-#endif
+			//imprime direccion de tabla
+			newReg_GETptrEEPROM = &Registro_En_EEPROM;
+			EEPROM_ReadBuffer(newReg_GETptrEEPROM,REPORTE_PUTptr,sizeof(tREG_GENERIC));
+			printDIR_REPORTES(&bufferPRINT);
+		#endif
 
         #ifdef VISOR_REPORTE_30DIAS
           REPORTE_30DIAS_addData(newReg_GETptr);  // Agrego datos a reporte de 30dias
 
-#ifdef RELOJ_DEBUG
-          tREG_30DIAS newReg_30dias;
-          tREG_30DIAS* newReg_30dias_ptr;
+			#ifdef RELOJ_DEBUG
+					  tREG_30DIAS newReg_30dias;
+					  tREG_30DIAS* newReg_30dias_ptr;
 
-        //imprime direccion de tabla
-        newReg_30dias_ptr = &newReg_30dias;
-		EEPROM_ReadBuffer(newReg_30dias_ptr, REPORTE_30DIAS_PUTptr,sizeof(tREG_30DIAS));
-		printDIR_REPORTES_30DIAS(&bufferPRINT);
-#endif
+					//imprime direccion de tabla
+					newReg_30dias_ptr = &newReg_30dias;
+					EEPROM_ReadBuffer(newReg_30dias_ptr, REPORTE_30DIAS_PUTptr,sizeof(tREG_30DIAS));
+					printDIR_REPORTES_30DIAS(&bufferPRINT);
+			#endif
 
-        #endif
+		#endif
         
         // Una vez finalizada la grabacion de FLASH:
         //  - Avanzo puntero de grabacion en FLASH
@@ -849,23 +857,21 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       //  updateNroVIAJE_inFlash(tipo);         // Actualizacion de NRO VIAJE
 
 
-#ifdef RELOJ_DEBUG
+		#ifdef RELOJ_DEBUG
+			//REGISTRO GUARDADO
+			//printCabecera_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
+			if((newReg_GETptrEEPROM->tipo == REG_libre) || (newReg_GETptrEEPROM->tipo == REG_ocupado) || (newReg_GETptrEEPROM->tipo == REG_fserv)){
+				printLiOcFs_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
+			}else if((newReg_GETptrEEPROM->tipo == REG_apagar)){
+				//printA_PAGAR_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
+				printA_PAGAR_REGISTER_TAB_REPORTES((tREG_A_PAGAR*)newReg_GETptrEEPROM,(newReg_GETptrEEPROM->empty+14));
 
-        //REGISTRO GUARDADO
-        //printCabecera_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
-        if((newReg_GETptrEEPROM->tipo == REG_libre) || (newReg_GETptrEEPROM->tipo == REG_ocupado) || (newReg_GETptrEEPROM->tipo == REG_fserv)){
-        	printLiOcFs_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
-        }else if((newReg_GETptrEEPROM->tipo == REG_apagar)){
-        	//printA_PAGAR_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
-        	printA_PAGAR_REGISTER_TAB_REPORTES((tREG_A_PAGAR*)newReg_GETptrEEPROM,(newReg_GETptrEEPROM->empty+14));
-
-        }else if((newReg_GETptrEEPROM->tipo == REG_sesion)){
-            printSESIONS_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
-        }else{
-        	printLiOcFs_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
-        }
-
-#endif
+			}else if((newReg_GETptrEEPROM->tipo == REG_sesion)){
+				printSESIONS_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
+			}else{
+				printLiOcFs_REGISTER_TAB_REPORTES(newReg_GETptrEEPROM);
+			}
+		#endif
         
         incRegQueue_ptr(&newReg_GETptr);      // Avanzo puntero de extraccion de cola
         
@@ -875,7 +881,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
 
 
       }
-      #endif
+#endif
     }
 
 
@@ -1742,6 +1748,15 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       
       exit = 0;
       sesiones = 0;
+
+      EEPROM_ReadBuffer(&aux_search, search_ptr, sizeof(tREG_GENERIC));
+
+      if (aux_search.tipo == REG_sesion){
+        *buffer_ptr++ = (tREG_SESION*)search_ptr;  // Guardo puntero de SESION
+        sesiones++;                               // Incremento contador de sesiones
+      }
+
+
       dispararTO_lazo();
       while(!exit){
 
@@ -1767,6 +1782,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
           break;
         }
 
+    	decFlashRep_ptr(&search_ptr);
         EEPROM_ReadBuffer(&aux_search, search_ptr, sizeof(tREG_GENERIC));
 
         if (aux_search.tipo == REG_sesion){
@@ -1783,7 +1799,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
             }
         }
 */
-        decFlashRep_ptr(&search_ptr);
+        //decFlashRep_ptr(&search_ptr);
         
         if (chkTO_lazo_F() == 1){
           exit = 1;
@@ -2540,7 +2556,9 @@ void chkPerdidaDatosTurno (void){
         if ((numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 15)) && (numero_reg_del_turno < (NUMERO_DE_REGISTROS_DE_TABLA - 6))){
           // Quedan menos de 10 y mas de 5 indices para alcanzar a la ultima sesion => Muestro aviso
         	if (RELOJ_LIBRE || RELOJ_FUERA_SERVICIO){
-        		Tx_Comando_MENSAJE(CIERRE_TURNO);
+       			if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+        				Tx_Comando_MENSAJE(CIERRE_TURNO);
+        			}
         	}
 
         }else if (numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 6)){
@@ -2838,7 +2856,6 @@ void chkPerdidaDatosTurno (void){
 
 
   }
-
 
 
 /*********************************************************************************************/

@@ -22,10 +22,18 @@
 
 
 /************************ ADDRES SIZE PROG RELOJ *******************************************************/
+#define	ADDR_BASE_PROG_PART0				ADDR_EEPROM_PAGE_0
 #define	ADDR_BASE_PROG_PART1				ADDR_EEPROM_PAGE_1
 #define	ADDR_BASE_PROG_PART2				ADDR_EEPROM_PAGE_2
 #define	ADDR_BASE_PROG_PART3				ADDR_EEPROM_PAGE_3
 #define	ADDR_BASE_PROG_PART4				ADDR_EEPROM_PAGE_4
+#define	ADDR_BASE_PROG_PART5				ADDR_EEPROM_PAGE_5
+#define	ADDR_BASE_PROG_PART6				ADDR_EEPROM_PAGE_6
+#define	ADDR_BASE_PROG_PART7				ADDR_EEPROM_PAGE_7
+#define	ADDR_BASE_PROG_PART8				ADDR_EEPROM_PAGE_8
+#define	ADDR_BASE_PROG_PART9				ADDR_EEPROM_PAGE_9
+#define	ADDR_BASE_PROG_PART10				ADDR_EEPROM_PAGE_10
+#define	ADDR_BASE_PROG_PART11				ADDR_EEPROM_PAGE_11
 
 #define	ADDR_BASE_VARIABLES			     	ADDR_EEPROM_PAGE_12			//AQUI GUARDO VARIABLES DE DISTINTO TIPO
 
@@ -46,30 +54,48 @@
 #define	ADDR_BASE_TABLA_REPORTE_30DIAS		ADDR_EEPROM_PAGE_256
 
 
-#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
-#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21
+//#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
+//#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21
+
+
+//#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
+//#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21
+
+#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_14
+#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_15
+
 
 #define	ADDRESS_PROG_relojCOMUN     		ADDR_BASE_PROG_PART1
+//#define	ADDRESS_PROG_relojCOMUN     		ADDR_BASE_PROG_PART4
 #define	SIZE_PROG_relojCOMUN        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojCOMUN)
 #define	ADDRESS_PROG_relojT1D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN
+//#define	ADDRESS_PROG_relojT1D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN
 #define	SIZE_PROG_relojT1D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT1D)
 #define	ADDRESS_PROG_relojT2D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D
+//#define	ADDRESS_PROG_relojT2D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D
 #define	SIZE_PROG_relojT2D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT2D)
 #define	ADDRESS_PROG_relojT3D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D
+//#define	ADDRESS_PROG_relojT3D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D
 #define	SIZE_PROG_relojT3D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT3D)
 #define	ADDRESS_PROG_relojT4D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D + SIZE_PROG_relojT3D
+//#define	ADDRESS_PROG_relojT4D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D + SIZE_PROG_relojT3D
 #define	SIZE_PROG_relojT4D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT4D)
 
 #define	ADDRESS_PROG_relojT1N 				ADDR_BASE_PROG_PART2
+//#define	ADDRESS_PROG_relojT1N 				ADDR_BASE_PROG_PART5
 #define	SIZE_PROG_relojT1N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT1N)
 #define	ADDRESS_PROG_relojT2N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N
+//#define	ADDRESS_PROG_relojT2N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N
 #define	SIZE_PROG_relojT2N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT2N)
 #define	ADDRESS_PROG_relojT3N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N
+//#define	ADDRESS_PROG_relojT3N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N
 #define	SIZE_PROG_relojT3N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT3N)
 #define	ADDRESS_PROG_relojT4N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N
+//#define	ADDRESS_PROG_relojT4N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N
 #define	SIZE_PROG_relojT4N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT4N)
 
 #define	ADDRESS_PROG_relojEqPESOS 			ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
+//#define	ADDRESS_PROG_relojEqPESOS 			ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
 #define	SIZE_PROG_relojEqPESOS   	    	sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojEqPESOS)
 
 #define	ADDRESS_PROG_relojCALEND 			ADDRESS_PROG_relojEqPESOS + SIZE_PROG_relojEqPESOS
@@ -144,11 +170,15 @@
 
 
 //el tamaño de PROG_TICKET ES DE 220 POR LO TANTO OCUPA 2 PAGINAS (220 -128 = 92)
-#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART3+174 							//SUMO 174 PORQUE A PARTIR DE AHI NO FUNCIONA, NO SE PORQUE QUIZAS ESTE FALLANDO LA EEPROM. ESTO ME LLEVA A PAGINA  PAGINA 4
+//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART3+172-8 							//SUMO 174 PORQUE A PARTIR DE AHI NO FUNCIONA, NO SE PORQUE QUIZAS ESTE FALLANDO LA EEPROM. ESTO ME LLEVA A PAGINA  PAGINA 4
+#define	ADDRESS_PROG_TICKET_PAGE1     		ADDR_BASE_PROG_PART4 							//
+#define	ADDRESS_PROG_TICKET_PAGE2     		ADDR_BASE_PROG_PART5 							//
+//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART6 							//SUMO 174 PORQUE A PARTIR DE AHI NO FUNCIONA, NO SE PORQUE QUIZAS ESTE FALLANDO LA EEPROM. ESTO ME LLEVA A PAGINA  PAGINA 4
+//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART1					//CON LA NUEVA EEPROM HUBO PROBLEMAS DE GRABACION EN LA ADDR_BASE_PROG_PART3+174
 #define	SIZE_PROG_TICKET        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET)
 
 //ADDRESS_PROG_TICKET_RECAUD ya esta en PAGINA 6
-#define	ADDRESS_PROG_TICKET_RECAUD 		ADDRESS_PROG_TICKET + SIZE_PROG_TICKET
+#define	ADDRESS_PROG_TICKET_RECAUD 		ADDR_BASE_PROG_PART6
 #define	SIZE_PROG_TICKET_RECAUD    	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET_RECAUD)
 
 
@@ -212,19 +242,20 @@
    extern tEEPROM_ERROR grabar_byte_EEPROM (byte dato, uint16_t* EEPROM_ptr, byte mask);
    extern tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask);
    extern tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
+   extern tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
 
-  void read_backup_eeprom(void);
- void write_backup_eeprom(void);
- extern void test_size(void);
- extern void testEEPROM(void );
- extern void levantar_variablesEEPROM (void);
-
-
- uint32_t EEPROM_readDouble (uint32_t* EEPROM_ptr);
- tEEPROM_ERROR EEPROM_writeDouble (uint32_t* EEPROM_ptr, uint32_t dato);
- tEEPROM_ERROR EEPROM_write (word* EEPROM_ptr, word dato);
- tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr);
+	 void read_backup_eeprom(void);
+	 void write_backup_eeprom(void);
+	 extern void test_size(void);
+	 extern void testEEPROM(void );
+	 extern void levantar_variablesEEPROM (void);
 
 
+	 uint32_t EEPROM_readDouble (uint32_t* EEPROM_ptr);
+	 tEEPROM_ERROR EEPROM_writeDouble (uint32_t* EEPROM_ptr, uint32_t dato);
+	 tEEPROM_ERROR EEPROM_write (word* EEPROM_ptr, word dato);
+	 tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr);
+
+	 extern void borrar_EEPROM (void);
 
 #endif /* EEPROM_EEPROM_H_ */

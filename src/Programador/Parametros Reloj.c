@@ -202,7 +202,12 @@
          // BUZZER_play(RING_error);
         }*/
   	  //Buzzer_On(BEEP_PROGRAMCION_ERROR);
-  	  error_eepromDATA=1;
+     error_eepromDATA=1;
+  	 prog_mode=1;
+
+  	  EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
+      HORA_source = 1;		//para que cuando este borrado toda la eeprom pueda inicializar reportes
+
     }
 }
            
@@ -1752,8 +1757,12 @@ void read_TICKET_eeprom(uint8_t* buffer_backup){
 	uint32_t size_eeprom;
 
 	size_eeprom = SIZE_PROG_TICKET;
-	address_eeprom = ADDRESS_PROG_TICKET;
-	EEPROM_ReadBuffer(buffer_backup,address_eeprom,size_eeprom);
+	address_eeprom = ADDRESS_PROG_TICKET_PAGE1;
+	EEPROM_ReadBuffer(buffer_backup,address_eeprom,128);
+
+	address_eeprom = ADDRESS_PROG_TICKET_PAGE2;
+	EEPROM_ReadBuffer(buffer_backup+128,address_eeprom,size_eeprom-128);
+
 }
 
 
@@ -2108,7 +2117,15 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
 
     void levantar_progTICKET (void){
 
-     EEPROM_ReadBuffer(&EEPROM_PROG_TICKET,ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
+    uint8_t* EEPROM_PROG_TICKET_ptr;
+
+     //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
+ 	 EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, ADDRESS_PROG_TICKET_PAGE1,128);
+
+ 	 EEPROM_PROG_TICKET_ptr = &EEPROM_PROG_TICKET;
+ 	 EEPROM_PROG_TICKET_ptr += 128;
+ 	 EEPROM_ReadBuffer(EEPROM_PROG_TICKET_ptr,ADDRESS_PROG_TICKET_PAGE2,sizeof(tPRG_TICKET)-128);
+
      EEPROM_ReadBuffer(&EEPROM_PROG_TICKET_RECAUD,ADDRESS_PROG_TICKET_RECAUD,sizeof(tPRG_TICKET_RECAUD));
     // testEEPROM();
     }

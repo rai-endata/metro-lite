@@ -383,7 +383,6 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 	uint16_t cursor=0;
 	byte status;
 
-
 	//first find the page the write is directed to.
 	if(addr > EEPROM_SIZE || addr+num > EEPROM_SIZE )
 		return errBounds;
@@ -391,9 +390,9 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 
 #if defined 	USING_MEMORY_PROTECT
 	if(EEPROM_IsProtected( addr,(uint16_t)(addr+num)))
- 	 {
+ 	{
  		 return errProtected;
- 	 }
+ 	}
 #endif
 
 
@@ -403,20 +402,23 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 
 		//Set the Write Enable Latch
 		offsetInPage=addr % EEPROM_PAGE_SIZE_BYTES;
-		//now write to the end of the page
 		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
-
+		//__NOP();
 		SpiTxRxByte(EEPROM_WREN, (uint8_t*)&status);						//Send the write sequence
+		//__NOP();
 		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);		//CS==H
 		//write sequence finished, the CS->H is needed to set the Write enable latch.
-
+		//__NOP();
 		//now select the Chip again for the command sequence
 		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
+		//__NOP();
 		SpiTxRxByte(EEPROM_WRITE, (uint8_t*)&status);						//now send the WRITE command
 		SpiTxRxByte((uint8_t)(addr >> 8), (uint8_t*)&status);				//send H 8 bits of addr
 		SpiTxRxByte((uint8_t)(addr &255), (uint8_t*)&status);				//send low 8 bits of addr
 
+		//now write to the end of the page
 		while ((offsetInPage < EEPROM_PAGE_SIZE_BYTES) && (num >0) )
+		//while ((num >0) )
 		{
 			//send the byte
 			SpiTxRxByte(array[cursor], (uint8_t*)&status);
@@ -425,10 +427,23 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 			offsetInPage++;
 			num--;
 		}
+
+		//__NOP();
 		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);		//CS==H
+
+
+		__NOP();
+		//Set the Write DisEnable Latch
+		offsetInPage=addr % EEPROM_PAGE_SIZE_BYTES;
+		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
+		__NOP();
+		SpiTxRxByte(EEPROM_WRDI, (uint8_t*)&status);						//Send the write sequence
+		__NOP();
+		GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);		//CS==H
+
 		EEPROM_MilliSecDelay(4);		//this could be as little as 3mS and no greater than 4mS
 		EEPROM_WaitForWIP();
-		offsetInPage=0;
+			offsetInPage=0;
 	}
 
 	return errNone;
@@ -561,15 +576,18 @@ byte status;
 		return errBounds;
 
 	GPIO_WriteBit(EEPROM_CS_PORT, EEPROM_CS_PIN, RESET);		//CS==L
-	tb=SpiTxRxByte(EEPROM_READ, (uint8_t*)&status);				//send the command to read the eeprom
-	tb= (uint8_t)(addr>>8);
-	tb=SpiTxRxByte(tb, (uint8_t*)&status);						//send the addr from which to read data (LSB)
-	tb=(uint8_t)(addr &255);
-	tb=SpiTxRxByte(tb, (uint8_t*)&status);						//send the addr from which to read data (MSB)
+	__NOP();
+
+	SpiTxRxByte(EEPROM_READ, (uint8_t*)&status);						//now send the WRITE command
+	SpiTxRxByte((uint8_t)(addr >> 8), (uint8_t*)&status);				//send H 8 bits of addr
+	SpiTxRxByte((uint8_t)(addr &255), (uint8_t*)&status);				//send low 8 bits of addr
+
 	//now clock in the data bytes
 	for (i = 0; i < num; i++) {
 		buff[i]=SpiTxRxByte(0, (uint8_t*)&status);
 	}
+
+	__NOP();
 	GPIO_WriteBit(EEPROM_CS_PORT, EEPROM_CS_PIN, SET);		//CS==H
 	return (tb);
 }

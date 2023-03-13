@@ -28,6 +28,8 @@ static tBAX 			rxVA_protBAX_STAGE; 			 // Etapa del protocolo BAX
 
 static tBAX_SCI 		rxVA_baxFORMAT;              // Datos de SCI segun protocolo BAX
 
+unsigned char N_Rx_App;
+
 void VA_UART_ini (void){
 	va_rxDATA_ini();
 
@@ -81,7 +83,13 @@ void guardarRxDA_BaxFORMAT (void){
 
 	if( va_rx_cntBYTE > 0){
 		//toma datos del buffer de sci (va_rxDATA)
+		//byte* rxBYTE_ptr = &rxBYTE;
 		rxBYTE = getBUFCIR(&va_rxDATA);
+
+		//prueba lo envia por el puerto serie
+		//Enviar_BUFFER_Rx_porPuertoSerie ((byte*)&rxBYTE, 1);
+
+
 		//chk si están llegando datos con el protocolo bax
 		rxVA_chk_baxFORMAT(rxBYTE);
 		//Aqui se analizarian eventualmente otros protocolos
@@ -124,7 +132,10 @@ void rxVA_chk_baxFORMAT(byte dato){
        // ya que despues, el puntero apunta a otro lado
        huart7.Rx_TO_cnt = 0;											//timout disparado por el byete de stop
        GETptr = rxVA_baxFORMAT.RxGPA[rxVA_baxFORMAT.RxGPA_GETidx];   	// Extraigo puntero GET, para poder tomar su direccion
-       inc_ptr(&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX);   			// salto N
+
+       N_Rx_App = get_byte (&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX); 	// Extraigo N
+       //inc_ptr(&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX);   			// salto N
+
        //inc_ptr(&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX);   			// salto MOV_H
        //inc_ptr(&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX);   			// salto MOV_L
        RxCMD = get_byte (&GETptr, rxVA_baxFORMAT.RxBuffer, dim_BAX); 	// Extraigo CMD

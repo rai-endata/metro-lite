@@ -63,7 +63,7 @@
 
 
      // eeprom_ptr = &EEPROM_PROG_TICKET;   // Puntero a Inicio de Parametros TICKET
-      EEPROM_ReadBuffer(&dataEEPROM,ADDRESS_PROG_TICKET,1);
+      EEPROM_ReadBuffer(&dataEEPROM, ADDRESS_PROG_TICKET_PAGE1, 1);
       if (dataEEPROM == 0xFF){
 			// No hay programacion => programo por defecto
 			prgTICKET_armarDEFAULT();
@@ -104,7 +104,12 @@
       
       if (error == PRG_OK){
     	  read_TICKET_eeprom((uint8_t*)&buffer_prog);
-          PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETtext, (byte*) &EEPROM_PROG_TICKET);
+	  	  buffer_prog[EEPROMsize_PROG_TICKET]   = 0xdf;
+	  	  buffer_prog[EEPROMsize_PROG_TICKET+1] = 0x0a;
+
+          //PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETtext, (byte*) &EEPROM_PROG_TICKET);
+
+    	  PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETtext, (uint8_t*)&buffer_prog);
       }
     }
   
@@ -368,7 +373,12 @@
     tEEPROM_ERROR PROG_TICKET_grabarEEPROM (void){
       tEEPROM_ERROR error;
 
+
+
       dword* EEPROM_ptr;
+      dword* EEPROM_ptr_AUX;
+      byte* EEPROM_buffer_ptr_aux;
+
       //tPRG_TICKET EEPROM_buffer;
       byte EEPROM_buffer[EEPROMsize_PROG_TICKET];
       
@@ -376,12 +386,27 @@
       if (prgTICKET_EEPROM_F){
         prgTICKET_EEPROM_F = 0;          // Bajo Bandera
         
-        //EEPROM_ptr = &EEPROM_PROG_TICKET;
-        EEPROM_ptr = ADDRESS_PROG_TICKET;
-        
+        //EEPROM_ptr = ADDRESS_PROG_TICKET;
+        //EEPROM_ptr_AUX = ADDRESS_PROG_TICKET+88;
+        //EEPROM_buffer_ptr_aux = &EEPROM_buffer;
+        //EEPROM_buffer_ptr_aux += 88;
+
         armarBuffer_progTICKET_EEPROM(&EEPROM_buffer);  // Armo buffer de grabación según formato
         
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET);
+        EEPROM_ptr = ADDRESS_PROG_TICKET_PAGE1;
+        error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, 128);
+
+        EEPROM_ptr = ADDRESS_PROG_TICKET_PAGE2;
+        EEPROM_buffer_ptr_aux = &EEPROM_buffer;
+        EEPROM_buffer_ptr_aux += 128;
+        error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
+
+
+		//PRUEBA
+		//uint8_t buffer_prog[EEPROMsize_PROG_TICKET];
+		//read_TICKET_eeprom((uint8_t*)&buffer_prog);
+
+
       }
       
       return(error);

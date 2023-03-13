@@ -28,8 +28,11 @@ spiMODE_en spi_type;
 
 	void MX_SPIx_Init(void){
 		SpiHandle.Instance               = SPIx;
-		//SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
-		SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+		SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+		//SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+
+		//SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+
 		SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
 		SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
 		SpiHandle.Init.CLKPolarity       = SPI_POLARITY_LOW; //clock en reposo
