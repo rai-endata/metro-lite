@@ -15,6 +15,7 @@
 #include "Inicio.h"
 #include "DA Communication.h"
 #include "Bluetooth.h"
+#include "Air Update.h"
 
 
 /*********************************************************************************************/
@@ -40,6 +41,7 @@ static void DA_restoreTxPUTptr (void);
 static void recargar_Reintento_CMD (byte cmd);
 static byte chk_TxPendiente (void);
 static uint16_t chkSpace_onDA_TxBuffer (void);
+byte cmd_resp;
 
 /****************************
  *  MACROS Y CONSTANTES
@@ -89,8 +91,6 @@ uint16_t pauseTx_to_cnt;
 
 	  if (HAY_COMANDO_PENDIENTE ){
 
-		  //transmitiendo_RTA = 0;            				// Asumo que no voy a transmitir una Rta
-
 		  if(bluetoothCONECTADO){
 			  space = chkSpace_onDA_TxBuffer();
 			  if( space >3+Tabla_ComandosTx[CMD_a_Tx]->N){
@@ -108,7 +108,7 @@ uint16_t pauseTx_to_cnt;
   			   TxBufferDA_cntCMD++;       						// Incremento cantidad de comandos copiados a buffer de Tx
   			  }
             }else{
-            	clear_TxPendiente();
+            	//clear_TxPendiente();
             }
 		  }
 		}
@@ -277,8 +277,8 @@ void Tx_RTA_toDA (void){
 
 		//DA_TxBuffer_addData(NRO_MOVIL_H);            // Nro Móvil HIGH
 		//DA_TxBuffer_addData(NRO_MOVIL_L);            // Nro Móvil LOW
-
-		DA_TxBuffer_addData(getCMD_A_RESP + 0x80);   // Comando-Respuesta
+		cmd_resp = getCMD_A_RESP + 0x80;
+		DA_TxBuffer_addData(cmd_resp);   // Comando-Respuesta
 
 		if (getBUFFER_A_RESP != NULL){
 		  // Respuesta con Datos -> El Fin de Datos debe estar incluido en los datos para
@@ -462,8 +462,9 @@ void Tx_BUFFER_getN (void){
 	  // cargo el contador de reintentos asociado al comando y tb
 	  // modifico los reintentos del coma
 	  if (Tabla_ComandosTx[cmd]->Reintentos > 0){
+
 		if (Tabla_ComandosTx[cmd]->Reintentos != reintINFINITOS){
-		  Tabla_ComandosTx[cmd]->Reintentos--;                  // Decremento Reintentos
+		  Tabla_ComandosTx[cmd]->Reintentos--;                  // Decremento cantidad de Reintentos
 		}
 
 		reTx_timer_cnt[cmd] = Tabla_ComandosTx[cmd]->timeReint; // Cargo tiempo entre Reintentos
@@ -591,3 +592,18 @@ void Tx_BUFFER_getN (void){
          }
        }
 
+
+
+       /* ACCIONES AL FINALIZA TRANSMISION DE RESPUESTA */
+         /*************************************************/
+/*
+       void finTxRta_actions (void){
+             // Esta rutina se llama desde el lazo principal y realiza las acciones que
+             // esten esperando el fin de transmision de la respuesta para ser ejecutadas
+        	     if (waitToTx_upDateSuccess){
+        	    	 waitToTx_upDateSuccess=0;
+        	    	 updateFinRTA = 1;
+        	      }
+           }
+
+*/

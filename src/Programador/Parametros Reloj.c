@@ -8,6 +8,7 @@
   #include "Manejo de Buffers.h"
   #include "Programacion Parametros.h"
   #include "Parametros Reloj.h"
+  #include "Parametros Movil.h"
   #include "Tarifacion Reloj.h"
   #include "RTC.h"
   #include "Timer.h"
@@ -22,6 +23,9 @@
   #include "buzzer.h"
   #include "Grabaciones en EEPROM.h"
   #include "inicio.h"
+  #include "Air Update.h"
+  #include "DTE - Tx.h"
+
 
   //#include "Air Update.h"
 
@@ -74,12 +78,13 @@
 
   static void armarBuffer_progEqPESOS_EEPROM (byte* buffer);
   static void armarBuffer_progCALEND_EEPROM (byte* buffer);
-  
+  static void progProgramacionPorDefecto(void);
+
 
 /*********************************************************************************************/
 /* VARIABLES */
 /*************/
-  static byte PROG_RELOJ_DATE_PC[6];              // Hora y Fecha recibida desde la PC (DIA-MES-AÑO-HORA-MIN-SEG)
+   byte PROG_RELOJ_DATE_PC[6];              // Hora y Fecha recibida desde la PC (DIA-MES-AÑO-HORA-MIN-SEG)
   
   static byte* progRELOJ_COMUN_KATE;              // Puntero de extraccion de datos de parametros de RELOJ KATE
   static byte* progRELOJ_COMUN_GET;               // Puntero de extraccion de datos de parametros de RELOJ COMUNES
@@ -134,6 +139,12 @@
 	//EEPROM_ReadBuffer(&dataEEPROM,ADDRESS_PROG_relojCOMUN,1);
 
 	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
+	//if(error != EEPROM_OK){
+	if(error != EEPROM_OK){
+		progProgramacionPorDefecto();
+	}
+
+	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
 	if(error == EEPROM_OK){
 		if(seleccionManualTarifas){
 			tarifa_max = prgRELOJ_determineCantTarifasD_MANUAL() + prgRELOJ_determineCantTarifasN_MANUAL();
@@ -169,48 +180,62 @@
 		nroTARIFA_HAB_MANUAL = prgRELOJ_determineCantTarifasD_MANUAL();
 		nroTARIFA_HAB_AUTOMATICA = prgRELOJ_determineCantTarifasD_AUTOMATICA();
 
-    }else {
-        // No hay programacion o hay error=> Levanto defecto
-        /*
-    	prgRELOJcomun_armarDEFAULT();               // Armo String con parametros por defecto
-        PROG_RELOJcomun_to_EEPROM(0);               // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-        error = PROG_RELOJcomunes_grabarEEPROM();   // Grabar Parametros Comunes
-        if (error != EEPROM_OK){
-         // BUZZER_play(RING_error);
-        }
-
-        for (i=tarifa1D; i<(tarifa4N+1); i++){
-          prgRELOJtarifa_armarDEFAULT(i);           // Armo String con parametros por defecto
-          PROG_RELOJtarifa_to_EEPROM(i,0);		      // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-          error = PROG_RELOJtarifa_grabarEEPROM(i);	// Grabar Tarifa en EEPROM
-          if (error != EEPROM_OK){
-            //BUZZER_play(RING_error);
-          }
-        }
-
-        prgRELOJeqPesos_armarDEFAULT();             // Armo String con parametros por defecto
-        PROG_RELOJeqPesos_to_EEPROM(0);				// Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-        error = PROG_RELOJeqPesos_grabarEEPROM();   // Grabar Eq Pesos en EEPROM
-        if (error != EEPROM_OK){
-         // BUZZER_play(RING_error);
-        }
-
-        prgRELOJcalendar_armarDEFAULT();            // Armo String con parametros por defecto
-        PROG_RELOJcalend_to_EEPROM(0);						  // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-        error = PROG_RELOJcalend_grabarEEPROM();    // Grabar Calendario en EEPROM
-        if (error != EEPROM_OK){
-         // BUZZER_play(RING_error);
-        }*/
-  	  //Buzzer_On(BEEP_PROGRAMCION_ERROR);
-     error_eepromDATA=1;
-  	 prog_mode=1;
-
-  	  EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
-      HORA_source = 1;		//para que cuando este borrado toda la eeprom pueda inicializar reportes
-
+    }else{
+ 	  EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
+	  HORA_source = 1;						 //para que cuando este borrado toda la eeprom pueda inicializar reportes
     }
 }
-           
+
+  static void progProgramacionPorDefecto(void){
+       tEEPROM_ERROR error;
+       //parametros de movil por defecto
+        prgMOVIL_armarDEFAULT();            // Armo programacion por defecto
+        PROG_MOVIL_to_EEPROM(0);            // Solicitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+        error = PROG_MOVIL_grabarEEPROM();
+		if (error != EEPROM_OK){
+		 // BUZZER_play(RING_error);
+		}
+
+		// No hay programacion o hay error=> Levanto defecto
+		prgRELOJcomun_armarDEFAULT();               // Armo String con parametros por defecto
+		PROG_RELOJcomun_to_EEPROM(0);               // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+		error = PROG_RELOJcomunes_grabarEEPROM();   // Grabar Parametros Comunes
+		if (error != EEPROM_OK){
+		 // BUZZER_play(RING_error);
+		}
+
+		for (byte i=tarifa1D; i<(tarifa4N+1); i++){
+		  prgRELOJtarifa_armarDEFAULT(i);           // Armo String con parametros por defecto
+		  PROG_RELOJtarifa_to_EEPROM(i,0);		      // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+		  error = PROG_RELOJtarifa_grabarEEPROM(i);	// Grabar Tarifa en EEPROM
+		  if (error != EEPROM_OK){
+			//BUZZER_play(RING_error);
+		  }
+		}
+
+		prgRELOJeqPesos_armarDEFAULT();             // Armo String con parametros por defecto
+		PROG_RELOJeqPesos_to_EEPROM(0);				// Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+		error = PROG_RELOJeqPesos_grabarEEPROM();   // Grabar Eq Pesos en EEPROM
+		if (error != EEPROM_OK){
+		 // BUZZER_play(RING_error);
+		}
+
+		prgRELOJcalendar_armarDEFAULT();            // Armo String con parametros por defecto
+		PROG_RELOJcalend_to_EEPROM(0);						  // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+		error = PROG_RELOJcalend_grabarEEPROM();    // Grabar Calendario en EEPROM
+		if (error != EEPROM_OK){
+		 // BUZZER_play(RING_error);
+		}
+		//Buzzer_On(BEEP_PROGRAMCION_ERROR);
+
+		//error_eepromDATA=1;
+		//prog_mode=1;
+
+		//EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
+		//HORA_source = 1;		//para que cuando este borrado toda la eeprom pueda inicializar reportes
+
+     }
+
  
   /* RE-PROGRAMACION DE RELOJ, CON VALORES ACTUALES Y CONSTANTE NUEVA */
   /********************************************************************/
@@ -254,6 +279,7 @@
       return(error);
     }
   
+
   /* DETERMINAR SI DEBO ELIMINAR LOS REPORTES */
   /********************************************/
     byte PROG_determineDeleteReportes (void){
@@ -285,7 +311,7 @@
         prgRELOJ_COMUNES_OK_F = 0;                  // Asumo Parametro Erroneo
         if (error == PRG_OK){
           // Solo respondo si no hay errores, xq sino voy a grabar cualquiera en el EEPROM
-          RTC_updateDate(PROG_RELOJ_DATE_PC);       // Actualizo Fecha y Hora del RTC
+        //  RTC_updateDate(PROG_RELOJ_DATE_PC);       // Actualizo Fecha y Hora del RTC
           
           PROGRAMADOR_startTxRTA(subCMD_RELOJcomun);// Envio la Rta hacia el programador
           prgRELOJ_COMUNES_OK_F = 1;                // Parametro Correcto y Listo para ser Programado al finalizar Proceso
@@ -764,32 +790,32 @@
       // dato, asi cuando extraigo los mismo para grabarlos en el EEPROM, los
       // grabo desde el primero
 
-      progRELOJ_COMUN_GET = PROGRAMADOR_addByte(0x13);// Pulsos x KM por defecto (H)
-      (void)PROGRAMADOR_addByte(0x88);                // Pulsos x KM por defecto (L)
+      progRELOJ_COMUN_GET = PROGRAMADOR_addByte(0x03);// Pulsos x KM por defecto (H)
+      (void)PROGRAMADOR_addByte(0xE8);                // Pulsos x KM por defecto (L)
       (void)PROGRAMADOR_addByte(0x00);                // Carrera Bandera por defecto (H)
-      (void)PROGRAMADOR_addByte(0x00);                // Carrera Bandera por defecto (L)
+      (void)PROGRAMADOR_addByte(0x0A);                // Carrera Bandera por defecto (L)
       
       // Solo Tarifa 1 Diurnas Habilitada por defecto
       // Sin Sensor de Asiento por defecto
       // Servicio de Taxi por defecto
-      (void)PROGRAMADOR_addByte(0x03);                // Varios 1
+      (void)PROGRAMADOR_addByte(0x91);                // Varios 1
       
       // Correccion Horaria por defecto = 3
       // Signo de la Correccion Horaria negativo por defecto
       // Punto Decimal por Defecto = 2
       // Hora de GPS por defecto
-      (void)PROGRAMADOR_addByte(0xAB);                // Varios 2
+      (void)PROGRAMADOR_addByte(0x88);                // Varios 2
       
       // Tarifas Nocturnas Deshabilitadas por defecto
       // Tecla Espera Deshabilitada por defecto
       // Espera habilitada por defecto -> Cuando esta por debajo de VelTrans cuenta Tiempo
       // Espera Acumulativa por defecto -> Convertir Tiempo A Pulsos
       // Tarifacion en Pesos por Defecto
-      (void)PROGRAMADOR_addByte(0x70);                // Varios 3
+      (void)PROGRAMADOR_addByte(0x00);                // Varios 3
 
       // Por defecto un UNICO chofer, si quiere mas, que los programe.
       // Seleccion manual de tarifa Habilitada
-      (void)PROGRAMADOR_addByte(0x40);                // Varios 4
+      (void)PROGRAMADOR_addByte(0x52);                // Varios 4
 
       (void)PROGRAMADOR_addByte(finEEPROM_H);         // Fin de Datos
       (void)PROGRAMADOR_addByte(finEEPROM_L);
@@ -821,23 +847,23 @@
        (void)PROGRAMADOR_addByte(0x00);                    // Tiempo Gracia (H)
       (void)PROGRAMADOR_addByte(0x00);                    // Tiempo Gracia (L)
       
-      (void)PROGRAMADOR_addByte(0x01);                    // Bajada Bandera (H)
-      (void)PROGRAMADOR_addByte(0xAE);                    // Bajada Bandera (L)
+      (void)PROGRAMADOR_addByte(0x00);                    // Bajada Bandera (H)
+      (void)PROGRAMADOR_addByte(0x00);                    // Bajada Bandera (L)
       
       (void)PROGRAMADOR_addByte(0x00);                    // Distancia Inicial (H)
-      (void)PROGRAMADOR_addByte(250);                     // Distancia Inicial (L)
+      (void)PROGRAMADOR_addByte(0x01);                     // Distancia Inicial (L)
       
       (void)PROGRAMADOR_addByte(0x00);                    // Distancia Ficha (H)
-      (void)PROGRAMADOR_addByte(100);                     // Distancia Ficha (L)
+      (void)PROGRAMADOR_addByte(0x01);                     // Distancia Ficha (L)
       
       (void)PROGRAMADOR_addByte(0x00);                    // Valor Ficha (H)
-      (void)PROGRAMADOR_addByte(25);                      // Valor Ficha (L)
+      (void)PROGRAMADOR_addByte(0x01);                      // Valor Ficha (L)
       
-      (void)PROGRAMADOR_addByte(0x00);                    // Tiempo Ficha (H)
-      (void)PROGRAMADOR_addByte(10);                      // Tiempo Ficha (L)
+      (void)PROGRAMADOR_addByte(0x27);                     // Tiempo Ficha (H)
+      (void)PROGRAMADOR_addByte(0x0F);                      // Tiempo Ficha (L)
       
       (void)PROGRAMADOR_addByte(0x00);                    // Valor Ficha Tiempo (H)
-      (void)PROGRAMADOR_addByte(25);                      // Valor Ficha Tiempo (L)
+      (void)PROGRAMADOR_addByte(0X01);                      // Valor Ficha Tiempo (L)
 
       (void)PROGRAMADOR_addByte(0x00);                    // Hora Inicio (HH)
       (void)PROGRAMADOR_addByte(0x00);                    // Hora Inicio (MM)
@@ -960,10 +986,15 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojCOMUN-1] = finEEPROM_L;
 
 
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_relojCOMUN);
-        if(error == EEPROM_OK){
-        	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
-        }
+        grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_relojCOMUN);
+        waitToTx_upDateSuccess = 0;
+        error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
+        //grabacion correcta ?
+    	if(error == EEPROM_OK){
+    		waitToTx_upDateSuccess = 1;
+    	}else{
+    		//ring buzzer error
+    	}
 
       }
       
@@ -1084,11 +1115,11 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-2] = finEEPROM_H;              // Fin de Datos
 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-1] = finEEPROM_L;
         //grabar
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+        grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
         //grabacion correcta ?
 		if(error == EEPROM_OK){
-			//ring buzzer ok
-			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+			waitToTx_upDateSuccess = 1;
 		}else{
 			//ring buzzer error
 		}
@@ -1806,7 +1837,7 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
 /*********************************************************************************************/
 /* PROGRAMACION POR AIRE - PARAMETROS COMUNES */
 /**********************************************/
-#ifdef VISOR_AIR_UPDATE  
+
   /* GUARDAR DATOS DE AIRE A PROGRAMAR */
   /*************************************/
     void PROG_saveRELOJ_COMUN_air (byte* data, byte N){
@@ -1830,18 +1861,16 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
       // Si los datos no son correctos, indica esta situacion
       byte error;
       
-      //#ifdef _REMISES_KATE_
-      #ifdef VISOR_TARIFACION_KATE
-        N = N - 1;          //1 porque hay que restarle nroProg
-      #endif
-
 
       if (N != N_RELOJcomun){
         error = 1;
       
       }else{
+
+
         error = 0;
         PROG_RELOJcomun_to_EEPROM(1);
+        PROG_RELOJcomunes_grabarEEPROM();
       }
       
       return (error);
@@ -1885,17 +1914,21 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
       // Si los datos no son correctos, indica esta situacion
       byte error;
       
-      //#ifdef _REMISES_KATE_
-      #ifdef VISOR_TARIFACION_KATE
-        N = N - (sizeof(tTARIFA_KATE)+1);          //+1 porque hay sumarle nroProg
-      #endif
-      
+      //prueba
+      N -=  1;
+
       if (N != N_RELOJtarifa){
         error = 1;
       
       }else{
-        error = 0;
+
+	    //prueba
+	    N +=  1;
+
+    	error = 0;
         PROG_RELOJtarifa_to_EEPROM(TARIFA_toUpdate, 1);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate);
+
       }
       
       return (error);
@@ -1977,7 +2010,6 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
       
       return (error);
     }    
-#endif
 
 
 

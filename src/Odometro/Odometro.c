@@ -92,6 +92,9 @@
 	TIM_HandleTypeDef pulsoACCUM;
 	uint32_t PULSE_ACCUM_CNT;
 	uint32_t DISTANCIAm;
+	uint32_t DISTANCIA_100;
+	uint32_t DISTANCIA_100_anterior;
+
 	//uint16_t PULSOS_x_KM;
 	//uint16_t CARRERA_BANDERA;
     uint16_t  DISTANCIAkm;
@@ -219,6 +222,9 @@
 
       calcPulsos_APagar2Libre();            // Calcula la cantidad de pulsos equivalentes a la distancia para pasar A Pagar -> Libre
       carreraBandera_to_Pulsos();           // Calcula la cantidad de pulsos equivalentes a la carrera de Bandera
+  	  //DISTANCIAm = 0;
+  	  //DISTANCIA_100 = 0;
+
     }
 
 
@@ -329,6 +335,8 @@
 
       /*** La DISTANCIA la trabajamos sin decimales y en mts ***/
       DISTANCIAm = (delta_pulsos * 1000)/PULSOS_x_KM;		            // Distancia Recorrida en METROS sin decimales
+      DISTANCIA_100 = (DISTANCIAm/100)*100;
+
       //km_estado = DISTANCIAm/100;							//en km con un decimal
 
       if (dist_type == 1){

@@ -161,7 +161,7 @@
         chk = 0;                                    // Reseteo CheckSum
         TO_F = 0;                                   // Limpio Bandera
         exit = 0;                                   // Reseteo variable
-        //dispararTimeOut_lazo();                          // Disparo TimeOut Lazo
+        //dispararTimeOut_lazo();                   // Disparo TimeOut Lazo
         dispararTO_lazo();
         while (!exit && !TO_F){
           //TO_F = chkTimeOut_lazo_F();                    // Chequeo bandera de time out de lazo

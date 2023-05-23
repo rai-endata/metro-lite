@@ -196,82 +196,6 @@ void SOURCE_DATE_Ini (void){
        	}
        }
 
-/*
-void inicio(void){
-
-    byte* addressFLASH_cobrandoDATE;
-    byte* addressFLASH_ocupadoDATE;
-    byte* address_ocupadoDATE;
-    byte* address_cobrandoDATE;
-
-		  INICIO_microCorte = 0;
-		  get_backup_HoraApagado();
-		  INICIO_microCorte = diferenciaHoraria(RTC_Date.hora, HoraApagado.hora,15);
-	      // ACCIONES SEGUN TIPO DE CORTE
-	      if (INICIO_microCorte){
-	        // CORTE CORTO => Recuperar
-	    	  get_backup();   //para saber en que estado esta                       							//Extraigo backup de RTC
-	    	  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
-	    	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
-
-	    		  Reloj_iniTarifa(tarifa);
-				  RELOJ_iniTarifacion();
-				  get_backup();					//vuelvo a recuperar porque  RELOJ_iniTarifa me modifico algunas variables
-				  recuperar_valor_viaje_backup();
-		    	  update_valor_tarifa(tarifa);
-		    	  on_display_all();
-				  //para el calculo de frecuencia
-		    	  t_pulsos_anterior = 0;
-				  t_pulsos = 0;
-		  		  cntIC_anterior   = 0;
-		  		  //recupera segundos de espera y de tarifacion
-		  		segundosTarifacion = fichas_xTiempo*TIEMPO_FICHA_INICIAL;
-		  		segundosEspera =	segundosTarifacion +  dif_espera; //estimo a la mitad
-		  		minutosEspera = segundosTarifacion/60;
-
-		          addressFLASH_ocupadoDATE = &FLASH_ocupadoDATE;
-		          address_ocupadoDATE = &ocupadoDATE;
-
-		          *(address_ocupadoDATE+0) = *(addressFLASH_ocupadoDATE+0);
-		          *(address_ocupadoDATE+1) = *(addressFLASH_ocupadoDATE+1);
-		          *(address_ocupadoDATE+2) = *(addressFLASH_ocupadoDATE+2);
-		          *(address_ocupadoDATE+3) = *(addressFLASH_ocupadoDATE+3);
-		          *(address_ocupadoDATE+4) = *(addressFLASH_ocupadoDATE+4);
-		          *(address_ocupadoDATE+5) = *(addressFLASH_ocupadoDATE+5);
-		          *(address_ocupadoDATE+6) = *(addressFLASH_ocupadoDATE+6);
-
-		    	  if(MOSTRAR_IMPORTE){
-					  //muetra importe
-					  update_valor_display(VALOR_VIAJE);
-				  }else{
-					  //muetra fichas
-					  update_valor_display(fichas_xTiempo + fichas_xPulsos);
-				  }
-	    	  }
-	    	  if(ESTADO_RELOJ==COBRANDO){
-	    		 toggle_display();
-
-	    		 addressFLASH_cobrandoDATE = &FLASH_cobrandoDATE;
-		         address_cobrandoDATE = &cobrandoDATE;
-
-		         *(address_cobrandoDATE+0) = *(addressFLASH_cobrandoDATE+0);
-		         *(address_cobrandoDATE+1) = *(addressFLASH_cobrandoDATE+1);
-		         *(address_cobrandoDATE+2) = *(addressFLASH_cobrandoDATE+2);
-		         *(address_cobrandoDATE+3) = *(addressFLASH_cobrandoDATE+3);
-		         *(address_cobrandoDATE+4) = *(addressFLASH_cobrandoDATE+4);
-		         *(address_cobrandoDATE+5) = *(addressFLASH_cobrandoDATE+5);
-		         *(address_cobrandoDATE+6) = *(addressFLASH_cobrandoDATE+6);
-	    	  }
-
-
-
-	      }else{
-	        // CORTE LARGO
-
-	      }
-}
-*/
-
 
 void check_corte_alimentacion(void){
 
@@ -285,7 +209,6 @@ void check_corte_alimentacion(void){
 		  INICIO_microCorte = 0;
 
 		  read_horaAPAGADO_eeprom();
-		  //rtc__actDATE();
 	      getDate();
 		  read_backup_eeprom();
 		  INICIO_microCorte = diferenciaHoraria(RTC_Date.hora, HoraApagado.hora,16);
@@ -295,13 +218,10 @@ void check_corte_alimentacion(void){
 	    	  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
 	    	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
 
-	    		  //Reloj_iniTarifa(tarifa);
-				  //RELOJ_iniTarifacion();
 	    		  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
 	    		  //RELOJ_setTarifa(tarifa);        // Seteo automatico de tarifa
 	    		  RELOJ_setTarifa(tarifa_1_8);
 				  RELOJ_iniTarifacion();
-		  	      //RLJ_INI();
 				  //vuelvo a recuperar porque  RELOJ_iniTarifa me modifico algunas variables
 				  read_backup_eeprom();
 
@@ -331,6 +251,9 @@ void check_corte_alimentacion(void){
 		    	  ini_pulsador_impresion();
 
 	    	  }else{
+	    		  if(ESTADO_RELOJ == LIBRE){
+	    			  BanderaOut_On();
+	    		  }
 
 	    	    /* modificado 15/02/2023 previo a esta fecha no estaba comentada las linea de abajo
 	    		//viaje perdido
@@ -360,7 +283,8 @@ void check_corte_alimentacion(void){
 
 	    	ESTADO_RELOJ=LIBRE;
 	  		ResetDatGps(LIB);
-	    	Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
+	  		quitar_asignado;
+	  		Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
 	  		setTEST_DISPLAY();
 	      }
 	      //leo valor de corteALIMETACION

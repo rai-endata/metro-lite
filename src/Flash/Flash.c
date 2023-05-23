@@ -8,6 +8,7 @@
 #include "Flash.h"
 #include "Definicion de tipos.h"
 #include "driver_eeprom.h"
+#include "Reloj.h"
 
 tFLASH_FLAGS 	_flash_F;
 
@@ -416,14 +417,13 @@ tFLASH_FLAGS 	_flash_F;
          }
 
          /* CHEQUEAR SI PUEDO ACTUALIZAR LA FLASH */
-           /*****************************************/
+         /*****************************************/
+
          uint8_t FLASH_chkCanUpdate (void){
                 uint8_t status;
             	status = 0;
-            	//por ahora grabo siempre
-            	force_saveFLASH = 1;
-            	if(force_saveFLASH){
-                	status = 1;
-                }
+            	if(RELOJ_LIBRE || RELOJ_FUERA_SERVICIO){
+            		status = 1;
+         	 	}
                 return(status);
-             }
+         }

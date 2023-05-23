@@ -380,10 +380,20 @@
     extern byte* LOGUEO_getChoferLogueado (void);
     byte REPORTE_chkPointer (tREG_GENERIC*far pointer);
 
-    extern tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
-    extern tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
-    extern tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( byte nro_viaje);
+    //extern tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    //extern tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    //extern tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( byte nro_viaje);
+
+    //extern tREG_GENERIC* get_regLIBRE_byNUMERO_VIAJE ( byte nro_viaje);
+
+    extern tREG_LIBRE*	 get_regLIBRE_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    extern tREG_OCUPADO* get_regOCUPADO_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    extern tREG_A_PAGAR* get_regAPAGAR_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+    extern tREG_LIBRE* get_regLIBRE_date ( tREG_GENERIC* INI_ptr, byte nro_viaje);
+
+
     extern void chkPerdidaDatosTurno (void);
+    extern byte getColaReportes (void);
 
   /* TIMER */
   /*********/

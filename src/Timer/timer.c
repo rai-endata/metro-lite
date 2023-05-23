@@ -268,7 +268,7 @@
 
 		#ifdef HABILITA_REINTENTOS
         	  reTx_timer();                   // Time Out de Retransmisiones
-        	  reTx_datosSC();
+        	  //reTx_datosSC();
 		#endif
 
         	  /*

@@ -1178,8 +1178,8 @@ uint32_t              HAL_UART_GetError(UART_HandleTypeDef *huart);
 /** @addtogroup UART_Private_Functions
   * @{
   */
-#define 	UART_TX_TIME_OUT		10  //100 MILISEG
-#define 	UART_RX_TIME_OUT		10  //100 MILISEG
+#define 	UART_TX_TIME_OUT		100  //100 MILISEG
+#define 	UART_RX_TIME_OUT		100  //100 MILISEG
 
 
 

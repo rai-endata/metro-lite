@@ -41,7 +41,18 @@
 	}tGPS;
 
 
+    // NOMBRE DE ZONA/BASE
+    typedef struct{
+      byte nro;                         // Numero Zona/Base
+      byte name[5];                     // Nombre Zona/Base
+    }tNombreZonaBase;
 
+    // ZONA/BASE
+    // Debe tener longitud PAR
+    typedef struct{
+      tGeoPOINT Pos;								    // Posicion Zona/Base: Latitud y Longitud
+      tNombreZonaBase datos;            // Datos de la zona
+    }tZonaBase;
 
 
 

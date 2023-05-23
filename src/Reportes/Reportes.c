@@ -763,7 +763,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       //addressEEPROM_REPORTE_INDEX = (uint16_t*)ADDR_EEPROM_REPORTE_INDEX;
 
 
-      if (REPORTES_HABILITADOS && (newReg_queue_cnt > 0) /*&& (REPORTES_delay_cnt == 0)*/ && FLASH_chkCanUpdate()){
+      if (REPORTES_HABILITADOS && (newReg_queue_cnt > 0) /*&& (REPORTES_delay_cnt == 0)&& FLASH_chkCanUpdate()*/ ){
         newReg_queue_cnt--;               								//Decremento contador de registros encolados
         EEPROM_ReadBuffer((uint8_t*)&REPORTE_NRO_VIAJE,ADDR_EEPROM_REPORTE_NRO_VIAJE,SIZE_EEPROM_REPORTE_NRO_VIAJE);
         EEPROM_ReadBuffer((uint8_t*)&REPORTE_NRO_TURNO,ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
@@ -2580,7 +2580,7 @@ void chkPerdidaDatosTurno (void){
  }
 
 
-
+/*
  tREG_GENERIC* get_regAPAGAR_byNUMERO_VIAJE ( byte nro_viaje){
 
 	  byte TO_F;
@@ -2635,8 +2635,7 @@ void chkPerdidaDatosTurno (void){
       return( cobrando_ptr);
     }
 
-
- tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
+tREG_GENERIC* get_regOCUPADO_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
 
 	 uint16_t movSinPulsos;
       byte pointer_ok;
@@ -2715,6 +2714,7 @@ void chkPerdidaDatosTurno (void){
         return( ocupado_ptr);
     }
 
+
  tREG_GENERIC* get_regLIBRE_by_ptrREG_APAGAR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
 
 	   uint16_t movSinPulsos;
@@ -2735,9 +2735,9 @@ void chkPerdidaDatosTurno (void){
            TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
            EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
            aux_INI_ptr = &aux_INI;
-           if (aux_INI.tipo == REG_libre &&
-        	   aux_INI.nroViaje == nro_viaje /*&&
-        	   (aux_INI.estadoConexion == SIN_CONEXION_CENTRAL || aux_INI.estadoConexion == CON_CONEXION_CENTRAL)*/){
+           //if (aux_INI.tipo == REG_libre && aux_INI.nroViaje == nro_viaje && (aux_INI.estadoConexion == SIN_CONEXION_CENTRAL || aux_INI.estadoConexion == CON_CONEXION_CENTRAL)){
+           if (aux_INI.tipo == REG_libre && aux_INI.nroViaje == nro_viaje ){
+
              // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
          	  libre_ptr = (tREG_OCUPADO*)INI_ptr;
         	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
@@ -2791,6 +2791,359 @@ void chkPerdidaDatosTurno (void){
 
          return( libre_ptr);
      }
+
+
+
+ tREG_GENERIC* get_regLIBRE_byNUMERO_VIAJE ( byte nro_viaje){
+
+	//
+	//
+	//NRO VIAJE:  1  |  1 |  2 |  2 |  2 |  3 |  3 |  3 | 4
+	// 			-----+----+----+----+----+----+----+----+----
+	//ESTADO:	  C1 | L1 | O2 | C2 | L2 | O3 | C3 | L3 | O4
+	//		    -----+----+----+----+----+----+----+----+----
+
+	// NormalmeNte cuando se emite el comando L3 los datos que contiene son del L2,O3,C3
+	// por lo tanto cuando se va a emitir un L3 que no se emitio por falta de conexion
+	// tendra los datos de L2,O3,C3
+
+	// igualmente cuando hay una consulta por numero de viaje, si piden los datos
+	// del numero de viaje 2, se enviara los datos de L1, O2, C2
+
+	// Ejemplo2:   NroViaje: 2 -> se arma datos de L1,O2,C2
+	// Ejemplo1:   NroViaje: 3 -> se arma datos de L2,O3,C3
+
+	// Nota: lo datos no son relevantes se pueden omitir
+
+
+ 	  byte TO_F;
+       //tREG_GENERIC aux_INI;
+ 	  //tREG_GENERIC* aux_INI_ptr;
+ 	  //tREG_GENERIC* cobrando_ptr;
+
+ 	  tREG_LIBRE aux_INI;
+ 	  tREG_LIBRE* aux_INI_ptr;
+ 	  tREG_LIBRE* libre_ptr;
+
+       tREG_GENERIC* INI_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;
+
+ 	     libre_ptr = 0;
+         TO_F = 0;                                 // Reseteo Bandera de TimeOut
+         dispararTO_lazo();                        // Disparo Time Out de Lazo
+         do {
+           TO_F = chkTO_lazo_F();                  // Chequeo bandera de time out de lazo
+           EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+           aux_INI_ptr = &aux_INI; //tomo una direccion de la tabla de reporte, comenzando por el principio de la tabla
+
+           //me fio si el registro al cual apunto, pertenece a un libre con el nro de viaje indicado
+           if (aux_INI.tipo == REG_libre && (((tREG_LIBRE*)aux_INI_ptr)->nroViaje == nro_viaje)){
+                  libre_ptr = (tREG_LIBRE*)INI_ptr;
+             	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
+             	  regVIAJE.kmLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->km;
+             	  regVIAJE.segMarchaLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segMarcha;
+             	  regVIAJE.segParadoLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segParado;
+             	  regVIAJE.velMaxLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->velMax;
+             	  regVIAJE.sensor = ((tREG_LIBRE*)aux_INI_ptr)->sensor;
+             	  regVIAJE.estadoConexion_LIBRE = ((tREG_LIBRE*)aux_INI_ptr)->estadoConexion;
+                   //posicion
+             	  regVIAJE.sgnLatLonLibre = aux_INI.sgnLatLon;
+     			  regVIAJE.latitudLIBRE[0] = aux_INI.latitud[0];
+     			  regVIAJE.latitudLIBRE[1] = aux_INI.latitud[1];
+     			  regVIAJE.latitudLIBRE[2] = aux_INI.latitud[2];
+     			  regVIAJE.longitudLIBRE[0] = aux_INI.longitud[0];
+     			  regVIAJE.longitudLIBRE[1] = aux_INI.longitud[1];
+     			  regVIAJE.longitudLIBRE[2] = aux_INI.longitud[2];
+     			  regVIAJE.velgpsLIBRE = aux_INI.velgps;
+         	  break;
+           }
+           incFlashRep_ptr(&INI_ptr);              // Avanzo puntero
+         }while((INI_ptr != ADDR_EEPROM_REPORTE) );
+
+         detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+       return( libre_ptr);
+     }
+
+*/
+
+ tREG_LIBRE* get_regLIBRE_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
+
+	  uint16_t movSinPulsos;
+      byte pointer_ok;
+      byte TO_F;
+      tREG_LIBRE aux_INI;
+      tREG_LIBRE* aux_INI_ptr;
+      tREG_LIBRE* libre_ptr;
+
+      tREG_GENERIC* FIN_ptr;
+
+        FIN_ptr = INI_ptr;
+	    libre_ptr = NULL;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do{
+          decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+          TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_libre &&  aux_INI.nroViaje == nro_viaje){
+              libre_ptr = (tREG_LIBRE*)INI_ptr;
+         	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
+         	  regVIAJE.kmLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->km;
+         	  regVIAJE.segMarchaLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segMarcha;
+         	  regVIAJE.segParadoLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->segParado;
+         	  regVIAJE.velMaxLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->velMax;
+         	  regVIAJE.sensor = ((tREG_LIBRE*)aux_INI_ptr)->sensor;
+         	  regVIAJE.estadoConexion_LIBRE = ((tREG_LIBRE*)aux_INI_ptr)->estadoConexion;
+               //posicion
+         	  regVIAJE.sgnLatLonLibre = aux_INI.sgnLatLon;
+ 			  regVIAJE.latitudLIBRE[0] = aux_INI.latitud[0];
+ 			  regVIAJE.latitudLIBRE[1] = aux_INI.latitud[1];
+ 			  regVIAJE.latitudLIBRE[2] = aux_INI.latitud[2];
+ 			  regVIAJE.longitudLIBRE[0] = aux_INI.longitud[0];
+ 			  regVIAJE.longitudLIBRE[1] = aux_INI.longitud[1];
+ 			  regVIAJE.longitudLIBRE[2] = aux_INI.longitud[2];
+ 			  regVIAJE.velgpsLIBRE = aux_INI.velgps;
+ 			  break;
+          }
+
+        }while ((INI_ptr != FIN_ptr));
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+        if((libre_ptr == NULL)){
+        	  regVIAJE.dateLIBRE.fecha[0] = 0xff;
+        	  regVIAJE.dateLIBRE.fecha[1] = 0xff;
+        	  regVIAJE.dateLIBRE.fecha[2] = 0xff;
+        	  regVIAJE.dateLIBRE.fecha[3] = 0xff;
+        	  regVIAJE.dateLIBRE.hora[0] = 0xff;
+        	  regVIAJE.dateLIBRE.hora[1] = 0xff;
+        	  regVIAJE.dateLIBRE.hora[2] = 0xff;
+         	  regVIAJE.kmLIBRE = 0xff;
+         	  regVIAJE.segMarchaLIBRE = 0xff;
+         	  regVIAJE.segParadoLIBRE = 0xff;
+         	  regVIAJE.velMaxLIBRE = 0xff;
+         	  regVIAJE.sensor = 0xff;
+         	  regVIAJE.estadoConexion_LIBRE = 0xff;
+               //posicion
+         	  regVIAJE.sgnLatLonLibre = 0xff;
+ 			  regVIAJE.latitudLIBRE[0] = 0xff;
+ 			  regVIAJE.latitudLIBRE[1] = 0xff;
+ 			  regVIAJE.latitudLIBRE[2] = 0xff;
+ 			  regVIAJE.longitudLIBRE[0] = 0xff;
+ 			  regVIAJE.longitudLIBRE[1] = 0xff;
+ 			  regVIAJE.longitudLIBRE[2] = 0xff;
+ 			  regVIAJE.velgpsLIBRE = 0xff;
+        }
+
+        return( libre_ptr);
+    }
+
+
+tREG_OCUPADO* get_regOCUPADO_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
+
+	  uint16_t movSinPulsos;
+      byte pointer_ok;
+      byte TO_F;
+      tREG_OCUPADO aux_INI;
+      tREG_OCUPADO* aux_INI_ptr;
+      tREG_OCUPADO* ocupado_ptr;
+
+      tREG_GENERIC* FIN_ptr;
+
+        FIN_ptr = INI_ptr;
+	    ocupado_ptr = NULL;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do{
+          decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+          TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_ocupado &&  aux_INI.nroViaje == nro_viaje){
+            // Como se trata de un registro varios con mov sin pulsos => incremento cantidad
+        	  ocupado_ptr = (tREG_OCUPADO*)INI_ptr;
+        	  regVIAJE.dateOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->date;
+        	  regVIAJE.kmOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->km;
+        	  regVIAJE.segMarchaOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segMarcha;
+        	  regVIAJE.segParadoOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->segParado;
+        	  regVIAJE.velMaxOCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->velMax;
+        	  regVIAJE.fichaPesos = ((tREG_OCUPADO*)aux_INI_ptr)->fichaPesos;
+        	  regVIAJE.puntoDecimal  = ((tREG_OCUPADO*)aux_INI_ptr)->punto_decimal;
+        	  regVIAJE.minutosEspera = ((tREG_OCUPADO*)aux_INI_ptr)->minutosEspera;
+        	  regVIAJE.estadoConexion_OCUPADO = ((tREG_OCUPADO*)aux_INI_ptr)->estadoConexion;
+        	  //posicion
+        	  regVIAJE.sgnLatLonOcupado = aux_INI.sgnLatLon;
+			  regVIAJE.latitudOCUPADO[0] = aux_INI.latitud[0];
+			  regVIAJE.latitudOCUPADO[1] = aux_INI.latitud[1];
+			  regVIAJE.latitudOCUPADO[2] = aux_INI.latitud[2];
+			  regVIAJE.longitudOCUPADO[0] = aux_INI.longitud[0];
+			  regVIAJE.longitudOCUPADO[1] = aux_INI.longitud[1];
+			  regVIAJE.longitudOCUPADO[2] = aux_INI.longitud[2];
+			  regVIAJE.velgpsOCUPADO = aux_INI.velgps;
+			break;
+          }
+
+        }while ((INI_ptr != FIN_ptr));
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+        if((ocupado_ptr == NULL)){
+        	  ocupado_ptr = 0;
+          	  regVIAJE.dateOCUPADO.fecha[0] = 0xff;
+          	  regVIAJE.dateOCUPADO.fecha[1] = 0xff;
+          	  regVIAJE.dateOCUPADO.fecha[2] = 0xff;
+          	  regVIAJE.dateOCUPADO.fecha[3] = 0xff;
+          	  regVIAJE.dateOCUPADO.hora[0] = 0xff;
+          	  regVIAJE.dateOCUPADO.hora[1] = 0xff;
+          	  regVIAJE.dateOCUPADO.hora[2] = 0xff;
+          	  regVIAJE.kmOCUPADO = 0xff;
+          	  regVIAJE.segMarchaOCUPADO = 0xff;
+          	  regVIAJE.segParadoOCUPADO = 0xff;
+          	  regVIAJE.velMaxOCUPADO = 0xff;
+          	  regVIAJE.fichaPesos = 0xff;
+          	  regVIAJE.puntoDecimal  = 0xff;
+          	  regVIAJE.minutosEspera = 0xff;
+          	  regVIAJE.estadoConexion_OCUPADO = 0xff;
+          	  //posicion
+          	  regVIAJE.sgnLatLonOcupado = 0xff;
+  			  regVIAJE.latitudOCUPADO[0] = 0xff;
+  			  regVIAJE.latitudOCUPADO[1] = 0xff;
+  			  regVIAJE.latitudOCUPADO[2] = 0xff;
+  			  regVIAJE.longitudOCUPADO[0] = 0xff;
+  			  regVIAJE.longitudOCUPADO[1] = 0xff;
+  			  regVIAJE.longitudOCUPADO[2] = 0xff;
+  			  regVIAJE.velgpsOCUPADO = 0xff;
+        }
+
+        return( ocupado_ptr);
+    }
+
+tREG_A_PAGAR* get_regAPAGAR_by_anyPTR ( tREG_GENERIC* INI_ptr, byte nro_viaje){
+
+      byte TO_F;
+      tREG_A_PAGAR aux_INI;
+      tREG_A_PAGAR* aux_INI_ptr;
+      tREG_A_PAGAR* cobrando_ptr;
+
+      tREG_GENERIC* FIN_ptr;
+
+        FIN_ptr = INI_ptr;
+	    cobrando_ptr = NULL;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do{
+          decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+          TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_apagar &&  aux_INI.nroViaje == nro_viaje){
+        	  cobrando_ptr = (tREG_A_PAGAR*)INI_ptr;
+        	  regVIAJE.nroViaje 	 = aux_INI.nroViaje;
+        	  regVIAJE.chofer 		 = aux_INI.chofer;
+        	  regVIAJE.tarifa 		 = aux_INI.tarifa;
+        	  regVIAJE.dateA_PAGAR 	 = aux_INI.date;
+        	  regVIAJE.fichasDist[0] = aux_INI.fichasDist[0];
+        	  regVIAJE.fichasDist[1] = aux_INI.fichasDist[1];
+        	  regVIAJE.fichasDist[2] = aux_INI.fichasDist[2];
+        	  regVIAJE.fichasTime[0] = aux_INI.fichasTime[0];
+        	  regVIAJE.fichasTime[1] = aux_INI.fichasTime[1];
+        	  regVIAJE.fichasTime[2] = aux_INI.fichasTime[2];
+        	  regVIAJE.importe 		 = aux_INI.importe;
+        	  regVIAJE.estadoConexion_COBRANDO = aux_INI.estadoConexion;
+        	  //posicion
+        	  regVIAJE.sgnLatLonCobrando = aux_INI.sgnLatLon;
+        	  regVIAJE.latitudCOBRANDO[0] = aux_INI.latitud[0];
+        	  regVIAJE.latitudCOBRANDO[1] = aux_INI.latitud[1];
+        	  regVIAJE.latitudCOBRANDO[2] = aux_INI.latitud[2];
+        	  regVIAJE.longitudCOBRANDO[0] = aux_INI.longitud[0];
+        	  regVIAJE.longitudCOBRANDO[1] = aux_INI.longitud[1];
+        	  regVIAJE.longitudCOBRANDO[2] = aux_INI.longitud[2];
+			  regVIAJE.velgpsCOBRANDO = aux_INI.velgps;
+        	  break;
+          }
+
+        }while ((INI_ptr != FIN_ptr));
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+        if((cobrando_ptr == NULL)){
+      	  regVIAJE.nroViaje 	 = 0xff;
+      	  regVIAJE.chofer 		 = 0xff;
+      	  regVIAJE.tarifa 		 = 0x00;
+    	  regVIAJE.dateA_PAGAR.fecha[0] = 0xff;
+    	  regVIAJE.dateA_PAGAR.fecha[1] = 0xff;
+    	  regVIAJE.dateA_PAGAR.fecha[2] = 0xff;
+    	  regVIAJE.dateA_PAGAR.fecha[3] = 0xff;
+    	  regVIAJE.dateA_PAGAR.hora[0] = 0xff;
+    	  regVIAJE.dateA_PAGAR.hora[1] = 0xff;
+    	  regVIAJE.dateA_PAGAR.hora[2] = 0xff;
+      	  regVIAJE.fichasDist[0] = 0xff;
+      	  regVIAJE.fichasDist[1] = 0xff;
+      	  regVIAJE.fichasDist[2] = 0xff;
+      	  regVIAJE.fichasTime[0] = 0xff;
+      	  regVIAJE.fichasTime[1] = 0xff;
+      	  regVIAJE.fichasTime[2] = 0xff;
+      	  regVIAJE.importe 		 = 0xff;
+      	  regVIAJE.estadoConexion_COBRANDO = 0xff;
+      	  //posicion
+      	  regVIAJE.sgnLatLonCobrando = 0xff;
+      	  regVIAJE.latitudCOBRANDO[0] = 0xff;
+      	  regVIAJE.latitudCOBRANDO[1] = 0xff;
+      	  regVIAJE.latitudCOBRANDO[2] = 0xff;
+      	  regVIAJE.longitudCOBRANDO[0] = 0xff;
+      	  regVIAJE.longitudCOBRANDO[1] = 0xff;
+      	  regVIAJE.longitudCOBRANDO[2] = 0xff;
+		  regVIAJE.velgpsCOBRANDO = 0xff;
+        }
+
+        return( cobrando_ptr);
+    }
+
+
+tREG_LIBRE* get_regLIBRE_date ( tREG_GENERIC* INI_ptr, byte nro_viaje){
+
+	uint16_t movSinPulsos;
+      byte pointer_ok;
+      byte TO_F;
+      tREG_LIBRE aux_INI;
+      tREG_LIBRE* aux_INI_ptr;
+      tREG_LIBRE* libre_ptr;
+
+      tREG_GENERIC* FIN_ptr;
+
+        FIN_ptr = INI_ptr;
+	    libre_ptr = NULL;
+        TO_F = 0;                                 // Reseteo Bandera de TimeOut
+        dispararTO_lazo();                        // Disparo Time Out de Lazo
+        do{
+          decFlashRep_ptr(&INI_ptr);              					 // decremento puntero
+          TO_F = chkTO_lazo_F();                 					 // Chequeo bandera de time out de lazo
+          EEPROM_ReadBuffer(&aux_INI, INI_ptr,sizeof(tREG_GENERIC));
+          aux_INI_ptr = &aux_INI;
+          if (aux_INI.tipo == REG_libre &&  aux_INI.nroViaje == nro_viaje){
+              libre_ptr = (tREG_LIBRE*)INI_ptr;
+         	  regVIAJE.dateLIBRE = ((tREG_LIBRE*)aux_INI_ptr)->date;
+         	  break;
+          }
+
+        }while ((INI_ptr != FIN_ptr));
+
+        detenerTO_lazo();                         // Detengo Time Out de Lazo
+
+        if((libre_ptr == NULL)){
+      	  regVIAJE.dateLIBRE.fecha[0] = 0xff;
+      	  regVIAJE.dateLIBRE.fecha[1] = 0xff;
+      	  regVIAJE.dateLIBRE.fecha[2] = 0xff;
+      	  regVIAJE.dateLIBRE.fecha[3] = 0xff;
+      	  regVIAJE.dateLIBRE.hora[0] = 0xff;
+      	  regVIAJE.dateLIBRE.hora[1] = 0xff;
+      	  regVIAJE.dateLIBRE.hora[2] = 0xff;
+        }
+
+        return( libre_ptr);
+    }
+
 
  void clear_tabREPORTES (void){
 	 uint16_t* EEPROM_ptr;
@@ -2857,6 +3210,9 @@ void chkPerdidaDatosTurno (void){
 
   }
 
+ byte getColaReportes (void){
+	 return(newReg_queue_cnt);
+ }
 
 /*********************************************************************************************/
 /* TIMER */

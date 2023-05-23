@@ -64,7 +64,7 @@ void Bluetooth_TimeOut (void){
      if (Bluetooth_to_cnt != 0){
     	 Bluetooth_to_cnt--;
        if (Bluetooth_to_cnt == 0){
-    	  // setTO_Bluetooth(TO_BLUETOOTH_2);
+    	   //setTO_Bluetooth(TO_BLUETOOTH_2);
     	   check_pressBLUETOOTH();
 			if(bluetoothCONECTADO){
 				Tx_Status_RELOJ();

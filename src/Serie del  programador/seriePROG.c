@@ -108,6 +108,8 @@
 
           //Habilito Transmisión
           huart1.Tx_TO_cnt = UART_TX_TIME_OUT;
+          verdura1 = 0xff;
+          verdura2 = 0xff;
           HAL_UART_Transmit_IT(&huart1,verdura1,verdura2);
         }
       }

@@ -105,6 +105,7 @@
   /* RUTINAS */
   /***********/      
     extern void prgMOVIL_ini (void);
+    void prgMOVIL_armarDEFAULT (void);
       
     extern void PROG_readMOVIL (uint8_t N);
     extern void PROG_writeMOVIL (uint8_t N);
@@ -122,9 +123,7 @@
   
   /* AIR UPDATE */
   /**************/
-  #ifdef VISOR_AIR_UPDATE  
     extern void PROG_saveMOVIL_air (byte* data, byte N);
     extern byte PROG_writeMOVIL_air (byte N);
-  #endif
   
 #endif

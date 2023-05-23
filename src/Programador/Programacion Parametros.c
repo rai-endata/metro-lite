@@ -60,7 +60,7 @@ uint8_t finPRG_TO_RESET_TO_cnt;
     /*      LECTURA      *//*|*//*      ESCRITURA      */
     /*********************//*|*//***********************/
 		PROG_readMOVIL      ,    PROG_writeMOVIL,           // 0x80
-		PROG_readRADIO      ,    PROG_writeRADIO    ,      // 0x81
+		PROG_readRADIO      ,    PROG_writeRADIO    ,       // 0x81
 		PROG_none     		,    PROG_none      ,      		// 0x82
 		PROG_none     		,    PROG_none      ,      		// 0x83
 
@@ -460,7 +460,7 @@ uint8_t finPRG_TO_RESET_TO_cnt;
 	  error = PROG_MOVIL_grabarEEPROM();          // Grabacion de Parametros de Movil en EEPROM
 	  EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL,ADDRESS_PROG_MOVIL,sizeof(tPARAM_MOVIL));
       if (!TIPO_RELOJ_VALIDO){
-    	  error = EEPROM_ACCESS_ERROR;
+    	 // error = EEPROM_ACCESS_ERROR;
       }
 	}
 
@@ -714,7 +714,7 @@ uint8_t finPRG_TO_RESET_TO_cnt;
           PROG_RELOJtarifa_to_EEPROM(tarifa4N,0); // Levanto bandera de grabacion de programacion de tarifa 4 nocturna en eeprom
           PROG_RELOJeqPesos_to_EEPROM(0);         // Levanto bandera de grabacion de programacion de eq pesos en eeprom
           PROG_RELOJcalend_to_EEPROM(0);          // Levanto bandera de grabacion de programacion de calendario en eeprom
-          
+          RTC_updateDate(PROG_RELOJ_DATE_PC);     // Actualizo Fecha y Hora del RTC
           EEPROM_iniGrabacion();                  // Inicio grabacion de EEPROM AL INSTANTE xq es por IRQ
         }
         

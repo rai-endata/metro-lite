@@ -41,6 +41,8 @@
 
   //extern UART_HandleTypeDef huart1;
 	extern uint32_t DISTANCIAm;
+	extern uint32_t DISTANCIA_100;
+	extern uint32_t DISTANCIA_100_anterior;
 	extern uint16_t  DISTANCIAkm;
 	extern uint32_t DISTANCIAm_OCUPADO;
 	extern uint32_t DISTANCIAm_LIBRE;

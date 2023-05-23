@@ -16,6 +16,7 @@
 #include "Ticket Turno.h"
 #include "Reportes.h"
 #include "Ticket Parcial.h"
+#include "Air Update.h"
 
 
 typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
@@ -144,8 +145,8 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	&CMD_TARIFAS,
 	&CMD_Conf_inicioTURNO,
 	//&CMD_Conf_finTURNO,
-	&Comando_0B,
-	&Comando_0C,
+	&CMD_AIRUPDATE_SUCCESS,             // 0x0B - Actualizacion por Aire Exitosa,
+	&CMD_AirRead,
     //&CMD_Distancia_Velocidad,
     &Comando_0D,
     &Comando_0E,
@@ -505,7 +506,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		byte* ptrVALOR_VIAJE;
 		byte* ptrVALOR_VIAJE_mostrar;
 		byte* ptrfichas_Total;
-		byte* ptrDISTAMNCIAm;
+		byte* ptrDISTAMNCIA_100;
 		byte* ptrVELOCIDAD;
 
 		byte* ptrFichasDistancia;
@@ -520,11 +521,11 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 
 	    CMD_Valor_VIAJE.Tx_F = 1;                      // Levanto Bandera de Tx
-		CMD_Valor_VIAJE.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+		CMD_Valor_VIAJE.Reintentos = reint_0;   // Cargo Cantidad de Reintentos (INFINITOS)
 
 		ptrVALOR_VIAJE = &VALOR_VIAJE;
 		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;
-		ptrDISTAMNCIAm = &DISTANCIAm;
+		ptrDISTAMNCIA_100 = &DISTANCIA_100;
 		ptrVELOCIDAD   = &VELOCIDAD;
 
    		ptrBajadaBandera = &BajadaBandera;
@@ -594,10 +595,10 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		}
 
 
-		Valor_VIAJE_Buffer[14] = *(ptrDISTAMNCIAm+3);             //
-		Valor_VIAJE_Buffer[15] = *(ptrDISTAMNCIAm+2);             //
-		Valor_VIAJE_Buffer[16] = *(ptrDISTAMNCIAm+1);             //
-		Valor_VIAJE_Buffer[17] = *(ptrDISTAMNCIAm+0);             //
+		Valor_VIAJE_Buffer[14] = *(ptrDISTAMNCIA_100+3);             //
+		Valor_VIAJE_Buffer[15] = *(ptrDISTAMNCIA_100+2);             //
+		Valor_VIAJE_Buffer[16] = *(ptrDISTAMNCIA_100+1);             //
+		Valor_VIAJE_Buffer[17] = *(ptrDISTAMNCIA_100+0);             //
 		Valor_VIAJE_Buffer[18] = minutosEspera;  				  //minutos de espera
 
 		Valor_VIAJE_Buffer[19] = *(ptrVELOCIDAD+1) ;            	//
@@ -836,6 +837,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		CMD_Status_RELOJ.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_Status_RELOJ.Reintentos = reint_0;   // Cargo Cantidad de Reintentos (INFINITOS)
+		//CMD_Status_RELOJ.Reintentos = reint_3;   // Cargo Cantidad de Reintentos 3
 		getDate();
 		Status_RELOJ_Buffer[0] = 0;   				//fuente de hora
 		Status_RELOJ_Buffer[1] = RTC_Date.hora[0];   // HORA
@@ -965,7 +967,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
    	   byte n;
 
    	   CMD_TRANSPARENTE.Tx_F = 1;               // Levanto Bandera de Tx
-   	   CMD_TRANSPARENTE.Reintentos = reint_0;   // no tiene reintentos
+   	   CMD_TRANSPARENTE.Reintentos = reint_3;   // no tiene reintentos
 
        i=0;
        n = N-1;
@@ -1187,6 +1189,18 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				exit = 1;
 		}
 
+
+		if(subCMD == MENSAJE14 && !exit){
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Sincronizando el Reloj");
+				i=i+k;
+				exit = 1;
+		}
+
+		if(subCMD == MENSAJE15 && !exit){
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Tipo de equipo o reloj desconocido, verifique programacion de reloj");
+					i=i+k;
+					exit = 1;
+		}
 
 
 		CMD_MENSAJE.N = N_CMD + i;

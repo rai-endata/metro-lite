@@ -90,6 +90,7 @@ void guardarRxDA_BaxFORMAT (void){
 		//Enviar_BUFFER_Rx_porPuertoSerie ((byte*)&rxBYTE, 1);
 
 
+
 		//chk si están llegando datos con el protocolo bax
 		rxVA_chk_baxFORMAT(rxBYTE);
 		//Aqui se analizarian eventualmente otros protocolos

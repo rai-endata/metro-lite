@@ -473,7 +473,7 @@ void ini_puerto_sensor_asiento(void){
       byte data[2];
       tFLASH_ERROR error;
       
-      if (asiento_writeFlash && (FLASH_chkCanUpdate() || forced)){
+      if (asiento_writeFlash && (/*FLASH_chkCanUpdate() ||*/ forced)){
         asiento_writeFlash = 0;
         
         if (chkVISOR_powerOFF){

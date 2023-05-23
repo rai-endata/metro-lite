@@ -46,6 +46,16 @@
   }buffcirTYPE;
 
 
+  typedef struct{
+	   word* 	put;          //direccion donde se va agregar el proximo dato
+       word* 	get;          //direccion de donde se va sacar el proximo dato
+       word* 	iniBUFFER;    //direccion del buffer
+       uint16_t sizeBUFFER;   //tamaño del buffer
+       uint16_t cntWORD;      //contador de cantidad de word ingresados al buffer
+       byte  	cntDATOS;     //cuenta cuantos datos se ingresaron al buffer (cantidad de comandos, de string, ..etc)
+       byte  	fullBUFFER;   //indica buffer lleno
+  }buffWordTYPE;
+
 
 
   /* RUTINAS */
@@ -53,10 +63,8 @@
     // MANEJO DE BUFFERS y PUNTEROS
     extern uint16_t diferencia_punteros (byte* put_ptr, byte* get_ptr, uint16_t buffer_long);
     extern void cargar_buffer (byte** putA_ptr_address, byte** getA_ptr_address, byte** getB_ptr_address, uint16_t long_paquete, byte* ptrA_ini_address, uint16_t bufferA_long, byte* ptrB_ini_address, uint16_t bufferB_long);
-    extern void put_byte (byte** put_ptr_address, byte data_in, byte* ptr_ini_address, uint16_t buffer_long);
-    extern byte get_byte (byte** get_ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
-    extern void inc_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
-    extern void dec_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
+
+
 
     
     extern void string_copy (byte* dest_ptr, byte* orig_ptr);
@@ -76,13 +84,18 @@
 
     extern void buffer_N_copy (byte* dest_ptr, byte* orig_ptr, byte N);
     
-    extern void verificar_fin_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
     
     /* manejo de BUFCIR*/
     extern void putBUFCIR (byte dat, buffcirTYPE* DATA);
     extern byte getBUFCIR (buffcirTYPE* DATA);
     extern void incGET_BUFCIR (buffcirTYPE* DATA);
     extern void decGET_BUFCIR (buffcirTYPE* DATA);
+    extern void put_byte (byte** put_ptr_address, byte data_in, byte* ptr_ini_address, uint16_t buffer_long);
+    extern byte get_byte (byte** get_ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
+    extern void inc_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
+    extern void dec_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
+
+
     extern void dec_cntDATOS_BUFCIR (buffcirTYPE* DATA);
     extern byte check_cntDATOS_BUFCIR(buffcirTYPE* DATA);
     extern byte check_cntBYTE_BUFCIR(buffcirTYPE* DATA);
@@ -90,7 +103,20 @@
     extern void incN_ptrDATA (byte* ptrDATA, byte* iniBUFFER, uint16_t sizeBUFFER, byte N);
     extern void decN_ptrDATA (byte* ptrDATA, byte* iniBUFFER, uint16_t sizeBUFFER, byte N);
     extern uint16_t chkSpace_BuffCIR (buffcirTYPE* buff);
-  
+
+    extern void putWord_BUFCIR (word dat, buffWordTYPE* DATA);
+    extern word getWord_BUFCIR (buffWordTYPE* DATA);
+    extern void incWord_BUFCIR (buffWordTYPE* DATA);
+    extern void decWord_BUFCIR (buffWordTYPE* DATA);
+    extern void put_word (word** put_ptr_address, word data_in, word* ptr_ini_address, uint16_t buffer_long);
+	extern word get_word (word** get_ptr_address, word* ptr_ini_address, uint16_t buffer_long);
+	extern void incWord_ptr (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
+	extern void decWord_ptr (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
+
+
+	extern word create_dataWord(byte hi, byte lo);
+
+
   #ifdef VISOR_HCS12X    
     extern void put_byte_PAGED (byte*__rptr* put_ptr_address, byte data_in, byte*__rptr ptr_ini_address, uint16_t buffer_long);
     extern byte get_byte_PAGED (byte*__rptr* get_ptr_address, byte*__rptr ptr_ini_address, uint16_t buffer_long);

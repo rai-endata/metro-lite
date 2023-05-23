@@ -480,6 +480,7 @@
 	    //#define RELOJ_BANDERITA     ((TIPO_RELOJ == BANDERITA_LIBRE_ALTO) || (TIPO_RELOJ == BANDERITA_OCUPADO_ALTO))
 	    //#define RELOJ_PROTOCOLO     (TIPO_RELOJ == PROTOCOLO)
 
+	extern byte PROG_RELOJ_DATE_PC[6];              // Hora y Fecha recibida desde la PC (DIA-MES-AÑO-HORA-MIN-SEG)
 
   /* RUTINAS */
   /***********/      
@@ -598,7 +599,6 @@
 
   /* AIR UPDATE */
   /**************/
-  #ifdef VISOR_AIR_UPDATE  
     extern void PROG_saveRELOJ_COMUN_air (byte* data, byte N);
     extern byte PROG_writeRELOJ_COMUN_air (byte N);    
     extern void PROG_saveRELOJ_TARIFA_air (byte* data, byte N);
@@ -607,7 +607,6 @@
     extern byte PROG_writeRELOJ_EqPESOS_air (byte N);    
     extern void PROG_saveRELOJ_CALEND_air (byte* data, byte N);
     extern byte PROG_writeRELOJ_CALEND_air (byte N);    
-  #endif
 
 
  #endif

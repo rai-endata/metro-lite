@@ -233,6 +233,7 @@
       segundosEspera = 0;
       dif_espera = 0;
       minutosEspera = 0;
+      minutosEspera_anterior = 0;
       segundosEspera = 0;
       RELOJ_esperaIni();                                    // Inicializacion de la espera
     }

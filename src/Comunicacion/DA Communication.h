@@ -28,6 +28,7 @@
     #define N_CMD_POS           (N_CMD+N_POS) // Longitud de COMANDO + POSICION
 
 
+
    // Fin de datos de Air Buffer
   #define fin_datos_msb     0xDF
   #define fin_datos_lsb     0x0A
@@ -46,6 +47,8 @@
   #define MENSAJE11		0x0B		//Pase a Ocupado con Tarifa automatica
   #define MENSAJE12		0x0C		//Se esta quedando sin espacio para guardar reportes, CIERRE EL TURNO
   #define MENSAJE13		0x0D		//Se ha cerrado el turno, AUTOMATICAMENTE, por falta de espacio para reportes
+  #define MENSAJE14		0x0E		//Sincronizando el Reloj
+  #define MENSAJE15		0x0F		//El reloj esta en modo programacion
 
   /* ESTRUCTURAS */
   /***************/  

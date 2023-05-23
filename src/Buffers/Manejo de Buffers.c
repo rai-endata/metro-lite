@@ -23,9 +23,15 @@
   static void guardar_en_buffer (byte** ptr_address, byte data_in);
   static byte extraer_de_buffer (byte** ptr_address);
   //static byte verificar_desbordamiento (byte** ptr_address, byte* fin_address);
+
   static void verificar_ini_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
-  
-  
+  static void verificar_iniWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
+  static void verificar_fin_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
+  static void verificar_finWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
+
+
+  static void guardarWord_en_buffer (word** ptr_address, word data_in);
+  static word extraerWord_de_buffer (word** ptr_address);
   
 
 
@@ -171,17 +177,20 @@
     }
 
 
+/* GUARDAR WORD EN BUFFER CIRCULAR */
+/***********************************/
+void put_word (word** put_ptr_address, word data_in, word* ptr_ini_address, uint16_t buffer_long){
+  /*
+	Dada la direccion de memoria de un puntero, va colocando el dato que se le pasa como argumento
+	en la direccion apuntada por el contenido de la direccion del puntero.
+	Al guardar un byte, incrementa el puntero y se fija si debe dar la vuelta o no
+  */
+  guardarWord_en_buffer(put_ptr_address, data_in);   // Guarda Byte e Incrementa puntero
+  verificar_finWord_buffer(put_ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
+}
+
     
 
-
-
-
-
-  
-  
-
-
-   
   /* EXTRAER BYTE DE BUFFER CIRCULAR */
   /***********************************/ 
     byte get_byte (byte** get_ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
@@ -199,7 +208,24 @@
       return(data_out);
     }
 
-  
+    /* EXTRAER WORD DE BUFFER CIRCULAR */
+     /***********************************/
+       word get_word (word** get_ptr_address, word* ptr_ini_address, uint16_t buffer_long){
+         /*
+           Analogo a GUARDAR BYTE... Se le pasa la direccion de memoria del puntero segun el cual se quieren
+           extraer los datos, extrae los datos en una variable volatil y luego incrementa este puntero. Y se
+           fija si debe dar la vuelta o no.
+           El valor extraido es devuelto por la funcion como un argumento de salida
+         */
+         word data_out;
+
+         data_out = extraerWord_de_buffer(get_ptr_address);                           // extrae Byte e Incrementa puntero
+         verificar_finWord_buffer(get_ptr_address, ptr_ini_address, buffer_long);     // verifica que el incremento no rebase el destino y si lo hace da la vuelta
+
+         return(data_out);
+       }
+
+
   /* INCREMENTAR PUNTERO A BUFFER CIRCULAR */
   /*****************************************/  
     void inc_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
@@ -210,15 +236,36 @@
       verificar_fin_buffer(ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
     }
 
+	/* INCREMENTAR PUNTERO A BUFFER CIRCULAR */
+	/*****************************************/
+	void dec_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
+	/*
+	  decrementa el puntero y verifica que no se rebase. Es decir, da la vuelta si corresponde
+	*/
+	  (*ptr_address)--;               // Incrementar el contenido de la posicion de memoria del puntero => o sea, el puntero
+	  verificar_ini_buffer(ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
+	}
+
+
+    /* INCREMENTAR PUNTERO A BUFFER CIRCULAR */
+    /*****************************************/
+      void incWord_ptr (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long){
+      /*
+        Incrementa el puntero y verifica que no se rebase. Es decir, da la vuelta si corresponde
+      */
+        (*ptr_address)++;               // Incrementar el contenido de la posicion de memoria del puntero => o sea, el puntero
+        verificar_finWord_buffer(ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
+      }
+
 
 /* INCREMENTAR PUNTERO A BUFFER CIRCULAR */
   /*****************************************/  
-    void dec_ptr (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
+    void decWord_ptr (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long){
     /*
       decrementa el puntero y verifica que no se rebase. Es decir, da la vuelta si corresponde
     */
       (*ptr_address)--;               // Incrementar el contenido de la posicion de memoria del puntero => o sea, el puntero
-      verificar_ini_buffer(ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
+      verificar_iniWord_buffer(ptr_address, ptr_ini_address, buffer_long);     // Verifica que el incremento no rebase el destino y si lo hace da la vuelta
     }
 
 
@@ -504,33 +551,7 @@
     }    
 
   
-  /* VERIFICAR FIN BUFFER CIRCULAR */
-  /*********************************/  
-    void verificar_fin_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
-      /*
-        Toma la direccion de un puntero, la direccion de inicio del buffer que maneja y la longitud
-        de dicho buffer.
-        Un puntero auxliar (ptr_fin) apunta al fin del buffer, o sea la direccion de inicio del buffer
-        + la longitud.
-        Luego se comparan estos dos punteros y si son iguales, es decir, se alcanzo el fin; se modifica
-        el contenido de la posicion de memoria del puntero, para hacer que el mismo apunte al inicio de
-        su buffer
-      */
-      byte* ptr_fin;
-      byte* ptr;
-        
       
-      ptr_fin = (ptr_ini_address);
-      ptr_fin += buffer_long;
-      
-      ptr = *(ptr_address);               // Puntero apuntando al contenido de la direccion de memoria del puntero
-      
-      if (ptr >= ptr_fin){
-        (*ptr_address) = ptr_ini_address; // Contenido de la direccion del puntero que apunte al inicio del buffer
-      }
-    }      
-
-    
 /*********************************************************************************************/
 /* RUTINAS INTERNAS */
 /********************/
@@ -585,6 +606,20 @@
     }
 
 
+    /* GUARDAR BYTE EN BUFFER */
+      /**************************/
+static void guardarWord_en_buffer (word** ptr_address, word data_in){
+
+/*
+	 LE PASO COMO ARGUMENTO LA DIRECCION DE MEMORIA DEL PUNTERO Y NO EL PUNTERO, PARA
+	 PODER INCREMENTAR EL PUNTERO. SINO LO QUE HARIA ES INCREMENTAR EL PUNTERO VOLATIL3
+	 CREADO AL PASARLO COMO ARGUMENTO Y NO EL PUNTERO REAL
+*/
+	**ptr_address = data_in;
+    (*ptr_address)++;
+}
+
+
 
   /* EXTRAE BYTE DE BUFFER */
   /*************************/
@@ -599,7 +634,74 @@
       return(data_out);
     }    
 
-  
+    /* EXTRAE WORD DE BUFFER */
+      /*************************/
+	static word extraerWord_de_buffer (word** ptr_address){
+	  // Simetrica a guardar_en_buffer
+	   word data_out;
+
+	  data_out = **ptr_address;
+
+	  (*ptr_address)++;
+
+	  return(data_out);
+	}
+
+	/* VERIFICAR FIN BUFFER CIRCULAR */
+	  /*********************************/
+	  static  void verificar_fin_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
+	      /*
+	        Toma la direccion de un puntero, la direccion de inicio del buffer que maneja y la longitud
+	        de dicho buffer.
+	        Un puntero auxliar (ptr_fin) apunta al fin del buffer, o sea la direccion de inicio del buffer
+	        + la longitud.
+	        Luego se comparan estos dos punteros y si son iguales, es decir, se alcanzo el fin; se modifica
+	        el contenido de la posicion de memoria del puntero, para hacer que el mismo apunte al inicio de
+	        su buffer
+	      */
+	      byte* ptr_fin;
+	      byte* ptr;
+
+
+	      ptr_fin = (ptr_ini_address);
+	      ptr_fin += buffer_long;
+
+	      ptr = *(ptr_address);               // Puntero apuntando al contenido de la direccion de memoria del puntero
+
+	      if (ptr >= ptr_fin){
+	        (*ptr_address) = ptr_ini_address; // Contenido de la direccion del puntero que apunte al inicio del buffer
+	      }
+	    }
+
+
+
+	    /* VERIFICAR FIN BUFFER CIRCULAR */
+	    /*********************************/
+	    static  void verificar_finWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long){
+	        /*
+	          Toma la direccion de un puntero, la direccion de inicio del buffer que maneja y la longitud
+	          de dicho buffer.
+	          Un puntero auxliar (ptr_fin) apunta al fin del buffer, o sea la direccion de inicio del buffer
+	          + la longitud.
+	          Luego se comparan estos dos punteros y si son iguales, es decir, se alcanzo el fin; se modifica
+	          el contenido de la posicion de memoria del puntero, para hacer que el mismo apunte al inicio de
+	          su buffer
+	        */
+	        word* ptr_fin;
+	        word* ptr;
+
+
+	        ptr_fin = (ptr_ini_address);
+	        ptr_fin += buffer_long;
+
+	        ptr = *(ptr_address);               // Puntero apuntando al contenido de la direccion de memoria del puntero
+
+	        if (ptr >= ptr_fin){
+	          (*ptr_address) = ptr_ini_address; // Contenido de la direccion del puntero que apunte al inicio del buffer
+	        }
+	      }
+
+
   /* VERIFICAR INICIO BUFFER CIRCULAR */
   /************************************/  
     static void verificar_ini_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long){
@@ -609,7 +711,16 @@
       }
     }      
     
-  
+	/* VERIFICAR INICIO BUFFER CIRCULAR */
+	/************************************/
+	static void verificar_iniWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long){
+
+	  if (*ptr_address < ptr_ini_address){
+		*ptr_address = (ptr_ini_address + buffer_long) - 1;  // Contenido de la direccion del puntero que apunte al inicio del buffer
+	  }
+	}
+
+
   /* VERIFICAR DESBORDAMIENTO */
   /****************************/
    /*
@@ -633,8 +744,8 @@
   
       
   
-/* AGREGAR DATOS AL BUFFER  */
-/*******************************/
+/* AGREGAR DATOS (bytes) AL BUFFER  */
+/************************************/
 void putBUFCIR (byte dat, buffcirTYPE* DATA){
   if(!DATA->fullBUFFER){
     put_byte(&(DATA->put), dat, DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
@@ -645,9 +756,20 @@ void putBUFCIR (byte dat, buffcirTYPE* DATA){
   }
 }
 
+/* AGREGAR DATOS (words) AL BUFFER  */
+/************************************/
+void putWord_BUFCIR (word dat, buffWordTYPE* DATA){
+  if(!DATA->fullBUFFER){
+    put_word(&(DATA->put), dat, DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
+    DATA->cntWORD++;
+    if(DATA->put == DATA->get){
+     DATA->fullBUFFER = 1;
+    }
+  }
+}
+
 /* SACAR DATO DEL BUFFER  */
 /*******************************/
-
 
 byte getBUFCIR (buffcirTYPE* DATA){
   byte dato;
@@ -664,11 +786,30 @@ byte getBUFCIR (buffcirTYPE* DATA){
 }
 
 
+/* SACAR DATO DEL BUFFER  */
+/*******************************/
 
+word getWord_BUFCIR (buffWordTYPE* DATA){
+  word dato;
+  if(DATA->cntWORD > 0){
+    dato = get_word(&(DATA->get), DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
+    DATA->cntWORD--;
+    DATA->fullBUFFER = 0;
+    if(DATA->get == DATA->put && DATA->cntWORD > 0){
+     //nunca tendria que pasar por aca (programacion defensiva)
+     DATA->cntWORD = 0;
+    }
+  }
+  return (dato);
+}
+
+
+
+/* INCREMENTAR ptr word GET  */
+/*****************************/
 
 /* INCREMENTAR ptr GET  */
 /************************/
-
 
 void incGET_BUFCIR (buffcirTYPE* DATA){
   if((DATA->cntBYTE > 0) && (DATA->get!= DATA->put)){
@@ -677,6 +818,7 @@ void incGET_BUFCIR (buffcirTYPE* DATA){
   }
 }
 
+
 /* DECREMENTAR ptr GET  */
 /************************/
 
@@ -684,6 +826,25 @@ void decGET_BUFCIR (buffcirTYPE* DATA){
   if(DATA->get!= DATA->put){
     dec_ptr(&(DATA->get), DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
     DATA->cntBYTE++;
+  }
+}
+
+
+void incWord_BUFCIR (buffWordTYPE* DATA){
+  if((DATA->cntWORD > 0) && (DATA->get!= DATA->put)){
+    incWord_ptr(&(DATA->get), DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
+    DATA->cntWORD--;
+  }
+}
+
+
+/* DECREMENTAR ptr GET  */
+/************************/
+
+void decWord_BUFCIR (buffWordTYPE* DATA){
+  if(DATA->get!= DATA->put){
+    decWord_ptr(&(DATA->get), DATA->iniBUFFER, (uint16_t) DATA->sizeBUFFER);
+    DATA->cntWORD++;
   }
 }
 
@@ -806,4 +967,21 @@ byte* take_ptrGET_BUFCIR(buffcirTYPE* DATA){
 
         return(space);
       }
+
+  	word create_dataWord(byte hi, byte lo){
+
+  		// resultado
+  		// +------+------+
+  		// |  hi  |  lo  |
+  		// +------+------+
+
+  		word resultado;
+  		word aux;
+
+  		resultado = (word)hi;
+  		resultado = hi<<8;
+  		aux = (word)lo;
+  		resultado = resultado | aux;
+  		return(resultado);
+  	}
 

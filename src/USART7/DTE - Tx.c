@@ -9,7 +9,9 @@
 #include "DA Tx.h"
 #include "Lista Comandos.h"
 #include "DA Define Commands.h"
-//#include "Air Tx.h"
+#include "Air Update.h"
+#include "Comandos sin conexion a central.h"
+#include "Programacion Parametros.h"
 
 
 #define dim_DATx       150
@@ -61,11 +63,16 @@ void DA_Tx (void){
 	byte* DA_TxGETBackup;
 	static byte CMD_a_Tx;
 
+
 	DA_TxGET = DA_TxBuffer_getGETptr();
 	DA_TxPUT = DA_TxBuffer_getPUTptr();
 
+	// && (datosSC_cntBYTE == 0)
+
 	//if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (DA_TxGET != DA_TxPUT) && (TxBufferDA_cntCMD>0 ) ){
-	if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ) ){
+	if ((!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ))){
+		 //para que no se demore en responder al programador
+		 //|| ((prgRELOJ_COMUNES_OK_F && DA_doTx)	&& (TxBufferDA_cntCMD>0 ))){
 	//if ((!pauseTx || (CMD_a_Tx == 128)) && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ) ){
 
 		//copia datos de DA_TxBuffer a un buffer lineal
@@ -181,8 +188,22 @@ void DA_Tx (void){
     		//analizo que dispositivo serie finalizo la transmisión
     		if(huart == &huart7){
     			//termino la transmison al visor android
-    			DA_Txing = 0;      // Finalice la transmisión.
+    			DA_Txing = 0;      //Finalice la transmisión.
+   			    transmitiendo_RTA = 0;            				// Asumo que no voy a transmitir una Rta
+    			if(cmd_resp == 0xE0){
+    				if(waitToTx_upDateSuccess){
+    					waitToTx_upDateSuccess = 0;
+    					updateFinRTA_LOCAL = 1;
+    				}
+    			}else if(cmd_resp == 0xc0){
+    			 //se temino de enviar una respuesta de comando transparente
+    				if(waitToTx_upDateSuccess){
+    					waitToTx_upDateSuccess = 0;
+    					updateFinRTA_TRANSPARENTE = 1;
+    				}
 
+    			}
+    			cmd_resp = 0xff;
     		}
 
     	}else{

@@ -61,6 +61,7 @@
 #include "Reportes.h"
 //#include "watchdog.h"
 #include "DA Define Commands.h"
+#include "Comandos sin conexion a central.h"
 
 
 //#include "file aux1.h"
@@ -138,7 +139,7 @@ int main(void)
 	SystemClock_Config();
 	set_tipo_de_equipo();
 	//IWDG_Config();		// Configurar el módulo IWDG
-	MX_SPIx_Init();		//ini spi
+	MX_SPIx_Init();			//ini spi
 	EPROM_CS_Init();
 	Ini_portBANDERITA();
 	MX_GPIO_Init();
@@ -146,7 +147,6 @@ int main(void)
 	//set_choice_device_uart1();
 	choice_device_uart1 = PROG_DEVICE;
 	USART1_Ini();
-
 	USART7_Ini();
 	MX_TIM2_Init4();
 	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
@@ -170,11 +170,10 @@ int main(void)
 
 	clr_BANDERA();
 
-
 	//inicializar asiento luego de tarifa (setea carrera_bandera)
 
 	ASIENTO_ini();
-	determinePrimerEncendido();         //Determinar si se trata del 1er Encendido
+	determinePrimerEncendido();         	//Determinar si se trata del 1er Encendido
 
 	//Configuración de contador de pulsos
 	DISTANCIA_setPulsosCntOld(0);
@@ -200,20 +199,15 @@ int main(void)
 
 	DISTANCIA_iniCalculo_PULSE_ACCUM();
 
-LOOP:
-	//borrar_EEPROM();
+
+// *****  Lazo Principal *************
+
 	for(;;){
-
-		//prueba
-		//read_progRELOJ_eeprom();
-		//read_backup_eeprom();
-		//grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET);
-		//chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
-
-
 		//IWDG->KR = IWDG_KEY_RELOAD;	// Realizar la recarga del contador del IWDG
+		//procesar_datosSC();				//procesa datos sin conexion
 
-		procesar_datosSC();				//procesa datos sin conexion
+		check_datosSC();
+
 		// REPORTES
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
@@ -256,16 +250,16 @@ LOOP:
 		EEPROM_chkRequest(1);			  //
 	    chkProgMode();
 	    ModoPROGRAMACION();
-
-
+	    //finTxRta_actions();               // Ejecuto Acciones que esperan el fin de Tx Rta (se recomienda que este debajo de proceso de IRQ MODEM)
+	    AIR_UPDATE_update ();             // Actualizacion por AIRE
 
 #ifdef RELOJ_DEBUG
 	    PRINT_DEBUG_imprimir();
 #endif
-
-
 	}
 }
+
+// ********* fin Lazo principal *****************
 
 
 void ModoPROGRAMACION (void){

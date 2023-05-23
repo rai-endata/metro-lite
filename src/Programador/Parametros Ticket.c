@@ -230,12 +230,34 @@
       // LEYENDA 1
       progTICKET_GET = PROGRAMADOR_addByte(TICKET_ID_Leyenda_1);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
-      (void)PROGRAMADOR_addByte(0);
+      (void)PROGRAMADOR_addByte('P');
+      (void)PROGRAMADOR_addByte('R');
+      (void)PROGRAMADOR_addByte('O');
+      (void)PROGRAMADOR_addByte('G');
+      (void)PROGRAMADOR_addByte('R');
+      (void)PROGRAMADOR_addByte('A');
+      (void)PROGRAMADOR_addByte('M');
+      (void)PROGRAMADOR_addByte('A');
+      (void)PROGRAMADOR_addByte('C');
+      (void)PROGRAMADOR_addByte('I');
+      (void)PROGRAMADOR_addByte('O');
+      (void)PROGRAMADOR_addByte('N');
+
       
       // LEYENDA 2
       (void)PROGRAMADOR_addByte(TICKET_ID_Leyenda_2);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
-      (void)PROGRAMADOR_addByte(0);
+      (void)PROGRAMADOR_addByte('P');
+      (void)PROGRAMADOR_addByte('O');
+      (void)PROGRAMADOR_addByte('R');
+      (void)PROGRAMADOR_addByte(' ');
+      (void)PROGRAMADOR_addByte('D');
+      (void)PROGRAMADOR_addByte('E');
+      (void)PROGRAMADOR_addByte('F');
+      (void)PROGRAMADOR_addByte('E');
+      (void)PROGRAMADOR_addByte('C');
+      (void)PROGRAMADOR_addByte('T');
+      (void)PROGRAMADOR_addByte('O');
       
       // LEYENDA 3
       (void)PROGRAMADOR_addByte(TICKET_ID_Leyenda_3);
@@ -245,6 +267,7 @@
       // LOCALIDAD
       (void)PROGRAMADOR_addByte(TICKET_ID_Localidad);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Localidad_Desconocida);
       len = string_length(txt);
       i = 0;
@@ -252,11 +275,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
       
       // SERVICIO
       (void)PROGRAMADOR_addByte(TICKET_ID_Servicio);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Tipo_de_Servicio_Desconocido);
       len = string_length(txt);
       i = 0;
@@ -264,11 +289,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
       
       // TITULAR
       (void)PROGRAMADOR_addByte(TICKET_ID_Titular);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Titular_Desconocido);
       len = string_length(txt);
       i = 0;
@@ -276,11 +303,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
       
       // CUIT
       (void)PROGRAMADOR_addByte(TICKET_ID_CUIT);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _CUIT_Desconocido);
       len = string_length(txt);
       i = 0;
@@ -288,11 +317,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
             
       // MARCA MODELO
       (void)PROGRAMADOR_addByte(TICKET_ID_MarcaModelo);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Coche_Desconocido);
       len = string_length(txt);
       i = 0;
@@ -300,11 +331,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
             
       // PATENTE
       (void)PROGRAMADOR_addByte(TICKET_ID_Patente);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Patente_Desconocida);
       len = string_length(txt);
       i = 0;
@@ -312,11 +345,13 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
             
       // LICENCIA
       (void)PROGRAMADOR_addByte(TICKET_ID_Licencia);
       (void)PROGRAMADOR_addByte(TICKET_fontNormal);
+      /*
       string_FAR_copy(txt, _Licencia_Desconocida);
       len = string_length(txt);
       i = 0;
@@ -324,6 +359,7 @@
         (void)PROGRAMADOR_addByte(txt[i]);
         i++;
       }
+      */
       (void)PROGRAMADOR_addByte(0);
             
       // IVA

@@ -168,6 +168,8 @@
 #define TARIFA_AUTOMATICA				MENSAJE11
 #define CIERRE_TURNO					MENSAJE12
 #define TURNO_CERRADO					MENSAJE13
+#define SINCRONIZANDO_CON_CENTRAL		MENSAJE14
+#define EQUIPO_O_RELOJ_DESCONOCIDO		MENSAJE15
 
 
 #define CUENTA_MAX_TARIFA	4
@@ -210,6 +212,7 @@
     extern uint16_t timerParado_cnt, timerParado_cnt_LIBRE, timerParado_cnt_OCUPADO;	//Tiempo de PARDO
     extern byte nroCorrelativo_INTERNO;          											//Nro Correlativo de Viaje
     extern byte minutosEspera;           											//Minutos de Espera
+    extern uint8_t minutosEspera_anterior;
     extern byte nroChofer;
 
     extern byte turnoChofer;
@@ -316,5 +319,16 @@
     const tDATE_flash FLASH_cobrandoDATE;
     const uint16_t FLASH_PULSOS_x_KM;
     extern uint8_t cntSendValorViaje;
+
+    extern void Tx_Pase_a_LIBRE  (byte tipo);
+    extern void Tx_Pase_a_OCUPADO (uint8_t tipo);
+    extern void Tx_Pase_a_COBRANDO (uint8_t tipo);
+    extern void Tx_Pase_a_FUERA_SERVICIO (void);
+
+    extern void rearmar_y_TX_cmdOcupado(byte nroViaje, byte status);
+    extern void rearmar_y_TX_cmdLibre(byte nroViaje);
+    extern byte chkCmd_Reloj(byte Rx_cmd);
+    extern void guardar_dateLIBRE(void);
+    extern void guardar_dateOCUPADO(void);
 
 #endif

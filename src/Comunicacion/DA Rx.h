@@ -79,11 +79,16 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void ConsultaEstado (byte* Rx_data_ptr);
 	extern void Comando_TRANSPARENTE_Rx (byte* Rx_data_ptr);
 	extern uint8_t armar_buff_viaje(uint8_t* buff_aux, uint8_t i);
+	//extern uint8_t armar_buff_viajeSC(uint8_t* buff_aux, uint8_t i);
 
 	extern void Pedido_reportePARCIAL_Rx (byte* Rx_data_ptr);
 
 	extern void ASIGNAR_Rx (byte* Rx_data_ptr);
 	extern void quitarASIGNADO_Rx (byte* Rx_data_ptr);
+	void Rx_appConectada_aCentral (byte* Rx_data_ptr);
+	void Rx_appDesconectada_deCentral (byte* Rx_data_ptr);
+	extern void Tx_respVersion_Equipo(void);
+
 
 
 #endif

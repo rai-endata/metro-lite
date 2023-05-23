@@ -25,7 +25,8 @@
 #include "Display-7seg.h"
 #include "Reportes.h"
 #include ".\Cx - Visor Android\Rx-VA.h"
-
+#include "Air Update.h"
+#include "Constantes.h"
 
 
 //#include "usart1.h"
@@ -68,6 +69,7 @@
 	static void READandPRINT(byte** ptrptrTABLA, byte tipo);
 	static void Print_turno (byte* Rx_data_ptr);
 	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr);
+	static void UpdateSuccess_Rx (byte* Rx_data_ptr);
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -262,8 +264,8 @@
 		Pedido_reportePARCIAL_Rx,
 	    Rx_comando_0F,
 
-		Rx_comando_10,
-	    Rx_comando_11,
+		Rx_appConectada_aCentral,
+		Rx_appDesconectada_deCentral,
 	    Rx_comando_12,
 		Rx_comando_13,
 		Rx_comando_14,
@@ -347,8 +349,8 @@
 	    Rx_comando_5E,
 	    Rx_comando_5F,
 
-	    Rx_comando_60,
-	    Rx_comando_61,
+		AIR_UPDATE_Rx,
+		AIR_READ_Rx,
 	    Rx_comando_62,
 	    Rx_comando_63,
 	    Rx_comando_64,
@@ -399,7 +401,7 @@
 	    Rx_comando_08,
 		Rx_comando_09,
 		Rx_comando_0A,
-		Rx_comando_0B,
+		UpdateSuccess_Rx,
 	    Rx_comando_0C,
 	    Rx_comando_0D,
 	    Rx_comando_0E,
@@ -568,6 +570,7 @@
 							  // Asumo Rta Simple (sin datos) => Seteo N y Buffer.
 							  // Si no fuera Rta simple, la rutina de Rx del comando en cuestión debe
 							  // setear la longitud y el buffer de Rta
+
 							  N_CMD_A_RESP = N_CMD;         						// Longitud de Respuesta Simple
 							  BUFFER_CMD_A_RESP = NULL;     						// No lleva Buffer (Rta Simple)
 							  Tabla_RxDA[Rx_cmd](RxDA_buffer);      			// Proceso Comando
@@ -581,16 +584,26 @@
 							// Recibí la respuesta a un comando
 							pauseTx = 0;
 							Rx_cmd -= 0x80;
+							//me fijo si la respuesta fue de un comando de reloj
+							if(chkCmd_Reloj(Rx_cmd)){
+								//cuando se transmite comando sin conexion
+								//espero la respuesta para transmitir el sgte.
+								esperarRespuesta_cmdReloj = 0;
+							}
+
 							anularTx_cmd(Rx_cmd);           				// Anulo la transmisión del comando
 							Tabla_RxRTA_DA[Rx_cmd](RxDA_buffer);  			// Proceso Respuesta
 						  }
+					}else{
+						Tx_Comando_MENSAJE(EQUIPO_O_RELOJ_DESCONOCIDO);
 					}
 
 				}
 				// Si recibí algo, mas alla de que sea  coherente o no, avanzo
 				// el GET dentro del GPA, xq ya procese lo que acabo de recibir
 				DA_RxData_procesado();             // Dato procesado
-			}
+			  }
+
 	}
 
 
@@ -1422,6 +1435,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						//RELOJ_INTERNO_newSesion(nroChofer);
 						//Tx_Conf_finTURNO(okFIN);
 						//print_ticket_turno();
+						CMD_Pase_a_LIBRE.timeReint = timeReint_normal;
 						if(ESTADO_RELOJ==LIBRE){
 							Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
 						}else {
@@ -1453,6 +1467,26 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						}
 					}
 
+		void UpdateSuccess_Rx (byte* Rx_data_ptr){
+						//
+						// El formato de datos de recepcion es
+						//
+						//    | N | CMD | DATA_1 | DATA_2 | . | . |
+						//
+						//
+						// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+						// cantidad maxima de FICHAS/PESOS.
+						byte N;
+						byte cmd;
+
+						N 	= *Rx_data_ptr++;               // Extraigo N
+						cmd = *Rx_data_ptr++;               // Extraigo CMD
+			    		//reseteo el equipo
+						NVIC_SystemReset();
+					}
+
+
+
 		/* RECEPCION DE  */
 		/**************************************/
 		void Pedido_Pase_LIBRE_Rx (byte* Rx_data_ptr){
@@ -1467,9 +1501,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			byte N;
 			byte cmd;
 
-			//if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ && (ESTADO_RELOJ != LIBRE)){
 			sinCONEXION_CENTRAL=0;
-
+			if(datosSC_cntWORD == 0){
 				N 	= *Rx_data_ptr++;               // Extraigo N
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 				SaveDatGps(Rx_data_ptr, LIB);
@@ -1484,9 +1517,11 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				}
 				//Tx_Resumen_VIAJE();
 				//TxRta_conDATOS(0x02);
-
-			//}
+			}else{
+				Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
+			}
 		}
+
 
 		/* RECEPCION DE  */
 		/**************************************/
@@ -1504,77 +1539,76 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			byte cmd;
 
 			sinCONEXION_CENTRAL=0;
+			if(datosSC_cntWORD == 0){
+				if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+					N 	= *Rx_data_ptr++;               // Extraigo N
+					cmd = *Rx_data_ptr++;               // Extraigo CMD
+					//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
+					tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
+					SaveDatGps(Rx_data_ptr, OCUP);
+	                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
+	                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
+	                // o bien desde fuera de servicio por sensor de asiento
+	                	if (seleccionManualTarifas){
+	                						if(tarifa > 4){
+	                						//tarifa invalida
+	                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+	                							Tx_Comando_MENSAJE(TARIFA_INVALIDA);
+	                						}else if(tarifa > nroTARIFA_HAB_MANUAL){
+	                						//tarifa no programada
+	                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+	                							Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
+	                						}else{
+	                							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+	                							paseOCUPADO_APP=1;
+	                							tarifa_1_4 = tarifa;
+	                							setTARIFA_MANUAL();
+	                							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+	                							//envia valor de viaje para que muestre bajada de bandera
+	                							Tx_Valor_VIAJE();
+	                						}
+	                	}else{
+	                						tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
+	                						//set tarifa a mostrar en display
+	                						if(tarifa_1_8 < 5){
+	                							tarifa_1_4 = tarifa_1_8;
+	                						}else{
+	                							tarifa_1_4 = tarifa_1_8 - 4;
+	                						}
 
-			if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
-				N 	= *Rx_data_ptr++;               // Extraigo N
-				cmd = *Rx_data_ptr++;               // Extraigo CMD
-				//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
-				tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
-				SaveDatGps(Rx_data_ptr, OCUP);
+	                						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+	                						paseOCUPADO_APP=1;
+	                						if(tarifa != tarifa_1_4){
+	                							tarifa = tarifa_1_4;
+	                							Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
+	                						}
 
+	                						Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+	                						//envia valor de viaje para que muestre bajada de bandera
+	                						Tx_Valor_VIAJE();
+	                	}
 
-                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
-                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
-                // o bien desde fuera de servicio por sensor de asiento
+	                }else if(ESTADO_RELOJ==COBRANDO){
+						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+						Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+						Tx_Valor_VIAJE();
+	                }else if(ESTADO_RELOJ==OCUPADO){
+	 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+	 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+	 					Tx_Valor_VIAJE();
+	                }else if (ESTADO_RELOJ==LIBRE){
+						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+						Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+	                } else{
+	                	TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+	                }
+				}else{
+					TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+					Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+				}
 
-                	if (seleccionManualTarifas){
-                						if(tarifa > 4){
-                						//tarifa invalida
-                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-                							Tx_Comando_MENSAJE(TARIFA_INVALIDA);
-                						}else if(tarifa > nroTARIFA_HAB_MANUAL){
-                						//tarifa no programada
-                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-                							Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
-                						}else{
-                							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-                							paseOCUPADO_APP=1;
-                							tarifa_1_4 = tarifa;
-                							setTARIFA_MANUAL();
-                							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-                							//envia valor de viaje para que muestre bajada de bandera
-                							Tx_Valor_VIAJE();
-                						}
-                	}else{
-                						tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
-                						//set tarifa a mostrar en display
-                						if(tarifa_1_8 < 5){
-                							tarifa_1_4 = tarifa_1_8;
-                						}else{
-                							tarifa_1_4 = tarifa_1_8 - 4;
-                						}
-
-                						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-                						paseOCUPADO_APP=1;
-                						if(tarifa != tarifa_1_4){
-                							tarifa = tarifa_1_4;
-                							Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
-                						}
-
-                						Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-                						//envia valor de viaje para que muestre bajada de bandera
-                						Tx_Valor_VIAJE();
-
-
-                	}
-
-                }else if(ESTADO_RELOJ==COBRANDO){
-					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-					Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
-					Tx_Valor_VIAJE();
-                }else if(ESTADO_RELOJ==OCUPADO){
- 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
- 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
- 					Tx_Valor_VIAJE();
-                }else if (ESTADO_RELOJ==LIBRE){
-					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-					Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
-                } else{
-                	TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-                }
 			}else{
-				TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
-				Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+				Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
 			}
 		}
 
@@ -1591,40 +1625,42 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				// cantidad maxima de FICHAS/PESOS.
 				byte N;
 				byte cmd;
+				if(datosSC_cntWORD == 0){
+					sinCONEXION_CENTRAL=0;
 
-				sinCONEXION_CENTRAL=0;
+						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+							if(ESTADO_RELOJ==OCUPADO){
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								N 	= *Rx_data_ptr++;               // Extraigo N
+								cmd = *Rx_data_ptr++;               // Extraigo CMD
+								SaveDatGps(Rx_data_ptr, COBR);
+								Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+								Tx_Valor_VIAJE();
 
-					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
-						if(ESTADO_RELOJ==OCUPADO){
-							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-							N 	= *Rx_data_ptr++;               // Extraigo N
-							cmd = *Rx_data_ptr++;               // Extraigo CMD
-							SaveDatGps(Rx_data_ptr, COBR);
-							Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
-							Tx_Valor_VIAJE();
+							}else if(ESTADO_RELOJ==COBRANDO){
+								//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								Tx_Valor_VIAJE();
+								Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 
-						}else if(ESTADO_RELOJ==COBRANDO){
-							//esto puede pasar si la central estaba caida y el pase a cobrando no se registro en la central
-							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-							Tx_Valor_VIAJE();
-							Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+								//TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+								//Tx_Comando_MENSAJE(PASE_A_COBRANDO_NO_PERMITIDO);
+							}else if (ESTADO_RELOJ==LIBRE){
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+							}else {
+								//no se en que caso puede ocurrir
+								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							}
 
-							//TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-							//Tx_Comando_MENSAJE(PASE_A_COBRANDO_NO_PERMITIDO);
-						}else if (ESTADO_RELOJ==LIBRE){
-							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-							Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
-						}else {
-							//no se en que caso puede ocurrir
-							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+						}else{
+							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+							Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
 						}
-
-					}else{
-						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
-						Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
-					}
-					//Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
-
+						//Tx_Comando_MENSAJE(RECAUDACION_PARCIAL);
+				}else{
+					Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
+				}
 			}
 
 
@@ -1646,6 +1682,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						//if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ && (ESTADO_RELOJ != LIBRE)){
 
 						sinCONEXION_CENTRAL=1;
+						yaTrasmitioUltimo_cmdReloj = 0;
+
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
 							SaveDatGps(Rx_data_ptr, LIB);
@@ -1685,6 +1723,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						byte cmd;
 
 						sinCONEXION_CENTRAL=1;
+						yaTrasmitioUltimo_cmdReloj = 0;
 
 						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 							N 	= *Rx_data_ptr++;               // Extraigo N
@@ -1765,6 +1804,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							byte cmd;
 
 							sinCONEXION_CENTRAL=1;
+							yaTrasmitioUltimo_cmdReloj = 0;
 
 								if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 									if(ESTADO_RELOJ==OCUPADO){
@@ -1957,13 +1997,67 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			N 	= *Rx_data_ptr++;                   // Extraigo N
 			cmd = *Rx_data_ptr++;               	// Extraigo CMD
 			Tx_Status_RELOJ();
-			if(ESTADO_RELOJ==COBRANDO){
+			if(ESTADO_RELOJ==OCUPADO || ESTADO_RELOJ==COBRANDO){
 				Tx_Valor_VIAJE();
 			}
-
+			Tx_respVersion_Equipo();
 
 		}
 
+
+		/* App Conectada */
+		/*****************/
+		void Rx_appConectada_aCentral (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+			byte N;
+			byte cmd;
+
+			N 	= *Rx_data_ptr++;                   // Extraigo N
+			cmd = *Rx_data_ptr++;               	// Extraigo CMD
+
+			appConectada_ACentral = 1;
+			//prueba
+			//Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
+
+			if(sinCONEXION_CENTRAL && !yaTrasmitioUltimo_cmdReloj){
+				yaTrasmitioUltimo_cmdReloj = 1;
+				if(ESTADO_RELOJ==COBRANDO){
+					//Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+				}else if (ESTADO_RELOJ==LIBRE){
+					//Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+				}else if (ESTADO_RELOJ==OCUPADO){
+					//Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+				}
+			}
+		}
+
+		/* App DesConectada */
+		/*******************/
+		void Rx_appDesconectada_deCentral (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+			byte N;
+			byte cmd;
+
+			N 	= *Rx_data_ptr++;                   // Extraigo N
+			cmd = *Rx_data_ptr++;               	// Extraigo CMD
+
+			appConectada_ACentral = 0;
+
+		}
 
 
 		/* RECEPCION DE PASE A ASIGNADO*/
@@ -2021,10 +2115,12 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			byte			status;  //0: encontro viaje // 1: no encontro viaje
 			uint16_t		dataWORD;
 			byte			buff_aux[400];
-			tREG_GENERIC*	ptrLIBRE;
-			tREG_GENERIC*	ptrOCUPADO;
-			tREG_GENERIC*	ptrREG_APAGAR;
+			tREG_LIBRE*	ptrREG_LIBRE;
+			tREG_OCUPADO*	ptrREG_OCUPADO;
+			tREG_A_PAGAR*	ptrREG_APAGAR;
 			uint8_t* 		Rx_data_ptr_aux;
+			byte prueba;
+			byte* prueba_ptr;
 
 			N 		= *Rx_data_ptr++;              // Extraigo N
 			cmd 	= *Rx_data_ptr++;              // Extraigo CMD
@@ -2035,14 +2131,13 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			Rx_data_ptr_aux[1]  = Rx_data_ptr[0];
 			Rx_data_ptr_aux[0]  = Rx_data_ptr[1];
 
-
 			switch (subcmd){
 			      case subCMD_ECO:	//ECO
 			    	  	  	i=0;
 			    	  	  	buff_aux[i++] = subCMD_ECO + 0x80;
 			    	  	    bufferNcopy(&buff_aux[i] ,Rx_data_ptr	,N); i = i + N;
 			    	  	  	N = i+1;
-				    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+				    	    Tx_cmdTRANSPARENTE(N, buff_aux );
 			      	  	  	break;
 			      case subCMD_VERSION:  //ESTADO DE RELOJ
                             i=0;
@@ -2088,6 +2183,21 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 			               break;
 			      case subCMD_consultaVIAJE:
+			    		//NRO VIAJE:  1  |  1 |  2 |  2 |  2 |  3 |  3 |  3 | 4
+			    		// 			-----+----+----+----+----+----+----+----+----
+			    		//ESTADO:	  C1 | L1 | O2 | C2 | L2 | O3 | C3 | L3 | O4
+			    		//		    -----+----+----+----+----+----+----+----+----
+
+			    		// NormalmeNte cuando se emite el comando L3 los datos que contiene son del L2,O3,C3
+			    		// por lo tanto cuando se va a emitir un L3 que no se emitio por falta de conexion
+			    		// tendra los datos de L2,O3,C3
+
+			    		// igualmente cuando hay una consulta por numero de viaje, si piden los datos
+			    		// del numero de viaje 2, se enviara los datos de L1, O2, C2
+
+			    		// Ejemplo2:   NroViaje: 2 -> se arma datos de L1,O2,C2
+			    		// Ejemplo1:   NroViaje: 3 -> se arma datos de L2,O3,C3
+
 							i=0;
 
 							buff_aux[i++] = subCMD_consultaVIAJE + 0x80;  //subcomando
@@ -2101,19 +2211,24 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							buff_aux[i++] = RTC_Date.fecha[1];  		  //MES
 							buff_aux[i++] = RTC_Date.fecha[2];  		  //AÑO
 
-							ptrREG_APAGAR = get_regAPAGAR_byNUMERO_VIAJE(dataBYTE);
-							if(ptrREG_APAGAR != NULL){
-								ptrOCUPADO  = get_regOCUPADO_by_ptrREG_APAGAR (ptrREG_APAGAR, dataBYTE);
-								ptrLIBRE    = get_regLIBRE_by_ptrREG_APAGAR (ptrREG_APAGAR, dataBYTE);
-								i = armar_buff_viaje((uint8_t*)&buff_aux, i);
-								N = i+1;
-								Tx_cmdTRANSPARENTE(N, buff_aux );
+							byte nroViaje = dataBYTE;
+
+							if(nroViaje == 0){
+								ptrREG_LIBRE = get_regLIBRE_by_anyPTR(REPORTE_PUTptr, 0xff);
 							}else{
-								status = 1;
-								buff_aux[i++] = status;
-                                N = i+1;
-				    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+								ptrREG_LIBRE = get_regLIBRE_by_anyPTR(REPORTE_PUTptr, nroViaje-1);
 							}
+							ptrREG_OCUPADO = get_regOCUPADO_by_anyPTR(REPORTE_PUTptr, nroViaje);
+							ptrREG_APAGAR  = get_regAPAGAR_by_anyPTR(REPORTE_PUTptr, nroViaje);
+
+							i = armar_buff_viaje((uint8_t*)&buff_aux, i);
+							N = i+1;
+							if(ptrREG_LIBRE == NULL || ptrREG_OCUPADO == NULL || ptrREG_APAGAR == NULL ){
+								status = 1;
+								buff_aux[8] = status;
+							}
+							Tx_cmdTRANSPARENTE(N, buff_aux );
+
 			               break;
 			      case subCMD_consultaTURNO:
 							cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, dataWORD, 2);        				// Obtengo punteros a todos las sesiones
@@ -2163,9 +2278,35 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 
 			               break;
-			      case 5 :
+			      case subCMD_progAIR:
+							i=0;
+							//respuesta al comando
+							buff_aux[i++] = subCMD_progAIR + 0x80;  		//subcomando
+							buff_aux[i++] = 0;   						  	//fuente de hora
+							getDate();
+							buff_aux[i++] = RTC_Date.hora[0];   		  	//HORA
+							buff_aux[i++] = RTC_Date.hora[1];   		  	//MINUTOS
+							buff_aux[i++] = RTC_Date.hora[2];   		  	//SEGUNDOS
+							buff_aux[i++] = RTC_Date.fecha[0];  		  	//DIA
+							buff_aux[i++] = RTC_Date.fecha[1];  		  	//MES
+							buff_aux[i++] = RTC_Date.fecha[2];  		  	//AÑO
+							buff_aux[i++] = *(Rx_data_ptr);  		  		//id 01
+							buff_aux[i++] = *(Rx_data_ptr+1);  		  		//id 02
+
+							N = i+1;
+							Tx_cmdTRANSPARENTE(N, buff_aux );
+							prueba_ptr = Rx_data_ptr+2;
+							prueba = *(Rx_data_ptr+2);
+							if(*(Rx_data_ptr+2) == 0x03){
+								//grabacion de param. reloj comun
+								AIR_UPDATE_RxTransparente(Rx_data_ptr-3);
+			    	  	    }else if(*(Rx_data_ptr+2) == 0x04){
+								//grabacion de param. tarifa
+								AIR_UPDATE_RxTransparente(Rx_data_ptr-3);
+							}
 			               break;
-			   default :
+
+			  default:
 				   	   	   break;
 
 
@@ -2177,8 +2318,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		byte 	cmd, subcmd, N, nro_viaje_rx, nro_viaje_buff, cntBYTE_BACK;
 		byte* 	get_BACK;
 
-		N 		= *Rx_data_ptr++;               // Extraigo N
-		cmd 	= *Rx_data_ptr++;               // Extraigo CMD
+		N 		= *Rx_data_ptr++;              // Extraigo N
+		cmd 	= *Rx_data_ptr++;              // Extraigo CMD
 		subcmd	= *Rx_data_ptr++;              // Extraigo sub CMD
 		//central -> reloj
 		/*
@@ -2186,6 +2327,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			#define subCMD_VERSION			0x02
 			#define subCMD_consultaVIAJE	0x03
 			#define subCMD_consultaTURNO	0x04
+			#define subCMD_progAir			0x05
 		*/
 
 		if(subcmd == subCMD_datosSC + 0x80){
@@ -2193,7 +2335,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 			//guardo puntero get y cntBYTE
 			get_BACK = datosSC.get;
-			cntBYTE_BACK = datosSC.cntBYTE;
+			cntBYTE_BACK = datosSC.cntWORD;
 			//tomo numero de viaje
 			nro_viaje_buff = getBUFCIR(&datosSC);
 			if(nro_viaje_rx == nro_viaje_buff){
@@ -2205,8 +2347,11 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			 //no avanzo el puntero -> lo restauro
 			 //y hacemos que aca no paso nada
 				datosSC.get = get_BACK;
-				datosSC.cntBYTE = cntBYTE_BACK;
+				datosSC.cntWORD = cntBYTE_BACK;
 			}
+		}else if(subcmd == subCMD_progSuccess + 0x80){
+			//reseteo el equipo
+			NVIC_SystemReset();
 		}
 	}
 
@@ -2288,3 +2433,116 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		return(i);
 	}
 
+/*
+	uint8_t armar_buff_viajeSC(uint8_t* buff_aux, uint8_t i){
+		//doy vuelta los bytes
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasDist, 3);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.fichasTime, 3);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.importe, 4);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmLIBRE			, 2);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.kmOCUPADO		, 2);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaLIBRE	, 2);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segMarchaOCUPADO, 2);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoLIBRE	, 2);
+		convert_bigINDIAN_to_litleINDIAN (&regVIAJE.segParadoOCUPADO, 2);
+		buff_aux[i++] = 0;						//status
+		buff_aux[i++] = regVIAJE.nroViaje;
+		buff_aux[i++] = regVIAJE.chofer;
+		buff_aux[i++] = regVIAJE.tarifa;
+		//if(regVIAJE.velMaxLIBRE>255){regVIAJE.velMaxLIBRE=255;}
+		//if(regVIAJE.velMaxOCUPADO>255){regVIAJE.velMaxOCUPADO=255;}
+		//if(regVIAJE.minutosEspera>255){regVIAJE.minutosEspera=255;}
+
+		buff_aux[i++] = regVIAJE.velMaxLIBRE;
+		buff_aux[i++] = regVIAJE.velMaxOCUPADO;
+		buff_aux[i++] = regVIAJE.sensor;
+		buff_aux[i++] = regVIAJE.minutosEspera;
+		buff_aux[i++] = regVIAJE.fichaPesos;
+		buff_aux[i++] = regVIAJE.puntoDecimal;
+		buff_aux[i++] = regVIAJE.estadoConexion_LIBRE;
+		buff_aux[i++] = regVIAJE.estadoConexion_OCUPADO;
+		buff_aux[i++] = regVIAJE.estadoConexion_COBRANDO;
+		buff_aux[i++] = regVIAJE.fichasDist[2];
+		buff_aux[i++] = regVIAJE.fichasDist[1];
+		buff_aux[i++] = regVIAJE.fichasDist[0];
+		buff_aux[i++] = regVIAJE.fichasTime[2];
+		buff_aux[i++] = regVIAJE.fichasTime[1];
+		buff_aux[i++] = regVIAJE.fichasTime[0];
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.importe			,sizeof(regVIAJE.importe));			 i = i + sizeof(regVIAJE.importe);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.kmLIBRE			,sizeof(regVIAJE.kmLIBRE));			 i = i + sizeof(regVIAJE.kmLIBRE);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.kmOCUPADO		,sizeof(regVIAJE.kmOCUPADO));		 i = i + sizeof(regVIAJE.kmOCUPADO);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segMarchaLIBRE	,sizeof(regVIAJE.segMarchaLIBRE));	 i = i + sizeof(regVIAJE.segMarchaLIBRE);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segMarchaOCUPADO	,sizeof(regVIAJE.segMarchaOCUPADO)); i = i + sizeof(regVIAJE.segMarchaOCUPADO);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segParadoLIBRE	,sizeof(regVIAJE.segParadoLIBRE));	 i = i + sizeof(regVIAJE.segParadoLIBRE);
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.segParadoOCUPADO	,sizeof(regVIAJE.segParadoOCUPADO)); i = i + sizeof(regVIAJE.segParadoOCUPADO);
+		//hora
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateLIBRE+4	,3); i = i + 3;
+		//fecha
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateLIBRE		,3); i = i + 3;
+		//hora
+		bufferNcopy(&buff_aux[i] ,(byte*)(&regVIAJE.dateOCUPADO)+4	,3); i = i + 3;
+		//fecha
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateOCUPADO		,3); i = i = i + 3;
+		//hora
+		bufferNcopy(&buff_aux[i] ,(byte*)(&regVIAJE.dateA_PAGAR)+4  ,3); i = i + 3;
+		//fecha
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.dateA_PAGAR	    ,3); i = i + 3;
+		//Posicion libre
+		buff_aux[i++] = regVIAJE.sgnLatLonLibre;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.latitudLIBRE	    ,3); i = i + 3;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.longitudLIBRE    ,3); i = i + 3;
+		buff_aux[i++] = regVIAJE.velgpsLIBRE;
+
+		//Posicion ocupado
+		buff_aux[i++] = regVIAJE.sgnLatLonOcupado;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.latitudOCUPADO   ,3); i = i + 3;
+		bufferNcopy(&buff_aux[i] ,(byte*)&regVIAJE.longitudOCUPADO   ,3); i = i + 3;
+		buff_aux[i++] = regVIAJE.velgpsOCUPADO;
+
+		return(i);
+	}
+*/
+
+	void Tx_respVersion_Equipo(void){
+		byte	buff_aux[100];
+		byte i, k, N;
+        i=0;
+
+            getDate();
+			buff_aux[i++] = subCMD_VERSION + 0x80;
+			buff_aux[i++] = 0;   				//fuente de hora
+			buff_aux[i++] = RTC_Date.hora[0];   // HORA
+			buff_aux[i++] = RTC_Date.hora[1];   // MINUTOS
+			buff_aux[i++] = RTC_Date.hora[2];   // SEGUNDOS
+			buff_aux[i++] = RTC_Date.fecha[0];  // DIA
+			buff_aux[i++] = RTC_Date.fecha[1];  // MES
+			buff_aux[i++] = RTC_Date.fecha[2];  // AÑO
+          //copia tipo de equipo
+			k = string_copy_returnN(&buff_aux[i],"  Equipo: ");
+			i=i+k;
+			switch (TIPO_DE_EQUIPO){
+			      case 0:
+					k = string_copy_returnN(&buff_aux[i],"metroblue (PB7=0, PB6=0)");
+					i=i+k;
+					break;
+			      case 1:
+						k = string_copy_returnN(&buff_aux[i],"metrolite (PB7=1, PB6=1)");
+						i=i+k;
+					break;
+			      default :
+						k = string_copy_returnN(&buff_aux[i],"  DESCONOCIDO");
+						i=i+k;
+			    	  break;
+			}
+          //copia version
+			k = string_copy_returnN(&buff_aux[i],", Firmware: ");
+			i=i+k;
+			k = string_copy_returnN(&buff_aux[i],versionFIRMWARE);
+			i=i+k;
+			k = string_copy_returnN(&buff_aux[i],fechaFIRMWARE);
+			i=i+k;
+
+			//prepara comando transparente
+            N = i+1;
+	        Tx_cmdTRANSPARENTE(N, buff_aux );
+	}

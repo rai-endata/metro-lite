@@ -17,7 +17,10 @@
 	#define cmdTARIFAS							0x09
 	#define cmdConf_inicioTURNO					0x0A
 	//#define cmdConf_finTURNO					0x0B
-	//#define cmdDistancia_Velocidad			0x0C
+//#define cmdDistancia_Velocidad			0x0C
+	#define CMD_AIR_UPDATE_DONE                 0x0B
+	#define CMD_AIR_READ                    	0x0C
+
 
 	#define CMD_RELOJ_Pase_a_LIBRE              0x18
 	#define CMD_RELOJ_Pase_a_OCUPADO            0x19
@@ -27,10 +30,15 @@
 	#define CMD_RELOJ_Pase_a_OCUPADO_BANDERA    0x1D
 	#define CMD_RELOJ_Pase_a_OCUPADO_APP	    0x1E
 
-	#define CMD_RELOJ_Pase_a_LIBRE_SC           0x28
-	#define CMD_RELOJ_Pase_a_OCUPADO_SA_SC      0x2C
-	#define CMD_RELOJ_Pase_a_OCUPADO_APP_SC     0x2E
-	#define CMD_RELOJ_Pase_a_COBRANDO_SC        0x2A
+	//#define CMD_RELOJ_Pase_a_LIBRE_SC           0x28
+	//#define CMD_RELOJ_Pase_a_OCUPADO_SA_SC      0x2C
+	//#define CMD_RELOJ_Pase_a_OCUPADO_APP_SC     0x2E
+	//#define CMD_RELOJ_Pase_a_COBRANDO_SC        0x2A
+
+	#define CMD_RELOJ_Pase_a_LIBRE_SC           0x18
+	#define CMD_RELOJ_Pase_a_OCUPADO_SA_SC      0x1C
+	#define CMD_RELOJ_Pase_a_OCUPADO_APP_SC     0x1E
+	#define CMD_RELOJ_Pase_a_COBRANDO_SC        0x1A
 
 	#define CMD_comandoTRANSPARENTE		0x40
 
@@ -41,8 +49,11 @@
 		#define subCMD_VERSION			0x02
 		#define subCMD_consultaVIAJE	0x03
 		#define subCMD_consultaTURNO	0x04
+		#define subCMD_progAIR			0x05
+
 
 		//reloj -> central
+		#define subCMD_progSuccess		0x0B
 		#define subCMD_datosSC			0x3F
 
 		#define CMD_comandoMENSAJE			0x50
@@ -80,6 +91,9 @@
     #define cmdEntra_DESCANSO					0x0C
 	#define cmdSale_DESCANSO					0x0D
     #define cmdREPORTE_PARCIAL_Rx				0x0E
+
+    #define cmdApp_CON_CONEXION_Rx				0x10
+	#define cmdApp_SIN_CONEXION_Rx				0x11
 
 	#define cmdPedido_Pase_LIBRE_SC				0x23
 	#define cmdPedido_Pase_OCUPADO_SC			0x24

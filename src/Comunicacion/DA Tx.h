@@ -44,8 +44,8 @@ CTRLTx_FLAGS  _ctrlTx_Central_F1;     // Banderas de Control de Transmisión 1
 
 
  extern uint16_t pauseTx_to_cnt;
- //#define PAUSE_TX			30			//300 mseg de pasua enter comando y comando
-#define PAUSE_TX_CORTA			30			//2 seg de pausa entre comando y comando para prueba
+ //#define PAUSE_TX			30				//300 mseg de pasua enter comando y comando
+#define PAUSE_TX_CORTA			100			//2 seg de pausa entre comando y comando para prueba
 #define PAUSE_TX_LARGA			500			//2 seg de pausa entre comando y comando para prueba
 
 /* RUTINAS */
@@ -69,6 +69,9 @@ CTRLTx_FLAGS  _ctrlTx_Central_F1;     // Banderas de Control de Transmisión 1
 
 	extern byte Rx_DA_getNRta (void);
 	 #define getN_CMD_A_RESP   (Rx_DA_getNRta())
+
+	//extern void finTxRta_actions (void);
+	extern byte cmd_resp;
 
 
 #endif

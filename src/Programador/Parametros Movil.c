@@ -15,10 +15,7 @@
 /*********************************************************************************************/
 /* PROTOTIPOS */
 /**************/
-  // INTERNAS
-  static void prgMOVIL_armarDEFAULT (void);
-  
-  
+
   // EEPROM
   static void armarBuffer_progMOVIL_EEPROM (byte* RAMbuffer);
   
@@ -55,8 +52,8 @@
             }
 
             if (!TIPO_RELOJ_VALIDO){
-            	error_eepromDATA=1;
-            	prog_mode=1;
+            	//error_eepromDATA=1;
+            	//prog_mode=1;
             }
 
       	}else{
@@ -171,7 +168,7 @@
 
   /* ARMAR STRING DE PARAMETROS MOVIL */
   /************************************/
-    static void prgMOVIL_armarDEFAULT (void){
+    void prgMOVIL_armarDEFAULT (void){
       // Los parametros demovil se grabaran en EEPROM con el siguiente formato:
       // (recordemos que la EEPROM se divide en bloques de 1 longword, es decir         
       //  4bytes)
@@ -326,7 +323,6 @@
 /*********************************************************************************************/
 /* PROGRAMACION POR AIRE */
 /*************************/
-#ifdef VISOR_AIR_UPDATE  
   /* GUARDAR DATOS DE AIRE A PROGRAMAR */
   /*************************************/
     void PROG_saveMOVIL_air (byte* data, byte N){
@@ -360,4 +356,3 @@
       
       return (error);
     }    
-#endif
