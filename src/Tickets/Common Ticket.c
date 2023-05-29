@@ -266,6 +266,61 @@ void printCABECERA(uint8_t** ptrDouble, byte plusPRINT){
 	}
 }
 
+
+void printCABECERA_TURNO(uint8_t** ptrDouble, byte plusPRINT){
+	uint8_t buffer_aux[20];
+    uint16_t aux32;
+
+	if(EEPROM_PROG_TICKET.TITULAR[2]!=0){
+		//Avalos Fernando
+		string_copy_incDest(ptrDouble,&EEPROM_PROG_TICKET.TITULAR[2]);
+		add_LF(ptrDouble);
+	}
+	if(EEPROM_PROG_TICKET.CUIT[2]!=0){
+		string_copy_incDest(ptrDouble,"CUIT: ");
+		//CUIT: 20187609224
+		string_copy_incDest(ptrDouble,&EEPROM_PROG_TICKET.CUIT[2]);
+		add_LF(ptrDouble);
+	}
+	if(EEPROM_PROG_TICKET.MARCA_MODELO[2]!=0){
+		string_copy_incDest(ptrDouble,"MODELO:: ");
+		//PALIO: M: 2009
+		string_copy_incDest(ptrDouble,&EEPROM_PROG_TICKET.MARCA_MODELO[2]);
+		add_LF(ptrDouble);
+	}
+	if(EEPROM_PROG_TICKET.PATENTE[2]!=0){
+		string_copy_incDest(ptrDouble,"PATENTE: ");
+		//Patente:  IIW 421
+		string_copy_incDest(ptrDouble,&EEPROM_PROG_TICKET.PATENTE[2]);
+		add_LF(ptrDouble);
+	}
+	if(EEPROM_PROG_TICKET.LICENCIA[2]!=0){
+		string_copy_incDest(ptrDouble,"LICENCIA: ");
+		//Licencia: 246
+		string_copy_incDest(ptrDouble,&EEPROM_PROG_TICKET.LICENCIA[2]);
+		add_LF(ptrDouble);
+	}
+
+	printLINE(ptrDouble);
+	//add_LF(ptrDouble);
+	if(plusPRINT){
+		//print numero de Movil
+
+		string_copy_incDest(ptrDouble,"Nro Movil:                 ");
+		aux32 = (((NRO_MOVIL_H & 0x000000ff)<<8) | (NRO_MOVIL_L & 0x0000ffff));
+		convert_to_string(buffer_aux, aux32, 0, base_BCD);
+		string_copy_incDest(ptrDouble,&buffer_aux);
+		add_LF(ptrDouble);
+
+		string_copy_incDest(ptrDouble,"Chofer:	              1-xxxxxx");
+		add_LF(ptrDouble);
+		string_copy_incDest(ptrDouble,"Nro Recibo:             000012");
+		add_LF(ptrDouble);
+		printLINE(ptrDouble);
+		add_LF(ptrDouble);
+	}
+}
+
 void printLINE(uint8_t** ptrDouble){
 	string_copy_incDest(ptrDouble,"-------------------------------");
 	add_LF(ptrDouble);

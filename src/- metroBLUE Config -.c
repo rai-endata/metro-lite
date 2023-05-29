@@ -18,8 +18,8 @@
 //char fechaFIRMWARE[] =  " (13/11/2019)";
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.7.1";
-char fechaFIRMWARE[] =  " (22/05/2023)";
+char versionFIRMWARE[] =  "v1.8.0";
+char fechaFIRMWARE[] =  " (29/05/2023)";
 
 //v1.7.1
 //Si el equipo estaba en cobrando y

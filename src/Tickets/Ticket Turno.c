@@ -105,7 +105,7 @@ void print_ticket_turno(uint8_t nroTurno){
 		//add_LF(ptrDouble);
 		//print nombre de empresa
 		printEMPRESA(ptrDouble);
-
+		printCABECERA_TURNO(ptrDouble,0);
 		//cantidad_de_sesion = REPORTES_getSesions(sesion_ptrs, 2);        				// Obtengo punteros a todos las sesiones
 		cantidad_de_sesion = REPORTES_getTurno(sesion_ptrs, nroTurno, max_turnosReporte);
 		if(cantidad_de_sesion ==0xff){

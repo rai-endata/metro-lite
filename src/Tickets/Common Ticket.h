@@ -51,6 +51,7 @@ extern tESTADO_IMPRESION statusPRINT;
 
 extern void IniPRINT(uint8_t** ptrDouble);
 extern void printCABECERA(uint8_t** ptrDouble, byte plusPRINT);
+extern void printCABECERA_TURNO(uint8_t** ptrDouble, byte plusPRINT);
 extern void printEMPRESA(uint8_t** ptrDouble);
 extern void printLINE(ptrDouble);
 extern void add_LF(uint8_t** ptrDouble);
