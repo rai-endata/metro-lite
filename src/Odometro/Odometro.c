@@ -334,7 +334,24 @@
 
 
       /*** La DISTANCIA la trabajamos sin decimales y en mts ***/
-      DISTANCIAm = (delta_pulsos * 1000)/PULSOS_x_KM;		            // Distancia Recorrida en METROS sin decimales
+
+      if(PULSOS_x_KM < 2000){
+    	  //La distancia max que puede calcular sin que se desborde es de 2147 km
+    	  //aqui el error de truncamiento es solo el redondeo del cociente
+    	  //el limite de distanciaviene dado porque Distanciam es de 4 bytes
+    	  //con lo cual tenemos ffffffffhex/2000dec = 2147 km de distancia max
+    	  DISTANCIAm = (delta_pulsos * 1000)/PULSOS_x_KM;		            // Distancia Recorrida en METROS sin decimales
+      }else{
+    	  //aqui se mete un error adicional, el truncamiento que hay en el cociente
+    	  //del denominador.
+    	  //la peor situacion es para k=2009
+    	  //el error para una distancia de 100 metros seria
+    	  //distancia = (201*100)/(2009/10) = 100,5 metros
+    	  // es decir hay un error del 0,5 % el cual va bajando
+    	  //para constantes mayores
+    	  DISTANCIAm = (delta_pulsos * 100)/(PULSOS_x_KM/10);		            // Distancia Recorrida en METROS sin decimales
+      }
+
       DISTANCIA_100 = (DISTANCIAm/100)*100;
 
       //km_estado = DISTANCIAm/100;							//en km con un decimal
