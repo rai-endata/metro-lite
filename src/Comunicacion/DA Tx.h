@@ -44,7 +44,7 @@ CTRLTx_FLAGS  _ctrlTx_Central_F1;     // Banderas de Control de Transmisión 1
 
 
  extern uint16_t pauseTx_to_cnt;
- //#define PAUSE_TX			30				//300 mseg de pasua enter comando y comando
+#define PAUSE_TX				15			//150 mseg de pausa entre comando y comando
 #define PAUSE_TX_CORTA			100			//2 seg de pausa entre comando y comando para prueba
 #define PAUSE_TX_LARGA			500			//2 seg de pausa entre comando y comando para prueba
 

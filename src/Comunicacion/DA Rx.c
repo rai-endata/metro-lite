@@ -1,3 +1,4 @@
+
 #include "DA Rx.h"
 #include "main.h"
 #include "print UART.h"
@@ -1502,6 +1503,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			byte cmd;
 
 			sinCONEXION_CENTRAL=0;
+			appConectada_ACentral = 1;
+
 			if(datosSC_cntWORD == 0){
 				N 	= *Rx_data_ptr++;               // Extraigo N
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
@@ -1539,6 +1542,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			byte cmd;
 
 			sinCONEXION_CENTRAL=0;
+			appConectada_ACentral = 1;
+
 			if(datosSC_cntWORD == 0){
 				if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 					N 	= *Rx_data_ptr++;               // Extraigo N
@@ -1625,6 +1630,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				// cantidad maxima de FICHAS/PESOS.
 				byte N;
 				byte cmd;
+				appConectada_ACentral = 1;
 				if(datosSC_cntWORD == 0){
 					sinCONEXION_CENTRAL=0;
 
@@ -2000,7 +2006,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			if(ESTADO_RELOJ==OCUPADO || ESTADO_RELOJ==COBRANDO){
 				Tx_Valor_VIAJE();
 			}
-			Tx_respVersion_Equipo();
+			//Tx_respVersion_Equipo();
 
 		}
 

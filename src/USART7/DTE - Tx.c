@@ -71,6 +71,7 @@ void DA_Tx (void){
 
 	//if (!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (DA_TxGET != DA_TxPUT) && (TxBufferDA_cntCMD>0 ) ){
 	if ((!pauseTx && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ))){
+	//if ((bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ))){
 		 //para que no se demore en responder al programador
 		 //|| ((prgRELOJ_COMUNES_OK_F && DA_doTx)	&& (TxBufferDA_cntCMD>0 ))){
 	//if ((!pauseTx || (CMD_a_Tx == 128)) && bluetoothCONECTADO && DA_doTx && (!DA_Txing ) && (TxBufferDA_cntCMD>0 ) ){
@@ -105,12 +106,14 @@ void DA_Tx (void){
 				TxBufferDA_cntCMD--;
 				DA_Txing = 1;
 				CMD_a_Tx = tempTxBuffer[3];
+				//pauseTx = 1;
+				//if(CMD_RELOJ){
+					//pauseTx_to_cnt = PAUSE_TX_LARGA;
+				//}else{
+					//pauseTx_to_cnt = PAUSE_TX_CORTA;
+				//}
 				pauseTx = 1;
-				if(CMD_RELOJ){
-					pauseTx_to_cnt = PAUSE_TX_LARGA;
-				}else{
-					pauseTx_to_cnt = PAUSE_TX_CORTA;
-				}
+				pauseTx_to_cnt = PAUSE_TX;
 
 				HAL_UART_Transmit_IT(&huart7, va_txDATA.get, N+3);	// Habilito Transmisión
 			}else{

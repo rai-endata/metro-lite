@@ -48,7 +48,7 @@
   #define MENSAJE12		0x0C		//Se esta quedando sin espacio para guardar reportes, CIERRE EL TURNO
   #define MENSAJE13		0x0D		//Se ha cerrado el turno, AUTOMATICAMENTE, por falta de espacio para reportes
   #define MENSAJE14		0x0E		//Sincronizando el Reloj
-  #define MENSAJE15		0x0F		//El reloj esta en modo programacion
+  #define MENSAJE15		0x0F		//Tipo de equipo o reloj desconocido, verifique programacion de reloj
 
   /* ESTRUCTURAS */
   /***************/  

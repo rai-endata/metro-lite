@@ -95,6 +95,7 @@
         if (TMR_GRAL_1seg){
           TMR_GRAL_1seg = 0;
           tmr_1seg();
+          //check_pressBLUETOOTH();
           seg_prueba++;
         }
       }

@@ -1,3 +1,4 @@
+#include  "- metroBLUE Config -.h"
 #include "DA Define Commands.h"
 #include "DA Define Null Commands.h"
 #include "DA Tx.h"
@@ -116,6 +117,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 	typeTxCMD   CMD_MENSAJE={0,CMD_comandoMENSAJE,0,timeReint_rapido,N_comandoMENSAJE,comandoMENSAJE_Buffer};
 
 
+	static void getVersion(byte* buf);
 	byte RESP_DATOS_buffer[4];
 
 /*********************************************************************************************/
@@ -435,21 +437,47 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		EncendidoEquipo_Buffer[5] = RTC_Date.fecha[1];  // MES
 		EncendidoEquipo_Buffer[6] = RTC_Date.fecha[2];  // AÑO
 
-		EncendidoEquipo_Buffer[7] = REVISION_H;            // Nº Revision High
-		EncendidoEquipo_Buffer[8] = REVISION_L;            // Nº Revision Low
+		getVersion(&EncendidoEquipo_Buffer[7]);
 
-		EncendidoEquipo_Buffer[9] = HoraApagado.hora[0];   // Hora
-		EncendidoEquipo_Buffer[10]= HoraApagado.hora[1];   // Minutos
-		EncendidoEquipo_Buffer[11]= HoraApagado.hora[2];   // Segundos
-		EncendidoEquipo_Buffer[12]= HoraApagado.fecha[0];  // Día
-		EncendidoEquipo_Buffer[13]= HoraApagado.fecha[1];  // Mes
-		EncendidoEquipo_Buffer[14]= HoraApagado.fecha[2];  // Año
-		EncendidoEquipo_Buffer[15]= motivo_reset;          // Motivo Reset (parte alta)
+		EncendidoEquipo_Buffer[10] = HoraApagado.hora[0];   // Hora
+		EncendidoEquipo_Buffer[11]= HoraApagado.hora[1];   // Minutos
+		EncendidoEquipo_Buffer[12]= HoraApagado.hora[2];   // Segundos
+		EncendidoEquipo_Buffer[13]= HoraApagado.fecha[0];  // Día
+		EncendidoEquipo_Buffer[14]= HoraApagado.fecha[1];  // Mes
+		EncendidoEquipo_Buffer[15]= HoraApagado.fecha[2];  // Año
 		EncendidoEquipo_Buffer[16]= TIPO_DE_EQUIPO;        // tipode equipo
 
 
 		EncendidoEquipo_Buffer[N_DATOS_EncendidoEquipo] = fin_datos_msb;  // Fin Datos
 		EncendidoEquipo_Buffer[N_DATOS_EncendidoEquipo+1] = fin_datos_lsb;// Fin Datos
+
+   }
+
+   static void getVersion(byte* buf){
+	   byte*  ver_firm;
+       byte aux;
+
+	   ver_firm = &versionFIRMWARE;
+	   aux = '.';
+
+	   for(byte i=0; i < 3; i++){
+
+		   if(i == 2){
+    		   aux = 0;  //fin de cadena
+    	   }
+
+		   if(*(ver_firm+2) == aux){
+    		   ver_firm++;
+    		   *buf++ = (*ver_firm & (0x0F));
+    		   ver_firm++;
+    	   }else{
+    		    ver_firm++;
+    		   *buf++ = (*ver_firm & 0x0F)<<4 | (*(ver_firm+1) & 0x0F);
+    		   ver_firm++;
+    		   ver_firm++;
+    	   }
+       }
+
 
    }
 

@@ -26,7 +26,7 @@ SPI_HandleTypeDef SpiHandle;
 
 spiMODE_en spi_type;
 
-	void MX_SPIx_Init(void){
+void MX_SPIx_Init(void){
 		SpiHandle.Instance               = SPIx;
 		SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
 		//SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;

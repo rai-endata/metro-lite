@@ -199,7 +199,7 @@ int main(void)
 
 	DISTANCIA_iniCalculo_PULSE_ACCUM();
 
-
+	check_pressBLUETOOTH();
 // *****  Lazo Principal *************
 
 	for(;;){

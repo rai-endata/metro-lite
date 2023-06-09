@@ -18,12 +18,25 @@
 //char fechaFIRMWARE[] =  " (13/11/2019)";
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.1";
-char fechaFIRMWARE[] =  " (31/05/2023)";
+char versionFIRMWARE[] =  "v1.8.2";
+char fechaFIRMWARE[] =  " (09/06/2023)";
+
+
+
+//v1.8.2
+//cambia la distancia del pase por sensor de asiento de cobrando a libre, de 60 a 30 metros.
+//en encendido de equipo agrega la version usando 3 bytes (estaba revision en 2 bytes, y estaba fija en 0001)
+//Ahora llamo funcion check_pressBLUETOOTH() en el arranque; ademas de hacerlo cuando se produce
+//un flanco en el pin de bluethooth
+//cuando recibo cambios de reloj con conecccion levanto la bandera appConectada_ACentral
+//cuando inicia la app ya no envio la version (Tx_respVersion_Equipo())
+//pongo una pausa entre comando y comando de 150 mseg.
+
+
+//
 
 //v1.8.1
 //arregla el error de desbordamiento en la variable
-//Distanciam
 
 //1.8.0
 //Agrega datos del titular al ticket de turno

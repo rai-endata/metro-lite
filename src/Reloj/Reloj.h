@@ -147,7 +147,7 @@
 *	 	CONSTANTES
 ********************************************************************/
 
-#define distanciaA_PAGAR_to_LIBRE     60  // 60mts a recorrer en A PAGAR para pasar a LIBRE
+#define distanciaA_PAGAR_to_LIBRE     30 //60  // 60mts a recorrer en A PAGAR para pasar a LIBRE
 
 #define CAMBIO_RELOJ_PERMITIDO 				0x00	//permite cambio reloj
 #define CAMBIO_RELOJ_NO_PERMITIDO_NC	 	0x01	//no hay cambio porque el reloj esta en el estado pedido
