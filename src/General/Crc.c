@@ -69,12 +69,15 @@ uint16_t crctab16[] = {
 	{
 		uint16_t CRC_16;
 		uint16_t fcs = 0xffff; // initialization
+		uint16_t aux_crc;
 
 	   while(nLength>0)
 	   {
 		 fcs = (fcs >> 8) ^ crctab16[(fcs ^ *pData) & 0xff];
 		 nLength--;
 		 pData++;
+		 //para depuracion
+		 aux_crc =  ~fcs;
 	   }
 	   CRC_16  = ~fcs;
 	   return CRC_16;

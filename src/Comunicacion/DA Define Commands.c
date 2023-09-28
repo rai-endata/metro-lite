@@ -1132,6 +1132,9 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 			uint16_t aux16; uint32_t aux32; uint8_t buffer_aux[20];
             uint8_t existe_sesion_iniciada;
+            uint32_t kmLIBRE, kmOCUPADO;
+			uint32_t datosMOV[1][2];
+
 
 				iniTURNO_ptr = &iniTURNO;	finTURNO_ptr = &finTURNO;
 
@@ -1142,15 +1145,46 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 						exit = 1;
 				}else{
 					TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
+
+
+					//date inicio turno
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\Inicio:    "); //7 espacios
+					i=i+k;
+					comandoMENSAJE_Buffer[i++] = 0x0D;
+					comandoMENSAJE_Buffer[i++] = 0x0A;
+					date_to_string(&buffer_aux, finTURNO_ptr->date);
+					//preparar_print (finTURNO_ptr->date, 0, &buffer_aux, 0);
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+
 					//Nro Turno
-					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nTurno: "); //7 espacios
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nTurno:    "); //7 espacios
 					i=i+k;
 					preparar_print (finTURNO_ptr->nroTurno, 0, &buffer_aux, 0);
 					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 					i=i+k;
 
+					//calc kmLIB, KmOCUP
+					(void)REPORTES_cal_kml_kmo(datosMOV);
+					kmLIBRE = datosMOV[0][0];
+					kmOCUPADO = datosMOV[0][1];
+
+					//kmLIB
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nKmLib:    "); //15 espacios
+					i=i+k;
+					preparar_print (kmLIBRE, 1, &buffer_aux, 0);
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+
+					//kmOCUP
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nKmOcup:"); //15 espacios
+					i=i+k;
+					preparar_print (kmOCUPADO, 1, &buffer_aux, 0);
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
+					i=i+k;
+
 					//viajes
-					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nViajes: "); //15 espacios
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nViajes:   "); //15 espacios
 					i=i+k;
 					aux16 = getViajes_Parcial();
 					//aux16 = aux16 + 1;
@@ -1159,7 +1193,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 					i=i+k;
 
 					//REC PARCIAL
-					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nRecaud: ");
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\nRecaud:    ");
 					i=i+k;
 					aux32 = getRecaudacion_Parcial();
 					if(ESTADO_RELOJ == COBRANDO){
@@ -1174,7 +1208,8 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 						//muestra ficha
 						puntoDECIMAL = 3;
 					}
-					preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
+					//preparar_print_poneCOMA (aux32, puntoDECIMAL, &buffer_aux, 0 );
+					preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0);
 					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],&buffer_aux);
 					i=i+k;
 					exit = 1;

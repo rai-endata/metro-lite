@@ -23,8 +23,10 @@
 	extern void TICKET_PARCIAL_setIni (tREG_SESION* addr_iniSESION, tREG_SESION* reg_iniSESION );
 	extern uint16_t getViajes_Parcial(void);
 	extern uint32_t getRecaudacion_Parcial(void);
+	extern void REPORTES_cal_kml_kmo (uint32_t* datosMOV);
 
 #endif
+
 
 
 #endif /* TICKET_PARCIAL_H_ */

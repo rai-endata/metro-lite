@@ -106,7 +106,6 @@ uint32_t cntIC_anterior;
 mainFLAGS1	_VISOR_F1;			// Variables Generales
 byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
 
-
 //#define		sbss 0x20000438
 //#define		ebss 0x20000468
 /*
@@ -116,8 +115,6 @@ byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
 #define		sbss	0x200007b8
 #define		ebss	0x2000517c
 */
-
-
 
 void SystemInit_test(void);
 

@@ -1026,6 +1026,7 @@
 				// El formato de datos de recepcion es
 				//
 				//    | N | CMD | DATA_1 | DATA_2 | . | . |
+				//    | N | CMD |dir hi | dir low | data byte | . |
 				//
 				//
 				// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
@@ -1051,7 +1052,7 @@
 				cmd = *Rx_data_ptr++;               // Extraigo CMD
 
 				aux_ptrTABLA = &ptrTABLA;
-				//apunto al registro de tabla que quiero leer (con ptrTABLA)
+				//apunto al registro de tabla que quiero escribir (con ptrTABLA)
 				aux_ptrTABLA[3] = 0;
 				aux_ptrTABLA[2] = 0;
 				aux_ptrTABLA[1] = *Rx_data_ptr;

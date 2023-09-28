@@ -18,10 +18,12 @@
 //char fechaFIRMWARE[] =  " (13/11/2019)";
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.2";
+char versionFIRMWARE[] =  "v1.8.2.1";
 char fechaFIRMWARE[] =  " (09/06/2023)";
 
 
+//v1.8.2.1
+//version que agrega kml y kmo en ticket parcial hecho para la app que esta haciendo santi
 
 //v1.8.2
 //cambia la distancia del pase por sensor de asiento de cobrando a libre, de 60 a 30 metros.
@@ -36,8 +38,7 @@ char fechaFIRMWARE[] =  " (09/06/2023)";
 //
 
 //v1.8.1
-//arregla el error de desbordamiento en la variable
-
+//arregla el error de desbordamiento en la variable Distanciam
 //1.8.0
 //Agrega datos del titular al ticket de turno
 

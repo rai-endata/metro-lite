@@ -33,6 +33,7 @@ extern byte estadosTurno;
 	extern void TICKET_TURNO_setIni (tREG_SESION* addr_iniSESION, tREG_SESION* reg_iniSESION );
 	extern void TICKET_TURNO_setFin (tREG_SESION* addr_finSESION, tREG_SESION* reg_finSESION );
 	void REPORTES_calVarios (tREG_GENERIC* INI_ptr, tREG_GENERIC* FIN_ptr, uint32_t* datosMOV);
+
 #endif
 
 	extern byte TURNO_getVelMax_estado(byte tipo);
