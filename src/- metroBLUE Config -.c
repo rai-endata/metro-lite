@@ -14,14 +14,13 @@
 	y: Major, version_minor	((uint16_t)0x00)  //se incrementa cuando cambia funcionalidad vuelve a cero cuando se incrementa x
 	Z: Major, 								  //se incrementa cuando se arregla algun/os errores, vuelve a cero cuando se incrementa x o y
     */
-//char versionFIRMWARE[] =  "v1.3.1";
-//char fechaFIRMWARE[] =  " (13/11/2019)";
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.2";
-char fechaFIRMWARE[] =  " (09/06/2023)";
+//char versionFIRMWARE[] =  "v1.8.2";
+//char fechaFIRMWARE[] =  " (09/06/2023)";
 
-
+char versionFIRMWARE[] =  "v1.8.2.A";
+char fechaFIRMWARE[] =  "(28/09/2023)";
 
 //v1.8.2
 //cambia la distancia del pase por sensor de asiento de cobrando a libre, de 60 a 30 metros.

@@ -1653,7 +1653,14 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								//Tx_Comando_MENSAJE(PASE_A_COBRANDO_NO_PERMITIDO);
 							}else if (ESTADO_RELOJ==LIBRE){
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-								Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+								//parche reintento infinito de libre, porque la app esta en ocupado
+								//el reloj en libre, la app queda reintentando el pase a cobrando
+								//entonces le envio un pase a cobrando trucho para que se pase a cobrando
+								//y luego se pueda pasar a libre
+
+								//Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+								Tx_Pase_a_COBRANDO_trucho(CON_CONEXION_CENTRAL);
+								Tx_Valor_VIAJE();
 							}else {
 								//no se en que caso puede ocurrir
 								TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);

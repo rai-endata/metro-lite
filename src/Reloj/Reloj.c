@@ -2503,6 +2503,139 @@ void cambio_de_reloj_x_sensor_asiento(void){
   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO+1] = fin_datos_lsb;// Fin Datos
      }
 
+//manda dato de ficha o pesos con el valor 0x55
+//para que la central sepa que es un comando trucho
+ void Tx_Pase_a_COBRANDO_trucho (uint8_t tipo){
+
+   		byte* ptrVALOR_VIAJE;
+   		byte* ptrVALOR_VIAJE_mostrar;
+   		byte* ptrDISTAMNCIAm;
+   		byte* ptrVELOCIDAD;
+
+   		byte* ptrFichasDistancia;
+   		byte* ptrFichasTiempo;
+   		byte* ptrBajadaBandera;
+
+   		uint32_t FichasDistancia;
+   		uint32_t FichasTiempo;
+   		uint16_t BajadaBandera;
+   		uint8_t tarifa_mostrar;
+
+		CMD_Pase_a_COBRANDO.Tx_F = 1;                      // Levanto Bandera de Tx
+		CMD_Pase_a_COBRANDO.Reintentos = reint_3;   // Cargo Cantidad de Reintentos (INFINITOS)
+
+   		ptrVALOR_VIAJE = &VALOR_VIAJE;
+   		ptrVALOR_VIAJE_mostrar = &VALOR_VIAJE_mostrar;
+   		ptrDISTAMNCIAm = &DISTANCIAm;
+   		ptrVELOCIDAD   = &VELOCIDAD;
+
+  		ptrBajadaBandera = &BajadaBandera;
+  		ptrFichasDistancia = &FichasDistancia;
+  		ptrFichasTiempo = &FichasTiempo;
+  		//BajadaBandera = TARIFA.bajadaBandera;
+  		FichasDistancia = TARIFACION_getFichasD();
+   		FichasTiempo =	TARIFACION_getFichasT();
+
+   		BajadaBandera = TARIFA.bajadaBandera;                             // Bajada Bandera
+
+   		if(TARIFA.diaNoche == 0){
+   					//DIURNA
+   					if(paseOCUPADO_APP){
+   						tarifa_mostrar = tarifa;
+   					}else{
+   						tarifa_mostrar = tarifa_1_4;
+   					}
+   				}else{
+   					//NOCTURNA
+   					if(paseOCUPADO_APP){
+   						tarifa_mostrar = tarifa+0x80;;
+   					}else{
+   						tarifa_mostrar = tarifa_1_4+0x80;
+   					}
+   		}
+
+   		getDate();
+
+   		//fuente de hora
+   		Pase_a_COBRANDO_Buffer[0] = HORA_source;                           // Hora GPS/RTC (0:GPS - 1:RTC)
+
+   		Pase_a_COBRANDO_Buffer[1] = RTC_Date.hora[0];   // HORA
+   		Pase_a_COBRANDO_Buffer[2] = RTC_Date.hora[1];   // MINUTOS
+   		Pase_a_COBRANDO_Buffer[3] = RTC_Date.hora[2];   // SEGUNDOS
+   		Pase_a_COBRANDO_Buffer[4] = RTC_Date.fecha[0];  // DIA
+   		Pase_a_COBRANDO_Buffer[5] = RTC_Date.fecha[1];  // MES
+   		Pase_a_COBRANDO_Buffer[6] = RTC_Date.fecha[2];  // AÑO
+
+   		Pase_a_COBRANDO_Buffer[7]  = tarifa_mostrar;  			  //numero de tarifa
+   		Pase_a_COBRANDO_Buffer[8]  = 0x55;  				  //ficha o pesos
+
+ 		if(TARIFA_PESOS){
+ 		//valor en pesos
+ 			Pase_a_COBRANDO_Buffer[9] = PUNTO_DECIMAL;  				  //ficha o pesos
+ 			Pase_a_COBRANDO_Buffer[10] = *(ptrVALOR_VIAJE+3);             //
+ 			Pase_a_COBRANDO_Buffer[11] = *(ptrVALOR_VIAJE+2);             //
+ 			Pase_a_COBRANDO_Buffer[12] = *(ptrVALOR_VIAJE+1);             //
+ 			Pase_a_COBRANDO_Buffer[13] = *(ptrVALOR_VIAJE+0);             //
+
+ 		}else{
+ 			//valor en fichas
+ 			if(EqPESOS_hab){
+ 				RedondeoValorViaje_3();
+ 				VALOR_VIAJE_mostrar = VALOR_VIAJE/10;
+ 				Pase_a_COBRANDO_Buffer[9] = 2;
+ 				Pase_a_COBRANDO_Buffer[10] = *(ptrVALOR_VIAJE_mostrar+3);             //
+ 				Pase_a_COBRANDO_Buffer[11] = *(ptrVALOR_VIAJE_mostrar+2);             //
+ 				Pase_a_COBRANDO_Buffer[12] = *(ptrVALOR_VIAJE_mostrar+1);             //
+ 				Pase_a_COBRANDO_Buffer[13] = *(ptrVALOR_VIAJE_mostrar+0);             //
+
+ 			}else{
+ 				Pase_a_COBRANDO_Buffer[9] = PUNTO_DECIMAL;  				  //ficha o pesos
+ 				Pase_a_COBRANDO_Buffer[10] = *(ptrVALOR_VIAJE+3);             //
+ 				Pase_a_COBRANDO_Buffer[11] = *(ptrVALOR_VIAJE+2);             //
+ 				Pase_a_COBRANDO_Buffer[12] = *(ptrVALOR_VIAJE+1);             //
+ 				Pase_a_COBRANDO_Buffer[13] = *(ptrVALOR_VIAJE+0);             //
+ 			}
+ 		}
+
+
+   		Pase_a_COBRANDO_Buffer[14] = *(ptrDISTAMNCIAm+3);             //
+   		Pase_a_COBRANDO_Buffer[15] = *(ptrDISTAMNCIAm+2);             //
+   		Pase_a_COBRANDO_Buffer[16] = *(ptrDISTAMNCIAm+1);             //
+   		Pase_a_COBRANDO_Buffer[17] = *(ptrDISTAMNCIAm+0);             //
+   		Pase_a_COBRANDO_Buffer[18] = minutosEspera;  				  //minutos de espera
+
+   		Pase_a_COBRANDO_Buffer[19] = *(ptrVELOCIDAD+1) ;            	//
+   		Pase_a_COBRANDO_Buffer[20] = *(ptrVELOCIDAD+0);            		//
+
+   		Pase_a_COBRANDO_Buffer[21] = (byte)ESTADO_RELOJ; 				// estado de reloj
+   		Pase_a_COBRANDO_Buffer[22] = turnoChofer;						// estado d e turno
+   		Pase_a_COBRANDO_Buffer[23] = nroChofer;  						// chofer quien inicio turno (si no inicio turno es cero)
+
+   		Pase_a_COBRANDO_Buffer[24] = *(ptrBajadaBandera+1);
+   		Pase_a_COBRANDO_Buffer[25] = *(ptrBajadaBandera+0);
+
+   		Pase_a_COBRANDO_Buffer[26] = *(ptrFichasDistancia+3);             //
+   		Pase_a_COBRANDO_Buffer[27] = *(ptrFichasDistancia+2);             //
+   		Pase_a_COBRANDO_Buffer[28] = *(ptrFichasDistancia+1);            	 //
+   		Pase_a_COBRANDO_Buffer[29] = *(ptrFichasDistancia+0);             	//
+
+   		Pase_a_COBRANDO_Buffer[30] = *(ptrFichasTiempo+3);             		//
+   		Pase_a_COBRANDO_Buffer[31] = *(ptrFichasTiempo+2);             		//
+   		Pase_a_COBRANDO_Buffer[32] = *(ptrFichasTiempo+1);             		//
+   		Pase_a_COBRANDO_Buffer[33] = *(ptrFichasTiempo+0);             		//
+
+ 		//Posicion cobrando
+   		Pase_a_COBRANDO_Buffer[34] = sgnLatLon_COBRANDO_CEL;
+ 		bufferNcopy(&Pase_a_COBRANDO_Buffer[35] ,(byte*)&latitudGPS_COBRANDO_CEL  ,3);
+ 		bufferNcopy(&Pase_a_COBRANDO_Buffer[38] ,(byte*)&longitudGPS_COBRANDO_CEL  ,3);
+ 		Pase_a_COBRANDO_Buffer[41] = velocidadGPS_COBRANDO_CEL;
+ 		Pase_a_COBRANDO_Buffer[42] = nroCorrelativo_INTERNO;  					//numero correlativo
+ 		Pase_a_COBRANDO_Buffer[43] = datosSC_cntWORD;
+
+   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO]  = fin_datos_msb;  // Fin Datos
+   		Pase_a_COBRANDO_Buffer[N_DATOS_Pase_a_COBRANDO+1] = fin_datos_lsb;// Fin Datos
+      }
+
  void Tx_Pase_a_FUERA_SERVICIO (void){
 
    	    CMD_Pase_a_FUERA_SERVICIO.Tx_F = 1;                      // Levanto Bandera de Tx
