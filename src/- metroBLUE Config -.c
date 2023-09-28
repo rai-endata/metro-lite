@@ -16,11 +16,22 @@
     */
 
 //micro stm32f091rc
-//char versionFIRMWARE[] =  "v1.8.2";
-//char fechaFIRMWARE[] =  " (09/06/2023)";
+char versionFIRMWARE[] =  "v1.8.3";
+char fechaFIRMWARE[] =  " (28/09/2023)";
 
-char versionFIRMWARE[] =  "v1.8.2.A";
-char fechaFIRMWARE[] =  "(28/09/2023)";
+
+//verion v1.8.3
+//fusion de 1.8.2 con 1.8.2.A
+
+
+verion v1.8.2.A
+parche reintento infinito de libre, porque la app esta en ocupado
+el reloj en libre, la app queda reintentando el pase a cobrando
+entonces le envio un pase a cobrando trucho para que se pase a cobrando
+y luego se pueda pasar a libre
+manda dato de ficha o pesos con el valor 0x55
+para que la central sepa que es un comando trucho
+
 
 //v1.8.2
 //cambia la distancia del pase por sensor de asiento de cobrando a libre, de 60 a 30 metros.
@@ -31,8 +42,6 @@ char fechaFIRMWARE[] =  "(28/09/2023)";
 //cuando inicia la app ya no envio la version (Tx_respVersion_Equipo())
 //pongo una pausa entre comando y comando de 150 mseg.
 
-
-//
 
 //v1.8.1
 //arregla el error de desbordamiento en la variable
