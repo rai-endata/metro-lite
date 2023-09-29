@@ -73,6 +73,7 @@
 				iniTURNO_ptr = &iniTURNO;
 				finTURNO_ptr = &finTURNO;
 
+
 				//Normal Mode (inicializa impresora MPT II)
 				IniPRINT(ptrDouble);
 				printLINE(ptrDouble);
@@ -248,5 +249,67 @@
 
 		return(viajes);
 	}
+
+	void REPORTES_cal_kml_kmo (uint32_t* datosMOV){
+
+		uint32_t kmLIBRE, kmOCUPADO;
+		byte TO_F;
+		tREG_GENERIC aux_INI;
+		tREG_GENERIC* aux_INI_ptr;
+		byte pointer_ok;
+
+		tREG_SESION*far SESION_ptr;
+		tREG_GENERIC*far ACTUAL_ptr;
+
+		SESION_ptr = (tREG_SESION*far) REPORTES_getPrevRegister_byType(REG_sesion);   // Extraigo puntero SESION anterior
+		ACTUAL_ptr = REPORTES_getPUT_ptr();           // Extraigo puntero actual
+
+		if (SESION_ptr == ACTUAL_ptr){
+		  // Si se diera el caso de que el puntero de inicio de sesion es el mismo que
+		  // el actual, es porque (ya se dio al menos una vuelta) y el puntero PUT esta
+		  // apuntando justamente al registro de sesion de muuuuucho tiempo atras, como
+		  // para pisarlo en una proxima escritura.
+		  // => Para extraer los datos necesito que estos punteros sean distintos, por
+		  // eso avanzo el de sesion
+		  incFlashRep_ptr(&SESION_ptr);               // Avanzo puntero
+		}
+
+		kmLIBRE = 0;
+		kmOCUPADO = 0;
+		aux_INI_ptr = &aux_INI;
+		pointer_ok = REPORTE_chkPointer(SESION_ptr);   // Verifico que el puntero de inicio sea correcto
+		if(pointer_ok){
+			 pointer_ok = REPORTE_chkPointer(ACTUAL_ptr); // Verifico que el puntero de fin sea correcto
+		}
+
+		TO_F = 0;
+		dispararTO_lazo();
+		while ((SESION_ptr != ACTUAL_ptr)){
+
+			TO_F = chkTO_lazo_F();		//Chequeo bandera de time out de lazo
+			//CHECK RANGO PUNTEROS
+			if(checkRANGE(SESION_ptr, FIN_TABLA_REPORTE, TO_F )){break;}		//cuando INI_ptr > FIN_TABLA_REPORTE sale del while
+			//READ EEPROM
+			EEPROM_ReadBuffer(&aux_INI,SESION_ptr,sizeof(tREG_GENERIC));
+
+			//CALCULOS LIBRE
+			if (aux_INI.tipo == REG_libre){
+			  //libre,ocupado,fuera de servicio
+			  kmLIBRE += ((tREG_LIBRE*) aux_INI_ptr)->km;
+			}
+
+			//CALCULOS OCUPADO
+			if (aux_INI.tipo == REG_ocupado){
+			  //libre,ocupado,fuera de servicio
+			  kmOCUPADO += ((tREG_OCUPADO*) aux_INI_ptr)->km;
+			}
+			//Avanzo puntero
+			incFlashRep_ptr(&SESION_ptr);
+		}
+		detenerTO_lazo();
+		datosMOV[0] = kmLIBRE;
+		datosMOV[1] = kmOCUPADO;
+	}
+
 
 #endif

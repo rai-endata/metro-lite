@@ -1400,9 +1400,5 @@ void print_ticket_turno(uint8_t nroTurno){
 		datosMOV[10] = tiempoParadoOCUPADO;
 		datosMOV[11] = tiempoParadoFSERV;
     	}
-
-
-
-
 #endif
 #endif

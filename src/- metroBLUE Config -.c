@@ -24,14 +24,17 @@ char fechaFIRMWARE[] =  " (28/09/2023)";
 //fusion de 1.8.2 con 1.8.2.A
 
 
-verion v1.8.2.A
-parche reintento infinito de libre, porque la app esta en ocupado
-el reloj en libre, la app queda reintentando el pase a cobrando
-entonces le envio un pase a cobrando trucho para que se pase a cobrando
-y luego se pueda pasar a libre
-manda dato de ficha o pesos con el valor 0x55
-para que la central sepa que es un comando trucho
+//verion v1.8.2.A
+//parche reintento infinito de libre, porque la app esta en ocupado
+//el reloj en libre, la app queda reintentando el pase a cobrando
+//entonces le envio un pase a cobrando trucho para que se pase a cobrando
+//y luego se pueda pasar a libre
+//manda dato de ficha o pesos con el valor 0x55
+//para que la central sepa que es un comando trucho
 
+
+//v1.8.2.1
+//version que agrega kml y kmo en ticket parcial hecho para la app que esta haciendo santi
 
 //v1.8.2
 //cambia la distancia del pase por sensor de asiento de cobrando a libre, de 60 a 30 metros.
@@ -44,8 +47,7 @@ para que la central sepa que es un comando trucho
 
 
 //v1.8.1
-//arregla el error de desbordamiento en la variable
-
+//arregla el error de desbordamiento en la variable Distanciam
 //1.8.0
 //Agrega datos del titular al ticket de turno
 
