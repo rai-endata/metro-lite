@@ -16,9 +16,12 @@
     */
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.3";
-char fechaFIRMWARE[] =  " (28/09/2023)";
+char versionFIRMWARE[] =  "v1.8.4";
+char fechaFIRMWARE[] =  " (29/09/2023)";
 
+
+//verion v1.8.4
+//fusion de 1.8.3 con 1.8.2.1
 
 //verion v1.8.3
 //fusion de 1.8.2 con 1.8.2.A
