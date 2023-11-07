@@ -36,7 +36,7 @@ void print_ticket_viaje(void){
 	uint16_t N_print;
 	uint8_t nro_viaje;
 
-  if(ESTADO_RELOJ==COBRANDO){
+  if(ESTADO_RELOJ==COBRANDO || ESTADO_RELOJ==LIBRE){
     if(statusPRINT==NO_HAY_IMPRESION_EN_PROCESO){
     		statusPRINT = IMPRESION_EN_PROCESO;
     		to_print_cnt = TO_PRINTING_VIAJE;

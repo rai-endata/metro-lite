@@ -253,6 +253,10 @@ void check_corte_alimentacion(void){
 	    	  }else{
 	    		  if(ESTADO_RELOJ == LIBRE){
 	    			  BanderaOut_On();
+	    			  //para impresion de ticket en libre recupero valor de viaje
+	    			  read_backup_eeprom();
+   					  recuperar_valor_viaje_backup();
+
 	    		  }
 
 	    	    /* modificado 15/02/2023 previo a esta fecha no estaba comentada las linea de abajo

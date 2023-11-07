@@ -2156,17 +2156,15 @@ void cambio_de_reloj_x_sensor_asiento(void){
  		Pase_a_LIBRE_Buffer[16]  = *(ptr_mRecorridos_OCUPADO+1);  	//m recorrido en OCUPADO parte alta
  		Pase_a_LIBRE_Buffer[17]  = *(ptr_mRecorridos_OCUPADO+0);  	//m recorrido en OCUPADO parte alta
 
- 		Pase_a_LIBRE_Buffer[18]  = velMax_OCUPADO;  				//velocidad máxima en OCUPADO parte alta
- 		Pase_a_LIBRE_Buffer[19]  = *(ptr_timerMarcha_cnt_OCUPADO+1);  		//tiempo marcha en OCUPADO parte alta
- 		Pase_a_LIBRE_Buffer[20]  = *(ptr_timerMarcha_cnt_OCUPADO+0); //tiempo marcha en OCUPADO parte baja
+ 		Pase_a_LIBRE_Buffer[18]  = velMax_OCUPADO;  					//velocidad máxima en OCUPADO parte alta
+ 		Pase_a_LIBRE_Buffer[19]  = *(ptr_timerMarcha_cnt_OCUPADO+1);  	//tiempo marcha en OCUPADO parte alta
+ 		Pase_a_LIBRE_Buffer[20]  = *(ptr_timerMarcha_cnt_OCUPADO+0); 	//tiempo marcha en OCUPADO parte baja
 
-
- 		Pase_a_LIBRE_Buffer[21]  = *(ptr_timerParado_cnt_OCUPADO+1);  		//tiempo parado en OCUPADO parte alta
+ 		Pase_a_LIBRE_Buffer[21]  = *(ptr_timerParado_cnt_OCUPADO+1);  	//tiempo parado en OCUPADO parte alta
  		Pase_a_LIBRE_Buffer[22]  = *(ptr_timerParado_cnt_OCUPADO+0);  	//tiempo parado en OCUPADO parte baja
 
-
- 		Pase_a_LIBRE_Buffer[23]  = minutosEspera;  					//minutos de espera
- 		Pase_a_LIBRE_Buffer[24]  = TARIFA.numero;  					//numero de tarifa
+ 		Pase_a_LIBRE_Buffer[23]  = minutosEspera;  						//minutos de espera
+ 		Pase_a_LIBRE_Buffer[24]  = TARIFA.numero;  						//numero de tarifa
 
  		//Pase_a_LIBRE_Buffer[25]  = *(ptr_importe+3);  					//importe parte baja
  		//Pase_a_LIBRE_Buffer[26]  = *(ptr_importe+2);  					//importe parte media baja
