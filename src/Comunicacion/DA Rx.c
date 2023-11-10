@@ -2135,6 +2135,8 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			uint8_t* 		Rx_data_ptr_aux;
 			byte prueba;
 			byte* prueba_ptr;
+			byte timeBuffer[6];
+			byte* ptr_timeBuffer;
 
 			N 		= *Rx_data_ptr++;              // Extraigo N
 			cmd 	= *Rx_data_ptr++;              // Extraigo CMD
@@ -2151,7 +2153,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			    	  	  	buff_aux[i++] = subCMD_ECO + 0x80;
 			    	  	    bufferNcopy(&buff_aux[i] ,Rx_data_ptr	,N); i = i + N;
 			    	  	  	N = i+1;
-				    	    Tx_cmdTRANSPARENTE(N, buff_aux );
+				    	    Tx_cmdTRANSPARENTE(N, buff_aux, reint_0 );
 			      	  	  	break;
 			      case subCMD_VERSION:  //ESTADO DE RELOJ
                             i=0;
@@ -2192,7 +2194,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 							//prepara comando transparente
                             N = i+1;
-			    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+			    	        Tx_cmdTRANSPARENTE(N, buff_aux, reint_0 );
 
 
 			               break;
@@ -2241,7 +2243,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								status = 1;
 								buff_aux[8] = status;
 							}
-							Tx_cmdTRANSPARENTE(N, buff_aux );
+							Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 
 			               break;
 			      case subCMD_consultaTURNO:
@@ -2273,20 +2275,20 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								buff_aux[i++] = status;
 								N = consulta_ticket_turno(&buff_aux[i], dataWORD);
 								N = N+i+1;
-								Tx_cmdTRANSPARENTE(N, buff_aux );
+								Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 							}else{
 								if(statusSESION == 2){
 									//ERROR EN REPORTE DE TURNO
 									status = 1;
 									buff_aux[i++] = status;
 	                                N = i+1;
-					    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+					    	        Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 								}else{
 									//TODAVIA NO FINALIZO NINGUN TURNO
 									status = 1;
 									buff_aux[i++] = status;
 	                                N = i+1;
-					    	        Tx_cmdTRANSPARENTE(N, buff_aux );
+					    	        Tx_cmdTRANSPARENTE(N, buff_aux, reint_0 );
 								}
 							}
 
@@ -2308,7 +2310,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							buff_aux[i++] = *(Rx_data_ptr+1);  		  		//id 02
 
 							N = i+1;
-							Tx_cmdTRANSPARENTE(N, buff_aux );
+							Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 							prueba_ptr = Rx_data_ptr+2;
 							prueba = *(Rx_data_ptr+2);
 							if(*(Rx_data_ptr+2) == 0x03){
@@ -2319,6 +2321,31 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								AIR_UPDATE_RxTransparente(Rx_data_ptr-3);
 							}
 			               break;
+
+			  case subCMD_updateHora:	//actualizacion de hora y fecha
+				  	  	  	// Rx_data_ptr: HORA MIN SEG DIA MES AÑO
+				  	  	    ptr_timeBuffer = (byte*)(&timeBuffer);
+				  	  	    //invierto HORA FECHA -> FECHA HORA
+				  	  	    bufferNcopy(ptr_timeBuffer, Rx_data_ptr + 3, 3);
+				  	  	    bufferNcopy(ptr_timeBuffer + 3, Rx_data_ptr, 3);
+				  	  	    //actualiza Hora
+							RTC_updateDate(timeBuffer);     // Actualizo Fecha y Hora del RTC
+							//HAL_Delay(2000);
+							//respuesta al comando
+                            getDate();
+				  	  	    i=0;
+							buff_aux[i++] = subCMD_updateHora + 0x80;
+							buff_aux[i++] = 0;   				//fuente de hora
+							buff_aux[i++] = RTC_Date.hora[0];   // HORA
+							buff_aux[i++] = RTC_Date.hora[1];   // MINUTOS
+							buff_aux[i++] = RTC_Date.hora[2];   // SEGUNDOS
+							buff_aux[i++] = RTC_Date.fecha[0];  // DIA
+							buff_aux[i++] = RTC_Date.fecha[1];  // MES
+							buff_aux[i++] = RTC_Date.fecha[2];  // AÑO
+
+							N = i+1;
+							Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
+							break;
 
 			  default:
 				   	   	   break;
@@ -2558,5 +2585,5 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 			//prepara comando transparente
             N = i+1;
-	        Tx_cmdTRANSPARENTE(N, buff_aux );
+	        Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 	}

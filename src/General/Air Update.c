@@ -403,7 +403,7 @@
 		buff_aux[i++] = AIR_UPDATE_ID[1];  			    //ID lsb
 
 		N = i+1;
-		Tx_cmdTRANSPARENTE(N, buff_aux );
+		Tx_cmdTRANSPARENTE(N, buff_aux, reint_3 );
     }
 
   /* TRANSMITIR LECTURA DE PARAMETRO PROGRAMABLE */

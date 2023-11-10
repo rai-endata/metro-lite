@@ -16,11 +16,14 @@
     */
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.5";
-char fechaFIRMWARE[] =  " (07/11/2023)";
+char versionFIRMWARE[] =  "v1.9.0";
+char fechaFIRMWARE[] =  " (10/11/2023)";
+
+//version v1.8.6
+//actualiza hora desde la central atravez de la central con el comando transparente
 
 //version v1.8.5
-//imprime en libre
+//imprime ticket en libre
 
 //verion v1.8.4
 //fusion de 1.8.3 con 1.8.2.1

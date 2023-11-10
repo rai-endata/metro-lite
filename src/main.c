@@ -215,7 +215,9 @@ int main(void)
 		check_pressPANICO();
 		check_pressTECLA();
 		//rtc__actDATE();
-		set_TIMEandDATE();
+		//set_TIMEandDATE();
+		checkTime();
+
 		TMR_GRAL_LOOP();
 		relojINTERNO_updateCHOFER();
 		//cntIC = __HAL_TIM_GetCompare(&pulsoACCUM,TIM_CHANNEL_1);
@@ -280,35 +282,32 @@ void ModoPROGRAMACION (void){
 
 
 
-void set_TIMEandDATE (void){
+	void set_TIMEandDATE (void){
 
-	RTC_TimeTypeDef sTime;
-	RTC_DateTypeDef sDate;
+		RTC_TimeTypeDef sTime;
+		RTC_DateTypeDef sDate;
 
-	getDate();
+		getDate();
 
-    if(RTC_Date.fecha[2]==0x00){
-    	sTime.Hours = 13;
-    	sTime.Minutes = 38;
-    	sTime.Seconds = 00;
-    	sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-    	sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+		sTime.Hours = 13;
+		sTime.Minutes = 38;
+		sTime.Seconds = 00;
+		sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+		sTime.StoreOperation = RTC_STOREOPERATION_RESET;
 		if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
 		{
 			_Error_Handler(__FILE__, __LINE__);
 		}
 
-    	sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
-    	sDate.Month = RTC_MONTH_APRIL;
-    	sDate.Date = 17;
-    	sDate.Year = 18;
+		sDate.WeekDay = RTC_WEEKDAY_TUESDAY;
+		sDate.Month = RTC_MONTH_APRIL;
+		sDate.Date = 17;
+		sDate.Year = 18;
 		if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
 		{
 		_Error_Handler(__FILE__, __LINE__);
 		}
-    }
-
-}
+	}
 
 
 
@@ -910,14 +909,6 @@ void SystemInit_test(void)
 //ConfigureADC_PA0();
 //ADC_Config();
 
-//if(checkTIME == 0){
-//	  checkTIME = 60;
-	  //RTC_actDate();
-		  //if(RTC_Date.fecha[2]==0x00){
-			// set_TIMEandDATE();
-			// RTC_actDate();
-		 //}
-//}
 
 
 	//******* PRUEBAS **************************

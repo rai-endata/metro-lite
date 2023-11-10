@@ -26,6 +26,18 @@ tDATE DateApagado;                        // Fecha y Hora de APAGADO
 tDATE* DATE_ptr;                 // Puntero para fuente de FECHA y HORA
 tDATE HoraApagado;
 
+	/* HORA VALIDA ? */
+	/*****************/
+	void checkTime(void){
+		if(checkTIME == 0){
+			  checkTIME = 60;
+			  getDate();
+			  if(RTC_Date.fecha[2]==0x00){
+				 set_TIMEandDATE();
+				 getDate();
+			  }
+		}
+	}
 
 /* EXTRAER DATE */
  /****************/
@@ -293,21 +305,22 @@ void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
 /* ACTUALIZAR FECHA y HORA DE RTC */
  /**********************************/
    void RTC_updateDate (byte* new_date){
-     // Rutina que actualiza los valores de HORA y FECHA en el RTC.
-     // El formato de new_date es:;
-     //    DIA - MES - AÑO - HORA - MIN - SEG
-     byte aux;
- 	 RTC_TimeTypeDef sTime;
- 	 RTC_DateTypeDef sDate;
+		// Rutina que actualiza los valores de HORA y FECHA en el RTC.
+		// El formato de new_date es:;
+		//    DIA - MES - AÑO - HORA - MIN - SEG
+		byte aux;
+		RTC_TimeTypeDef sTime;
+		RTC_DateTypeDef sDate;
 
-     aux = new_date[3];             // Extraigo la Nueva Hora
+		aux = new_date[3];             // Extraigo la Nueva Hora
 
-    // if (aux != RTC_Date.hora[0]){
+        //if (aux != RTC_Date.hora[0]){
 
      	sDate.Date = new_date[0];
      	sDate.Month = new_date[1];
      	sDate.Year = new_date[2];
-        // CALCULO DIA SEMANA
+
+     	//CALCULO DIA SEMANA
       	sDate.WeekDay = determineDiaSemana(&new_date[0]);
    		if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
  		{

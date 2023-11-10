@@ -60,7 +60,7 @@
 
 
 	//extern void Tx_Comando_TRANSPARENTE (void);
-	void Tx_cmdTRANSPARENTE(byte N, byte* buffer);
+	void Tx_cmdTRANSPARENTE(byte N, byte* buffer, byte reintentos);
 	void Tx_Comando_TRANSPARENTE_prueba(void);
 	void TxRta_conDATOS (byte dato);
 
