@@ -18,6 +18,7 @@
     extern char fechaFIRMWARE[];
 
 
+
 	//*****  Localidad  *********************************************
 
     /* MONTEVIDEO */        #define _TAXI_141_

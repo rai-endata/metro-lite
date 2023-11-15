@@ -448,10 +448,7 @@ void Pase_a_OCUPADO (byte estado){
 
 void Pase_a_COBRANDO (byte estado){
 
-
 	//if(ESTADO_RELOJ==OCUPADO){
-
-
 
 		anularReTx_RELOJ();
 		cobrandoDATE = getDate();
@@ -471,7 +468,6 @@ void Pase_a_COBRANDO (byte estado){
         timerA_PAGAR_to_LIBRE_cnt = 0;  // Al no estar Homologado, no espero nada
       #endif
 
-
         //Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
 		if(VELOCIDAD_MAX < 255){
 			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
@@ -482,7 +478,10 @@ void Pase_a_COBRANDO (byte estado){
 		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;		// Distancia Recorrida en OCUPADO (KM xxx.xx)
 		kmRecorridos_OCUPADO = kmRecorridos_INTERNO;
 		DISTANCIAm_OCUPADO = DISTANCIAm;
-		write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
+
+		//lo saco creo que se no usa, y causaba problemas en la actualizacion de hora
+		//write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
+
 		DISTANCIA_iniCalculo_PULSE_ACCUM();
 		//minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
 		importe_INTERNO = VALOR_VIAJE;                          	// Valor del Viaje

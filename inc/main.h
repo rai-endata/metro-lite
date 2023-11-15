@@ -259,6 +259,8 @@ extern void MX_RTC_Init(void);
 
 extern uint32_t cntIC_anterior;
 extern byte estaOCUPADO(void );
+extern  void checkTime(void);
+extern  void set_TIMEandDATE (void);
 
 
 #endif /* __MAIN_H */

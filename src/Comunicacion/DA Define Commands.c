@@ -987,7 +987,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		}
 */
 
-   void Tx_cmdTRANSPARENTE(byte N, byte* buffer){
+   void Tx_cmdTRANSPARENTE(byte N, byte* buffer, byte reintentos){
 
    	  // tDATE datePrueba;
    	   byte i;
@@ -995,7 +995,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
    	   byte n;
 
    	   CMD_TRANSPARENTE.Tx_F = 1;               // Levanto Bandera de Tx
-   	   CMD_TRANSPARENTE.Reintentos = reint_3;   // no tiene reintentos
+   	   CMD_TRANSPARENTE.Reintentos = reintentos;
 
        i=0;
        n = N-1;

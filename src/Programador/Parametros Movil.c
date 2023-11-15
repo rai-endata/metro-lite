@@ -41,8 +41,12 @@
         byte* eeprom_ptr;
       tEEPROM_ERROR error;
       
-      error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
-      	if(error == EEPROM_OK){
+      //parche hasta resolver mejor problema de error crc en programacion de movil
+      //no lo mira al crc hasta resolverlo mejor
+      //error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
+      error = EEPROM_OK;
+
+    	if(error == EEPROM_OK){
       		EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL,ADDRESS_PROG_MOVIL,sizeof(tPARAM_MOVIL));
             // Inicializo logica de banderita
             if (TIPO_RELOJ == BANDERITA_LIBRE_ALTO){

@@ -16,11 +16,15 @@
     */
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.8.5";
-char fechaFIRMWARE[] =  " (07/11/2023)";
+char versionFIRMWARE[] =  "v1.9.0";
+char fechaFIRMWARE[] =  " (10/11/2023)";
+
+//version v1.9.0
+//  * Actualiza hora y fecha, desde la central con el comando transparente
+//  * No mira el crc de programacion del movil (parche temporal, hasta encontrar error en ccr de programaciopn del movil
 
 //version v1.8.5
-//imprime en libre
+//imprime ticket en libre
 
 //verion v1.8.4
 //fusion de 1.8.3 con 1.8.2.1

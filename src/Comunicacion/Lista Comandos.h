@@ -50,6 +50,7 @@
 		#define subCMD_consultaVIAJE	0x03
 		#define subCMD_consultaTURNO	0x04
 		#define subCMD_progAIR			0x05
+		#define subCMD_updateHora		0x06
 
 
 		//reloj -> central
