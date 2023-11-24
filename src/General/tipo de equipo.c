@@ -7,6 +7,7 @@
 
 #include "tipo de equipo.h"
 #include "stm32f0xx_hal_gpio.h"
+#include "Parametros Movil.h"
 
 /* HAY DOS EQUIPOS (DOS PLACAS DISTINTAS)
  *
@@ -141,7 +142,10 @@ void set_tipo_de_equipo (void){
 	   tipo_de_equipo = METRO_BLUE;
 	}else if((pin0_tipoEQUIPO == 1) && (pin1_tipoEQUIPO == 1)){
 	   tipo_de_equipo = METRO_LITE;
+	}else if((pin0_tipoEQUIPO == 0) && (pin1_tipoEQUIPO == 1)){
+		   tipo_de_equipo = MINI_BLUE;
 	}else{
 	   tipo_de_equipo = EQUIPO_NO_DEFINIDO;
 	}
+
 }

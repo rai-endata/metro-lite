@@ -41,6 +41,7 @@
 		typedef enum{
 			METRO_BLUE,
 			METRO_LITE,
+			MINI_BLUE,
 			EQUIPO_NO_DEFINIDO
 		}tEQUIPO;
 
@@ -53,8 +54,11 @@ extern tEQUIPO tipo_de_equipo;
 
 #define EQUIPO_METRO_BLUE					(tipo_de_equipo == METRO_BLUE)
 #define EQUIPO_METRO_LITE					(tipo_de_equipo == METRO_LITE)
+#define EQUIPO_MINI_BLUE					(tipo_de_equipo == MINI_BLUE)
 #define EQUIPO_METRO_LITE_RELOJ_INTERNO		((tipo_de_equipo == METRO_LITE) && RELOJ_INTERNO)
 #define EQUIPO_METRO_LITE_RELOJ_BANDERITA	((tipo_de_equipo == METRO_LITE) && RELOJ_BANDERITA)
+#define EQUIPO_MINI_BLUE_RELOJ_BANDERITA	((tipo_de_equipo == MINI_BLUE) && RELOJ_BANDERITA)
+
 
 #define RELOJ_INTERNO       (TIPO_RELOJ == INTERNO)
 #define RELOJ_EXTERNO       (RELOJ_BANDERITA || RELOJ_PROTOCOLO)
@@ -66,7 +70,5 @@ extern tEQUIPO tipo_de_equipo;
 void set_tipo_de_equipo (void);
 
 //extern GPIO_PinState Buetooth_Status_GetState(void);
-
-
 
 #endif /* TIPO_DE_EQUIPO_H_ */

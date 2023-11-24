@@ -150,7 +150,8 @@ void clr_BANDERA (void){
       byte cambiar_reloj;
       tRELOJ estadoEQUIV;
 
-      if (RELOJ_BANDERITA && fin_muestreo_banderita_F && !RELOJ_chkDesconectado()){
+      if ((RELOJ_BANDERITA && fin_muestreo_banderita_F && !RELOJ_chkDesconectado()) ||
+    	  (EQUIPO_MINI_BLUE && fin_muestreo_banderita_F && !RELOJ_chkDesconectado()) ){
         fin_muestreo_banderita_F = 0;   // Bajo bandera
         nuevoEstado_segunMuestras;      // Nuevo estado segun las muestras
 
@@ -263,7 +264,7 @@ void clr_BANDERA (void){
       // el reloj interno, ya que internamente, se controla el importe del
       // viaje y demas datos de reloj
 
-    if (RELOJ_BANDERITA){
+    if (RELOJ_BANDERITA || EQUIPO_MINI_BLUE){
         if (estado_nuevo == OCUPADO){
           // PASE A OCUPADO
     		tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
@@ -326,7 +327,7 @@ byte RELOJ_chkDesconectado (void){
 
 void timer_muestreo_banderita (void){
       // Ejecutada cada 10mseg precisos
-	if (RELOJ_BANDERITA){
+	if (RELOJ_BANDERITA || EQUIPO_MINI_BLUE){
 		if(statusDISPLAY != DISPLAY_CHK){
 			timer_muestreo_banderita_cnt++;
 			if (timer_muestreo_banderita_cnt >= x10mseg_muestreo_band){

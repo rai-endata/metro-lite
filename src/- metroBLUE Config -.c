@@ -16,11 +16,15 @@
     */
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v1.9.0";
-char fechaFIRMWARE[] =  " (10/11/2023)";
+char versionFIRMWARE[] =  "v2.0.0";
+char fechaFIRMWARE[] =  " (24/11/2023)";
 
-//version v1.8.6
-//actualiza hora desde la central atravez de la central con el comando transparente
+//version v2.0.0
+//agrega tipo de equipo miniblue
+//PB6=0, PB7=1
+
+//version v1.9.0
+//actualiza hora desde la central con el comando transparente
 
 //version v1.8.5
 //imprime ticket en libre
