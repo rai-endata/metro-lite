@@ -17,6 +17,8 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
     byte statusSESION;
     uint32_t datosMOV[4][3];
     uint32_t kmTotal, velMaxTotal, tMarchaTotal,tParadoTotal;
+    uint32_t recaudaciones[] = {0, 0, 0, 0, 0, 0, 0, 0 };
+    uint32_t recaudacionTotal;
 
 			REPORTE_PUTptr_aux = REPORTE_PUTptr;
 
@@ -157,6 +159,8 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
 					//RECAUDACION
 					string_copy_incDest(ptrDouble,"RE");
 					aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
+					recaudaciones[tarifasTurno-1] = aux32;  //guardo recaudacion tarifa para luego calcular recaudacion total
+
 					convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
 					bufferNcopy_incDst(ptrDouble,(byte*)&aux32,4);
 				}
@@ -192,7 +196,9 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
 
 			//TOTAL RECAUDACION
 			string_copy_incDest(ptrDouble,"TR");
-			aux32 = (uint32_t)TURNO_getRecaudacion_turno(&buffer_aux);
+			//aux32 = (uint32_t)TURNO_getRecaudacion_turno(&buffer_aux);
+			aux32 = (uint32_t)TURNO_getRecaudacion_turnoNew(&buffer_aux, (uint32_t*)(&recaudaciones));
+			recaudacionTotal = aux32;
 			convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
 			bufferNcopy_incDst(ptrDouble,(byte*)&aux32,4);
 
@@ -209,14 +215,17 @@ uint16_t consulta_ticket_turno(uint8_t* buffer, uint16_t nroTurno){
 		        convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
 		        bufferNcopy_incDst(ptrDouble,(byte*)&aux32+3,1);
 
-				aux32 = (uint32_t)TURNO_calcRecaudacionChofer(buffer_aux);
+				//aux32 = (uint32_t)TURNO_calcRecaudacionChofer(buffer_aux);
+				aux32 = (uint32_t)TURNO_calcRecaudacionChoferNew(buffer_aux, recaudacionTotal);
+
 		        convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
 		        bufferNcopy_incDst(ptrDouble,(byte*)&aux32+1,3);
 			}
 
 			//PESOS POR KILOMETRO
 			string_copy_incDest(ptrDouble,"PK");
-			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
+			//aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
+			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turnoNew(buffer_aux, recaudacionTotal);
 	        convert_bigINDIAN_to_litleINDIAN (&aux32, 4);
 	        bufferNcopy_incDst(ptrDouble,(byte*)&aux32+1,3);
 

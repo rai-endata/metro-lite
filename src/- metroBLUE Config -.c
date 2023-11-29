@@ -16,8 +16,14 @@
     */
 
 //micro stm32f091rc
-char versionFIRMWARE[] =  "v2.0.0";
-char fechaFIRMWARE[] =  " (24/11/2023)";
+char versionFIRMWARE[] =  "v2.0.1";
+char fechaFIRMWARE[] =  " (29/11/2023)";
+
+
+//version v2.0.1
+//agrega un parche para corregir error que a veces
+//se dio al sumar las recaudaciones en el reporte de turno.
+
 
 //version v2.0.0
 //agrega tipo de equipo miniblue
