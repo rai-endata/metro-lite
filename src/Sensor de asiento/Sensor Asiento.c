@@ -554,11 +554,19 @@ void ini_puerto_sensor_asiento(void){
   				sensor_asiento_press = 1;                       //se presiono
   				doing_desrebote_asiento = 0;                    //Ya no estoy haciendo desrebote
   				chk_sensor_cnt = 0;								//espera para volver a checkear el sensor
+  				if((tipo_de_equipo == MINI_BLUE)){
+  					LOGICA_BANDERITA = LIBRE_enALTO;
+  					EEPROM_PROG_MOVIL.tipoReloj = BANDERITA_LIBRE_ALTO;
+  				}
   			}else{
   				sensor_asiento_press = 0;                       //no se presiono o se soltó
   				doing_desrebote_asiento = 0;                    //Ya no estoy haciendo desrebote
   				reset_sensor = 1;                               //Reset distancia/tiempo, para que vuelva a contar la distancia cuando vuelta a ser presionado
   				chk_sensor_cnt = 0;								//espera para volver a checkear el sensor
+  				if((tipo_de_equipo == MINI_BLUE)){
+  					LOGICA_BANDERITA = OCUPADO_enALTO;
+  					EEPROM_PROG_MOVIL.tipoReloj = BANDERITA_OCUPADO_ALTO;
+  				}
   			}
   		}
   	}

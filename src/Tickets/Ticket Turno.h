@@ -48,11 +48,14 @@ extern byte estadosTurno;
     extern uint16_t TURNO_getCantViajesAsiento_turno(void);
     extern uint16_t TURNO_getCantErroresAsiento_turno(void);
 
-    extern uint32_t TURNO_getRecaudacion_turno(byte* buffer);
+   // extern uint32_t TURNO_getRecaudacion_turno(byte* buffer);
+    extern uint32_t TURNO_getRecaudacion_turnoNew(byte* buffer, uint32_t* recaudaciones);
     extern uint32_t TURNO_calcKmTotales_turno(void);
-    extern uint32_t TURNO_calcRecaudacionChofer(byte* buffer);
+    //extern uint32_t TURNO_calcRecaudacionChofer(byte* buffer);
+    extern uint32_t TURNO_calcRecaudacionChoferNew(byte* buffer, uint32_t recaudacionTotal);
 
-    extern uint32_t TURNO_calcRecaudacionPorKm_turno(byte* buffer);
+    //extern uint32_t TURNO_calcRecaudacionPorKm_turno(byte* buffer);
+    extern uint32_t TURNO_calcRecaudacionPorKm_turnoNew(byte* buffer, uint32_t recaudacionTotal);
     extern uint32_t TURNO_calcPercentKmOcupado_turno(byte* buffer);
 
     extern uint16_t TURNO_getCantDesconexionesAlim_turno(void);

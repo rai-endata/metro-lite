@@ -27,6 +27,7 @@
 //#include "stm32f10x.h"
 #include "stm32f0xx_hal.h"
 #include "spi.h"
+#include "tipo de equipo.h"
 
 
 /****************************************************************************
@@ -655,7 +656,6 @@ void EEPROM_WriteStatusReg(uint8_t val)
 {
 	//enable WEL
 	 byte status;
-
 	GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, RESET);		//CS==L
 	SpiTxRxByte(EEPROM_WREN, (uint8_t*)&status);						//Send the write sequence
 	GPIO_WriteBit(EEPROM_CS_PORT,EEPROM_CS_PIN, SET);		//CS==H
@@ -695,11 +695,13 @@ void EEPROM_WriteStatusReg(uint8_t val)
 void EEPROM_WaitForWIP()
 {
 	volatile statusReg_t sr;
-	do
-	{
-		sr.byte=EEPROM_ReadStatusReg();
-	}while(sr.flags.wip);
 
+    if(!EQUIPO_MINI_BLUE){
+    	do
+    	{
+    		sr.byte=EEPROM_ReadStatusReg();
+    	}while(sr.flags.wip);
+    }
 }
 
 

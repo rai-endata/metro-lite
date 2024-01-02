@@ -274,7 +274,7 @@ void Pase_a_LIBRE (byte estado){
 	timerA_PAGAR_to_LIBRE_cnt = 0;
 	#endif
 
-	if(tipo_de_equipo == METRO_LITE){
+	if(tipo_de_equipo == METRO_LITE || tipo_de_equipo == MINI_BLUE){
 		timerA_PAGAR_to_LIBRE_cnt = 0;
 	}
 	if(timerA_PAGAR_to_LIBRE_cnt == 0){
@@ -1197,16 +1197,19 @@ static void RELOJ_resetReintentos (void){
 	{
 		GPIO_InitTypeDef  GPIO_InitStruct;
 
-		/* Enable the BANDERA OUT Clock */
-		BANDERA_OUT_CLK_ENABLE();
 
-		/* Configure the GPIO_LED pin */
-		GPIO_InitStruct.Pin = BANDERA_OUT_PIN;
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-		GPIO_InitStruct.Pull = GPIO_PULLUP;
-		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+		if(!EQUIPO_MINI_BLUE){
+			/* Enable the BANDERA OUT Clock */
+			BANDERA_OUT_CLK_ENABLE();
 
-		HAL_GPIO_Init(BANDERA_OUT_PORT, &GPIO_InitStruct);
+			/* Configure the GPIO_LED pin */
+			GPIO_InitStruct.Pin = BANDERA_OUT_PIN;
+			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+			GPIO_InitStruct.Pull = GPIO_PULLUP;
+			GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+			HAL_GPIO_Init(BANDERA_OUT_PORT, &GPIO_InitStruct);
+		}
 	}
 
 	/* SET Puerto de Salida de Bandera */
@@ -1929,7 +1932,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
       timerA_PAGAR_to_LIBRE_cnt--;
       if (timerA_PAGAR_to_LIBRE_cnt == 0){
     	  Buzzer_On(BEEP_HABILITA_PASE_LIBRE);
-          if(tipo_de_equipo != METRO_LITE){
+          if(tipo_de_equipo == METRO_BLUE){
         	  Tx_Comando_MENSAJE(YA_PUEDE_PASAR_A_LIBRE);
           }
       }

@@ -67,6 +67,9 @@ void print_ticket_turno(uint8_t nroTurno){
     byte statusSESION;
     uint32_t datosMOV[4][3];
     uint32_t kmTotal, velMaxTotal, tMarchaTotal,tParadoTotal;
+    uint32_t recaudaciones[] = {0, 0, 0, 0, 0, 0, 0, 0 };
+    uint32_t recaudacionTotal;
+
     byte puntoDECIMAL;
 
     if(TARIFA_PESOS){
@@ -264,6 +267,8 @@ void print_ticket_turno(uint8_t nroTurno){
 						string_copy_incDest(ptrDouble,"  Recaudado [$]        ");
 					}
 					aux32 = TURNO_getRecaudacion_tarifa(&buffer_aux, tarifasTurno);
+					recaudaciones[tarifasTurno-1] = aux32;  //guardo recaudacion tarifa para luego calcular recaudacion total
+
 					//preparar_print (aux32, 3, &buffer_aux, 0 );
 					//preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0 );
 					preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
@@ -323,7 +328,10 @@ void print_ticket_turno(uint8_t nroTurno){
 			}else{
 				string_copy_incDest(ptrDouble,"  Recaudado [$]        ");
 			}
-			aux32 = (uint32_t)TURNO_getRecaudacion_turno(&buffer_aux);
+			//aux32 = (uint32_t)TURNO_getRecaudacion_turno(&buffer_aux);
+			aux32 = (uint32_t)TURNO_getRecaudacion_turnoNew(&buffer_aux, (uint32_t*)(&recaudaciones));
+			recaudacionTotal = aux32;
+
 			//preparar_print (aux32, 3, &buffer_aux, 0 );
 			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
 			string_copy_incDest(ptrDouble,&buffer_aux);
@@ -354,7 +362,9 @@ void print_ticket_turno(uint8_t nroTurno){
 					string_copy_incDest(ptrDouble," Chofer [$]     ");
 				}
 				string_copy_incDest(ptrDouble,"  ");
-				aux32 = (uint32_t)TURNO_calcRecaudacionChofer(buffer_aux);
+				//aux32 = (uint32_t)TURNO_calcRecaudacionChofer(buffer_aux);
+				aux32 = (uint32_t)TURNO_calcRecaudacionChoferNew(buffer_aux, recaudacionTotal);
+
 				//preparar_print (aux32, puntoDECIMAL, &buffer_aux, 0 );
 				preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble);
 				//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
@@ -373,7 +383,8 @@ void print_ticket_turno(uint8_t nroTurno){
 			//print recaudacion por km
 			string_copy_incDest(ptrDouble,"$ x km              ");
 			string_copy_incDest(ptrDouble,"   ");
-			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
+			//aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
+			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turnoNew(buffer_aux, recaudacionTotal);
 			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble );
 			//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
 			string_copy_incDest(ptrDouble,&buffer_aux);
@@ -730,6 +741,7 @@ void print_ticket_turno(uint8_t nroTurno){
 
   /* EXTRAER RECAUDACION EN TURNO */
   /********************************/
+  /*
     uint32_t TURNO_getRecaudacion_turno(byte* buffer){
       // El calculo de la recaudacion depende de si trabaja con PESOS o con FICHAS.
       // Para el caso con fichas, sólo tiene sentido si tiene habilitada la Eq en Pesos
@@ -753,6 +765,33 @@ void print_ticket_turno(uint8_t nroTurno){
       return(recaudacion);
     }
 
+*/
+
+    /* EXTRAER RECAUDACION EN TURNO */
+      /********************************/
+        uint32_t TURNO_getRecaudacion_turnoNew(byte* buffer, uint32_t* recaudaciones){
+          // El calculo de la recaudacion depende de si trabaja con PESOS o con FICHAS.
+          // Para el caso con fichas, sólo tiene sentido si tiene habilitada la Eq en Pesos
+          //
+          // Si el buffer es NULL, no lo convierte a string ni lo modifica.
+          //
+          // Devuelve la recaudacion de la tarifa. 0 es el valor de error si no
+          // tiene programada la Eq Pesos
+          uint32_t recaudacion;
+          byte i;
+
+          recaudacion = 0;
+          i = 1;
+          while(i <= cantidadTarifasProgramables){
+            //recaudacion += TURNO_getRecaudacion_tarifa(NULL,i);
+        	  recaudacion += recaudaciones[i-1];
+            i++;
+          }
+
+           TICKET_importeToString(recaudacion, buffer);
+
+          return(recaudacion);
+        }
 
   /* CALCULAR KM TOTALES DEL TURNO */
   /*********************************/
@@ -770,6 +809,7 @@ void print_ticket_turno(uint8_t nroTurno){
 
   /* CALCULAR RECAUDACION CHOFER */
   /*******************************/
+    /*
     uint32_t TURNO_calcRecaudacionChofer(byte* buffer){
       // Calcula la recaudacion que le corresponde al chofer, la convierte a string y la devuelve
       // en el buffer.
@@ -784,10 +824,28 @@ void print_ticket_turno(uint8_t nroTurno){
 
       return(recaudChofer);
     }
+*/
+
+    uint32_t TURNO_calcRecaudacionChoferNew(byte* buffer, uint32_t recaudacionTotal){
+          // Calcula la recaudacion que le corresponde al chofer, la convierte a string y la devuelve
+          // en el buffer.
+          // Devuelve la recaudacion. 0 es el valor de error si no tiene programada la Eq Pesos
+          uint32_t recaudacion;
+          uint32_t recaudChofer;
+
+          //recaudacion = TURNO_getRecaudacion_turno(NULL);
+          recaudacion = recaudacionTotal;
+          recaudChofer = (recaudacion * PROG_TICKET_percentChofer) / 100;
+
+          TICKET_importeToString(recaudChofer, buffer);
+
+          return(recaudChofer);
+        }
 
 
   /* CALCULAR RECAUDACION POR KM TURNO */
   /*************************************/
+/*
     uint32_t TURNO_calcRecaudacionPorKm_turno(byte* buffer){
       // Calcula la recaudacion por KM recorrido, la convierte a string y la devuelve
       // en el buffer.
@@ -807,6 +865,30 @@ void print_ticket_turno(uint8_t nroTurno){
 
       return(pesosXkm);
     }
+*/
+
+    uint32_t TURNO_calcRecaudacionPorKm_turnoNew(byte* buffer, uint32_t recaudacionTotal){
+      // Calcula la recaudacion por KM recorrido, la convierte a string y la devuelve
+      // en el buffer.
+      // Devuelve la recaudacion. 0 es el valor de error si no tiene programada la Eq Pesos
+      uint32_t recaudacion;
+      uint32_t km;
+      uint32_t pesosXkm;
+
+      //recaudacion = TURNO_getRecaudacion_turno(NULL);
+      recaudacion = recaudacionTotal;
+      km = TURNO_getKM_estado(REG_libre);
+      km += TURNO_getKM_estado(REG_ocupado);
+      km += TURNO_getKM_estado(REG_fserv);
+      pesosXkm = recaudacion*10;
+      pesosXkm /= km;                             // Como los KM tiene 1 decimal, multiplico x10
+
+      TICKET_importeToString(pesosXkm, buffer);
+
+      return(pesosXkm);
+    }
+
+
 
 
   /* CALCULAR PROCENTAJE DE KM OCUPADO EN TURNO */

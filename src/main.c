@@ -62,7 +62,7 @@
 //#include "watchdog.h"
 #include "DA Define Commands.h"
 #include "Comandos sin conexion a central.h"
-
+#include "tipo de equipo.h"
 
 //#include "file aux1.h"
 
@@ -75,6 +75,7 @@ void watchDOG (void);
 void set_TIMEandDATE (void);
 
 void SystemClock_Config(void);
+void SystemClock_Config_sinRTC(void);
 
 static void MX_GPIO_Init(void);
 
@@ -133,32 +134,38 @@ int main(void)
 {
 	HAL_Init();				//definiciones necesarias para el uso del HAL
 	ini_display_7seg();
-	SystemClock_Config();
 	set_tipo_de_equipo();
+	if((tipo_de_equipo != MINI_BLUE)){
+		SystemClock_Config();
+	}else{
+		SystemClock_Config_sinRTC();
+	}
 	//IWDG_Config();		// Configurar el módulo IWDG
 	MX_SPIx_Init();			//ini spi
-	EPROM_CS_Init();
+	if((tipo_de_equipo != MINI_BLUE)){
+		EPROM_CS_Init();
+		USART1_Ini();
+		PRINT_ptrIni ();												//inicializo punteros de comandos
+		PROGRAMADOR_ini();
+		JUMPER_PROG_Init();
+		choice_device_uart1 = PROG_DEVICE;
+		MX_RTC_Init();
+	}
 	Ini_portBANDERITA();
 	MX_GPIO_Init();
-
-	//set_choice_device_uart1();
-	choice_device_uart1 = PROG_DEVICE;
-	USART1_Ini();
 	USART7_Ini();
 	MX_TIM2_Init4();
 	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
-	MX_RTC_Init();
+
 
 	VA_UART_ini();
 	DA_iniRx();
 	DA_iniTx();
-	PRINT_ptrIni ();												//inicializo punteros de comandos
+
 	buzzer_ini();
-	PROGRAMADOR_ini();
 	SOURCE_DATE_Ini();
 	levantar_variablesEEPROM();
 	ini_pulsador_cambio_reloj();
-	JUMPER_PROG_Init();
 
 	Bluetooth_Ini();
 	Panico_Ini();
@@ -166,9 +173,7 @@ int main(void)
 	BanderaOut_Ini();
 
 	clr_BANDERA();
-
 	//inicializar asiento luego de tarifa (setea carrera_bandera)
-
 	ASIENTO_ini();
 	determinePrimerEncendido();         	//Determinar si se trata del 1er Encendido
 
@@ -183,11 +188,9 @@ int main(void)
 	#endif
 
 	check_corte_alimentacion();
-
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();
 	InterruptPVD_When_VDD_OFF_Config();
-
 	ini_acumular_cmdSC();
 
 #ifdef RELOJ_DEBUG
@@ -195,41 +198,27 @@ int main(void)
 #endif
 
 	DISTANCIA_iniCalculo_PULSE_ACCUM();
-
 	check_pressBLUETOOTH();
+
 // *****  Lazo Principal *************
 
 	for(;;){
-		//IWDG->KR = IWDG_KEY_RELOAD;	// Realizar la recarga del contador del IWDG
-		//procesar_datosSC();				//procesa datos sin conexion
-
 		check_datosSC();
-
 		// REPORTES
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
 		#endif
-
 		check_relojBANDERITA();
-		
 		check_pressPANICO();
 		check_pressTECLA();
-		//rtc__actDATE();
-		//set_TIMEandDATE();
-		checkTime();
-
 		TMR_GRAL_LOOP();
 		relojINTERNO_updateCHOFER();
-		//cntIC = __HAL_TIM_GetCompare(&pulsoACCUM,TIM_CHANNEL_1);
 		PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
 		if(ESTADO_RELOJ != COBRANDO){
 			(void)calcularDISTANCIA_acumulada;			//actualiza calculo de distancia
 			DISTANCIAkm = DISTANCIAm/100; 				//con un decimal
 		}
-
-		firstDATE();
 		tarifarRELOJ();
-
 		//RECEPCION DE DA ************
 		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
 		RxDA_BaxFORMAT_toAIR_RxBuffer();	//toma datos de rxDA_baxFORMAT.RxBuffer con protocolo BAX y los guarda AIR_RxBuffer
@@ -237,20 +226,21 @@ int main(void)
 		//TRANSMISION A DA
 		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
 		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
-		//****************************
-
-		ASIENTO_consultaSensor();       	// Consulta sensor presionado o no
 		RELOJ_a_pagar_to_libre();
-		//grabar_enFLASH();
-	    //PROGRAMADOR
-	    PROGRAMADOR_chkRx();              //Chequeo de Recepcion de datos de Programacion
-		PROGRAMADOR_chkTx();			  //
-		PROGRAMADOR_fin();                //Fin de Programacion de Parametros aka Fin Grabacion EEPROM
-		EEPROM_chkRequest(1);			  //
-	    chkProgMode();
-	    ModoPROGRAMACION();
-	    //finTxRta_actions();               // Ejecuto Acciones que esperan el fin de Tx Rta (se recomienda que este debajo de proceso de IRQ MODEM)
-	    AIR_UPDATE_update ();             // Actualizacion por AIRE
+		//****************************
+		if((tipo_de_equipo != MINI_BLUE)){
+			ASIENTO_consultaSensor();	// Consulta sensor presionado o no
+		    PROGRAMADOR_chkRx();              //Chequeo de Recepcion de datos de Programacion
+			PROGRAMADOR_chkTx();			  //
+			PROGRAMADOR_fin();                //Fin de Programacion de Parametros aka Fin Grabacion EEPROM
+			EEPROM_chkRequest(1);			  //
+		    chkProgMode();
+		    ModoPROGRAMACION();
+		    AIR_UPDATE_update ();             // Actualizacion por AIRE
+
+		    checkTime();
+			firstDATE();
+		}
 
 #ifdef RELOJ_DEBUG
 	    PRINT_DEBUG_imprimir();
@@ -377,6 +367,9 @@ void ModoPROGRAMACION (void){
 	  /* USER CODE END Error_Handler_Debug */
 	}
 
+
+
+
 /*
 	static void SystemClockEX_Config(void)
 	{
@@ -438,6 +431,7 @@ void ModoPROGRAMACION (void){
 	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_HSI14;
 	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
 	  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+
 	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
 	  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
@@ -471,6 +465,57 @@ void ModoPROGRAMACION (void){
 	  //SysTick_IRQn interrupt configuration
 	  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 	}
+
+	void SystemClock_Config_sinRTC(void)
+		{
+
+		  RCC_OscInitTypeDef RCC_OscInitStruct;
+		  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+
+		  //Configure LSE Drive Capability
+		  //__HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_HIGH);
+
+	      //Initializes the CPU, AHB and APB busses clocks
+		  //RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_HSI14;
+		  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_HSI14;
+		  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+
+		  //RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+
+		  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+		  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+		  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
+		  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV2;
+		  //adc
+		  RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
+		  RCC_OscInitStruct.HSI14CalibrationValue = 16;
+
+		  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+		  {
+		    _Error_Handler(__FILE__, __LINE__);
+		  }
+
+		  //Initializes the CPU, AHB and APB busses clocks
+		  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+		  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+		  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+		  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+
+		  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+		  {
+		    _Error_Handler(__FILE__, __LINE__);
+		  }
+
+		 //Configure the Systick interrupt time
+		  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+		  //Configure the Systick
+		  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+		  //SysTick_IRQn interrupt configuration
+		  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+		}
+
 
 	// RTC init function
 	void MX_RTC_Init(void)

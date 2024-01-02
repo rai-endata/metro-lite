@@ -563,7 +563,7 @@
 					//setTO_Bluetooth(TO_BLUETOOTH_3);
 					Rx_cmd = RxDA_buffer[1];        								//Extraigo comando
 					if(EQUIPO_METRO_LITE_RELOJ_INTERNO ||
-					  (((EQUIPO_METRO_BLUE) || (EQUIPO_METRO_LITE_RELOJ_BANDERITA)) && !CMD_ACTIONS)){
+					  (((EQUIPO_METRO_BLUE) || (EQUIPO_METRO_LITE_RELOJ_BANDERITA) || (EQUIPO_MINI_BLUE_RELOJ_BANDERITA)) && !CMD_ACTIONS)){
 						//prueba (envia comandos recibidos por puerto serie)
 						//Enviar_BUFFER_Rx_porPuertoSerie ((byte*) RxDA_buffer, N_Rx_App);
 						  if (Rx_cmd < 0x80){
@@ -2175,10 +2175,17 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 									k = string_copy_returnN(&buff_aux[i],"metroblue (PB7=0, PB6=0)");
 									i=i+k;
 									break;
+
 							      case 1:
 										k = string_copy_returnN(&buff_aux[i],"metrolite (PB7=1, PB6=1)");
 										i=i+k;
 									break;
+
+							      case 2:
+										k = string_copy_returnN(&buff_aux[i],"miniblue (PB7=1, PB6=0)");
+										i=i+k;
+									break;
+
 							      default :
 										k = string_copy_returnN(&buff_aux[i],"  DESCONOCIDO");
 										i=i+k;
@@ -2566,10 +2573,17 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 					k = string_copy_returnN(&buff_aux[i],"metroblue (PB7=0, PB6=0)");
 					i=i+k;
 					break;
+
 			      case 1:
 						k = string_copy_returnN(&buff_aux[i],"metrolite (PB7=1, PB6=1)");
 						i=i+k;
 					break;
+
+			      case 2:
+						k = string_copy_returnN(&buff_aux[i],"miniblue (PB7=1, PB6=0)");
+						i=i+k;
+					break;
+
 			      default :
 						k = string_copy_returnN(&buff_aux[i],"  DESCONOCIDO");
 						i=i+k;

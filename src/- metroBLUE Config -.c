@@ -15,9 +15,17 @@
 	Z: Major, 								  //se incrementa cuando se arregla algun/os errores, vuelve a cero cuando se incrementa x o y
     */
 
-//micro stm32f091rc
-char versionFIRMWARE[] =  "v1.9.0";
-char fechaFIRMWARE[] =  " (10/11/2023)";
+char versionFIRMWARE[] =  "v2.0.1";
+char fechaFIRMWARE[] =  " (29/11/2023)";
+
+//version v2.0.1
+//fusion con rama agregaMiniblue en el que se realizo los sgtes cambios:
+//agrega un parche para corregir error que a veces
+//se dio al sumar las recaudaciones en el reporte de turno.
+
+//version v2.0.0
+//agrega tipo de equipo miniblue
+//PB6=0, PB7=1
 
 //version v1.9.0
 //  * Actualiza hora y fecha, desde la central con el comando transparente
@@ -31,7 +39,6 @@ char fechaFIRMWARE[] =  " (10/11/2023)";
 
 //verion v1.8.3
 //fusion de 1.8.2 con 1.8.2.A
-
 
 //verion v1.8.2.A
 //parche reintento infinito de libre, porque la app esta en ocupado
