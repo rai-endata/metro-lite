@@ -480,7 +480,7 @@ void Pase_a_COBRANDO (byte estado){
 		DISTANCIAm_OCUPADO = DISTANCIAm;
 
 		//lo saco creo que se no usa, y causaba problemas en la actualizacion de hora
-		//write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
+		//write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la distancia entre estados
 
 		DISTANCIA_iniCalculo_PULSE_ACCUM();
 		//minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera

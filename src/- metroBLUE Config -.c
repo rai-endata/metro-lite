@@ -31,6 +31,10 @@ char fechaFIRMWARE[] =  " (29/11/2023)";
 //  * Actualiza hora y fecha, desde la central con el comando transparente
 //  * No mira el crc de programacion del movil (parche temporal, hasta encontrar error en ccr de programaciopn del movil
 
+//version v1.8.6
+//   * Actualiza hora y fecha, desde la central con el comando transparente
+//  * No mira el crc de programacion del movil (parche temporal, hasta encontrar error en ccr de programaciopn del movil)
+
 //version v1.8.5
 //imprime ticket en libre
 
