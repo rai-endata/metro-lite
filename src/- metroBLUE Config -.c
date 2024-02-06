@@ -15,8 +15,18 @@
 	Z: Major, 								  //se incrementa cuando se arregla algun/os errores, vuelve a cero cuando se incrementa x o y
     */
 
-char versionFIRMWARE[] =  "v2.0.1";
-char fechaFIRMWARE[] =  " (29/11/2023)";
+char versionFIRMWARE[] =  "v2.0.2";
+char fechaFIRMWARE[] =  " (06/02/2024)";
+
+
+//version v2.0.2
+//amplia el parche agregado a la recudacion total en la verson v2.0.0
+//al viaje total
+//modificacion de funciones TURNO_getCantViajesAsiento_turno, TURNO_getCantErroresAsiento_turno()
+// y TURNO_calcKmTotales_turno() para tener en cuento los errores de timeout y error de rango de direcciones.
+//(el error de recudacion total y viaje total se habia dado en versiones anteriores debido a un timeout (TO_F))
+
+
 
 //version v2.0.1
 //fusion con rama agregaMiniblue en el que se realizo los sgtes cambios:

@@ -52,8 +52,13 @@
       static uint16_t base_ms;						    // Base de tiempos en miliseg.
       static byte ini_cnt=4;						//	detecta los primeros tres segundos
       byte   checkTIME=5;;
-      static byte TO_lazo_cnt;                      // Contador de TIME OUT DE LAZO
-        #define x100mseg_TO_lazo        100           // x100mseg a esperar en un lazo (FOR - WHILE)
+
+    //  static byte TO_lazo_cnt;                      // Contador de TIME OUT DE LAZO
+    //    #define x100mseg_TO_lazo        100           // x100mseg a esperar en un lazo (FOR - WHILE)
+
+
+      static word TO_lazo_cnt;                      // Contador de TIME OUT DE LAZO
+        #define x100mseg_TO_lazo        1000           // 1 mseg a esperar en un lazo (FOR - WHILE)
 
 
     /*********************************************************************************************/

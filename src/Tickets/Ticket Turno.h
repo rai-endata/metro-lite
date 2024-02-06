@@ -50,6 +50,7 @@ extern byte estadosTurno;
 
    // extern uint32_t TURNO_getRecaudacion_turno(byte* buffer);
     extern uint32_t TURNO_getRecaudacion_turnoNew(byte* buffer, uint32_t* recaudaciones);
+    extern uint16_t TURNO_getCantViajes_turnoNew(byte* buffer, uint16_t* viajes);
     extern uint32_t TURNO_calcKmTotales_turno(void);
     //extern uint32_t TURNO_calcRecaudacionChofer(byte* buffer);
     extern uint32_t TURNO_calcRecaudacionChoferNew(byte* buffer, uint32_t recaudacionTotal);

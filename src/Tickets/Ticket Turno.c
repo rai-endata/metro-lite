@@ -68,6 +68,8 @@ void print_ticket_turno(uint8_t nroTurno){
     uint32_t datosMOV[4][3];
     uint32_t kmTotal, velMaxTotal, tMarchaTotal,tParadoTotal;
     uint32_t recaudaciones[] = {0, 0, 0, 0, 0, 0, 0, 0 };
+    uint16_t viajes[] = {0, 0, 0, 0, 0, 0, 0, 0 };
+
     uint32_t recaudacionTotal;
 
     byte puntoDECIMAL;
@@ -226,6 +228,7 @@ void print_ticket_turno(uint8_t nroTurno){
 
 			do{
 				uint32_t cant_viajes = TURNO_getCantViajes_tarifa(tarifasTurno);
+				viajes[tarifasTurno-1] = cant_viajes;  //guardo recaudacion tarifa para luego calcular recaudacion total
 				if(cant_viajes){
 					//print tarifas
 					string_copy_incDest(ptrDouble,"TARIFA ");
@@ -288,7 +291,9 @@ void print_ticket_turno(uint8_t nroTurno){
 
 			//print Viajes
 			string_copy_incDest(ptrDouble,"  Viajes                ");
-			aux32 = (uint32_t)TURNO_getCantViajes_turno();
+			//aux32 = (uint32_t)TURNO_getCantViajes_turno();
+			aux32 = (uint32_t)TURNO_getCantViajes_turnoNew(&buffer_aux, (uint16_t*)(&viajes));
+
 			preparar_print (aux32, 0, &buffer_aux, 0 );
 			string_copy_incDest(ptrDouble,&buffer_aux);
 
@@ -299,8 +304,14 @@ void print_ticket_turno(uint8_t nroTurno){
 			if (SENSOR_ASIENTO_NORM || SENSOR_ASIENTO_INTEL){
 				string_copy_incDest(ptrDouble,"  Viajes asiento        ");
 				aux32 = (uint32_t)TURNO_getCantViajesAsiento_turno();
-				preparar_print (aux32, 0, &buffer_aux, 0 );
-				string_copy_incDest(ptrDouble,&buffer_aux);
+				//error de timeout ? (aux32 = 0xff)
+				if(aux32 != 0xff){
+					preparar_print (aux32, 0, &buffer_aux, 0 );
+					string_copy_incDest(ptrDouble,&buffer_aux);
+				}else{
+					string_copy_incDest(ptrDouble,"--");
+				}
+
 				add_LF(ptrDouble);
 			}/*else{
 				string_copy_incDest(ptrDouble,"  Viajes asiento        ");
@@ -313,8 +324,12 @@ void print_ticket_turno(uint8_t nroTurno){
 			if (SENSOR_ASIENTO_INTEL){
 				string_copy_incDest(ptrDouble,"  Errores asiento          ");
 				aux32 = (uint32_t)TURNO_getCantErroresAsiento_turno();
-				preparar_print (aux32, 0, &buffer_aux, 0 );
-				string_copy_incDest(ptrDouble,&buffer_aux);
+				if(aux32 != 0xff){
+					preparar_print (aux32, 0, &buffer_aux, 0 );
+					string_copy_incDest(ptrDouble,&buffer_aux);
+				}else{
+					string_copy_incDest(ptrDouble,"--");
+				}
 				add_LF(ptrDouble);
 			}/*else{
 				string_copy_incDest(ptrDouble,"  Errores asiento          ");
@@ -340,9 +355,12 @@ void print_ticket_turno(uint8_t nroTurno){
 			//print Km totales
 			string_copy_incDest(ptrDouble,"  Km Totales           ");
 			aux32 = (uint32_t)TURNO_calcKmTotales_turno();
-			preparar_print (aux32, 1, &buffer_aux, 0 );
-			string_copy_incDest(ptrDouble,&buffer_aux);
-			//string_copy_incDest(ptrDouble," Km");
+			if(aux32 != 0xffff){
+				preparar_print (aux32, 1, &buffer_aux, 0 );
+				string_copy_incDest(ptrDouble,&buffer_aux);
+			}else{
+				string_copy_incDest(ptrDouble,"--");
+			}
 			add_LF(ptrDouble);
 
 			//print porcentaje chofer
@@ -385,18 +403,26 @@ void print_ticket_turno(uint8_t nroTurno){
 			string_copy_incDest(ptrDouble,"   ");
 			//aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turno(buffer_aux);
 			aux32 = (uint32_t)TURNO_calcRecaudacionPorKm_turnoNew(buffer_aux, recaudacionTotal);
-			preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble );
-			//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
-			string_copy_incDest(ptrDouble,&buffer_aux);
+			if(aux32 != 0xffff){
+				preparar_print_new (aux32, puntoDECIMAL, &buffer_aux, 0, ptrDouble );
+				//convert_to_string(buffer_aux, aux32, 0xFF, base_DECIMAL);
+				string_copy_incDest(ptrDouble,&buffer_aux);
+			}else{
+				string_copy_incDest(ptrDouble,"--");
+			}
 			add_LF(ptrDouble);
 
 			//print porcentaje de  km en ocupado
 			string_copy_incDest(ptrDouble,"%km Ocupado             ");
 			aux32 = (uint32_t)TURNO_calcPercentKmOcupado_turno(buffer_aux);
-			aux32 = aux32/100;
-			preparar_print (aux32, 0, &buffer_aux, 0 );
-			string_copy_incDest(ptrDouble,&buffer_aux);
-			//string_copy_incDest(ptrDouble,"%");
+			if(aux32 != 0xffff){
+				aux32 = aux32/100;
+				preparar_print (aux32, 0, &buffer_aux, 0 );
+				string_copy_incDest(ptrDouble,&buffer_aux);
+				//string_copy_incDest(ptrDouble,"%");
+			}else{
+				string_copy_incDest(ptrDouble,"--");
+			}
 			add_LF(ptrDouble);
 
 			//print line
@@ -793,15 +819,50 @@ void print_ticket_turno(uint8_t nroTurno){
           return(recaudacion);
         }
 
+
+	    /* EXTRAER RECAUDACION EN TURNO */
+	      /********************************/
+	        uint16_t TURNO_getCantViajes_turnoNew(byte* buffer, uint16_t* viajes){
+
+        	 uint16_t viaje;
+	          byte i;
+
+	          viaje = 0;
+	          i = 1;
+	          while(i <= cantidadTarifasProgramables){
+	        	  viaje += viajes[i-1];
+	            i++;
+	          }
+
+	           TICKET_importeToString(viaje, buffer);
+
+	          return(viaje);
+	        }
+
   /* CALCULAR KM TOTALES DEL TURNO */
   /*********************************/
     uint32_t TURNO_calcKmTotales_turno(void){
       // Calcula el total de KM recorridos
       uint32_t km;
+      uint32_t aux;
 
       km = TURNO_getKM_estado(REG_libre);
-      km += TURNO_getKM_estado(REG_ocupado);
-      km += TURNO_getKM_estado(REG_fserv);
+      if(km != 0xffff){
+    	  aux = TURNO_getKM_estado(REG_ocupado);
+    	  if(aux != 0xffff){
+    		  km += aux;
+    	  }else{
+    		  return(km);
+    	  }
+      }else{
+    	  return(km);
+      }
+	  aux = TURNO_getKM_estado(REG_fserv);
+	  if(aux != 0xffff){
+		  km += aux;
+	  }else{
+		  return(km);
+	  }
 
       return(km);
     }
@@ -877,13 +938,14 @@ void print_ticket_turno(uint8_t nroTurno){
 
       //recaudacion = TURNO_getRecaudacion_turno(NULL);
       recaudacion = recaudacionTotal;
-      km = TURNO_getKM_estado(REG_libre);
-      km += TURNO_getKM_estado(REG_ocupado);
-      km += TURNO_getKM_estado(REG_fserv);
-      pesosXkm = recaudacion*10;
-      pesosXkm /= km;                             // Como los KM tiene 1 decimal, multiplico x10
-
-      TICKET_importeToString(pesosXkm, buffer);
+      km =TURNO_calcKmTotales_turno();
+      if(km != 0xffff){
+          pesosXkm = recaudacion*10;
+          pesosXkm /= km;                             // Como los KM tiene 1 decimal, multiplico x10
+          TICKET_importeToString(pesosXkm, buffer);
+      }else{
+    	  pesosXkm = 0xffff; // indica error
+      }
 
       return(pesosXkm);
     }
@@ -901,15 +963,16 @@ void print_ticket_turno(uint8_t nroTurno){
       uint32_t km;
       uint32_t percent;
 
-      km_ocupado = TURNO_getKM_estado(REG_ocupado);
-      km = TURNO_getKM_estado(REG_libre);
-      km += km_ocupado;
-      km += TURNO_getKM_estado(REG_fserv);
-      percent = ((km_ocupado * 100)*100) / km;
+      km =TURNO_calcKmTotales_turno();
+      if(km != 0xffff){
+          percent = ((km_ocupado * 100)*100) / km;
 
-      if (buffer != NULL){
-        convert_to_string_with_decimals(buffer, percent, 0xFF, 2, base_DECIMAL);
-        string_concat(buffer, "%");
+          if (buffer != NULL){
+            convert_to_string_with_decimals(buffer, percent, 0xFF, 2, base_DECIMAL);
+            string_concat(buffer, "%");
+          }
+      }else{
+    	  percent = 0xffff; // indica error
       }
 
       return(percent);

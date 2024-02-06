@@ -1261,7 +1261,10 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         while ((INI_ptr != FIN_ptr)){
 
           TO_F = chkTO_lazo_F();                  // Chequeo bandera de time out de lazo
-          if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
+          if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){
+        	  viajes =0xff;  //0xff significa error
+        	  break;
+          }
 
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
           if (aux_INI.tipo == REG_libre){
@@ -1537,7 +1540,10 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         while ((INI_ptr != FIN_ptr)){
 
           TO_F = chkTO_lazo_F();                  // Chequeo bandera de time out de lazo 
-          if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){break;}
+          if(checkRANGE(INI_ptr, FIN_TABLA_REPORTE, TO_F )){
+        	  km = 0xffff; // 0xffff se considera error
+        	  break;
+          }
 
           EEPROM_ReadBuffer(&aux_INI,INI_ptr,sizeof(tREG_GENERIC));
 
