@@ -15,8 +15,12 @@
 	Z: Major, 								  //se incrementa cuando se arregla algun/os errores, vuelve a cero cuando se incrementa x o y
     */
 
-char versionFIRMWARE[] =  "v2.0.2";
-char fechaFIRMWARE[] =  " (06/02/2024)";
+
+char versionFIRMWARE[] =  "v2.0.3";
+char fechaFIRMWARE[] =  " (05/05/2024)";
+
+//version v2.0.3
+//reordena direcciones de eeprom
 
 
 //version v2.0.2

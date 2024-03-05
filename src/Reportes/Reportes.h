@@ -254,39 +254,14 @@
       #define progTaller      1
       #define progAire        2
 
+#define ADDR_EEPROM_REPORTE				ADDR_BASE_TABLA_REPORTE
 #define	NUMERO_DE_REGISTROS_DE_TABLA	1000
 #define NUMERO_DE_CAMPOS_DE_REGISTRO	sizeof(tREG_GENERIC)
-#define DIM_REPORTE       				(NUMERO_DE_REGISTROS_DE_TABLA*NUMERO_DE_CAMPOS_DE_REGISTRO)   //cantidad de bytes de tabla de reportes
+#define SIZE_EEPROM_REPORTE  			(NUMERO_DE_REGISTROS_DE_TABLA*NUMERO_DE_CAMPOS_DE_REGISTRO)   //cantidad de bytes de tabla de reportes
 #define FIN_TABLA_REPORTE    			(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE - 1)
 
 #define dim_RegQueue          5
 
-#define	ADDR_EEPROM_REPORTE 				ADDR_BASE_TABLA_REPORTE
-#define	SIZE_EEPROM_REPORTE    	    		DIM_REPORTE
-
-#define	EEPROM_REPORTE_30DIAS			    ADDR_BASE_TABLA_REPORTE_30DIAS
-#define	SIZE_EEPROM_REPORTE_30DIAS    		dim_REPORTE_30DIAS
-
-#define	ADDR_EEPROM_REPORTE_PUT 			ADDR_BASE_VAR_REPORTES
-#define	SIZE_EEPROM_REPORTE_PUT				sizeof(uint32_t)
-
-#define	ADDR_EEPROM_REPORTE_INDEX 			ADDR_BASE_VAR_REPORTES + sizeof(uint32_t)
-#define	SIZE_EEPROM_REPORTE_INDEX			sizeof(uint16_t)
-
-#define	ADDR_EEPROM_REPORTE_NRO_VIAJE		ADDR_BASE_VAR_REPORTES + sizeof(uint32_t) + sizeof(uint16_t)
-#define	SIZE_EEPROM_REPORTE_NRO_VIAJE		sizeof(uint16_t)
-
-#define	ADDR_EEPROM_REPORTE_NRO_TURNO		ADDR_BASE_VAR_REPORTES + sizeof(uint32_t)+ 2*sizeof(uint16_t)
-#define	SIZE_EEPROM_REPORTE_NRO_TURNO		sizeof(uint16_t)
-
-#define	ADDR_INDEX_LAST_SESION 				ADDR_BASE_VAR_REPORTES + sizeof(uint32_t) + 3*sizeof(uint16_t)
-#define	SIZE_INDEX_LAST_SESION				sizeof(uint16_t)
-
-#define	EEPROM_REPORTE_30DIAS_PUT			ADDR_BASE_VAR_REPORTES + sizeof(uint32_t) + 4*sizeof(uint16_t)
-#define	SIZE_REPORTE_30DIAS_PUT	    		sizeof(uint32_t)
-
-#define	EEPROM_REPORTE_30DIAS_INDEX			ADDR_BASE_VAR_REPORTES + 2*sizeof(uint32_t) + 4*sizeof(uint16_t)
-#define	SIZE_REPORTE_30DIAS_INDEX  	    	sizeof(uint16_t)
 
     extern tREG_GENERIC* REPORTE_PUTptr;         // Puntero de Insersion de Registros (tipo GENERICO)
     extern tREG_LIBRE regLibre;

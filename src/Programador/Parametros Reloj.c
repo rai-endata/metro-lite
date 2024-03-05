@@ -1595,7 +1595,6 @@ void read_progRELOJ_eeprom(void){
 	uint8_t* buffer;
 
 	uint32_t size;
-	size = SIZE_PROG_RELOJ_EEPROM;
 
 	buffer = &buffer_backup;
 	read_relojCOMUN_eeprom(buffer); //long 12

@@ -1,195 +1,164 @@
-/*
- * eeprom.h
- *
- *  Created on: 5/5/2018
- *      Author: Rai
- */
-
 #ifndef __EEPROM__
-
 #define __EEPROM__
 
 #include "stddef.h"
 #include "stdint.h"
-
 #include "driver_eeprom.h"
 #include "Definicion de tipos.h"
 #include "rtc.h"
 #include "tipos - parametros reloj.h"
-
 #include "eeprom_aux.h"
 #include "eeprom address.h"
 
+//******************* ASIGNACION DE DIRECCIONES DE EEPROM **********************
+//******************************************************************************
 
-/************************ ADDRES SIZE PROG RELOJ *******************************************************/
-#define	ADDR_BASE_PROG_PART0				ADDR_EEPROM_PAGE_0
-#define	ADDR_BASE_PROG_PART1				ADDR_EEPROM_PAGE_1
-#define	ADDR_BASE_PROG_PART2				ADDR_EEPROM_PAGE_2
-#define	ADDR_BASE_PROG_PART3				ADDR_EEPROM_PAGE_3
-#define	ADDR_BASE_PROG_PART4				ADDR_EEPROM_PAGE_4
-#define	ADDR_BASE_PROG_PART5				ADDR_EEPROM_PAGE_5
-#define	ADDR_BASE_PROG_PART6				ADDR_EEPROM_PAGE_6
-#define	ADDR_BASE_PROG_PART7				ADDR_EEPROM_PAGE_7
-#define	ADDR_BASE_PROG_PART8				ADDR_EEPROM_PAGE_8
-#define	ADDR_BASE_PROG_PART9				ADDR_EEPROM_PAGE_9
-#define	ADDR_BASE_PROG_PART10				ADDR_EEPROM_PAGE_10
-#define	ADDR_BASE_PROG_PART11				ADDR_EEPROM_PAGE_11
+#define	ADDRESS_VARIOS     				ADDR_EEPROM_PAGE_0  // (pag0)
+#define	ADDRESS_PROG1     				ADDR_EEPROM_PAGE_1  // (pag1, pag2, Y pag3)     //Datos de programacion
+#define	ADDRESS_PROG2     				ADDR_EEPROM_PAGE_4  // (pag4, pag5, Y pag6)     //copia 1 datos de programacion
+#define	ADDRESS_PROG3     				ADDR_EEPROM_PAGE_7  // (pag7, pag8, Y pag9)	    //copia 2 datos de programacion
+#define	ADDRESS_PROG4     				ADDR_EEPROM_PAGE_10 // (pag10, pag11, Y pag12)  //copia 3 datos de programacion
 
-#define	ADDR_BASE_VARIABLES			     	ADDR_EEPROM_PAGE_12			//AQUI GUARDO VARIABLES DE DISTINTO TIPO
+#define	ADDRESS_PROG_TICKET_PAGE1		ADDR_EEPROM_PAGE_13
+#define	ADDRESS_PROG_TICKET_PAGE2		ADDR_EEPROM_PAGE_14
+#define	ADDRESS_PROG_TICKET_RECAUD		ADDR_EEPROM_PAGE_15
+#define	ADDRESS_REPORTES   				ADDR_EEPROM_PAGE_16
+#define	ADDR_BASE_TABLA_REPORTE			ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION
 
-#define	ADDR_DATA1_EEPROM 					ADDR_BASE_VARIABLES
-#define	ADDR_DATA2_EEPROM 					ADDR_BASE_VARIABLES + 1
-#define	ADDR_DATA3_EEPROM 					ADDR_BASE_VARIABLES + 2
-#define	ADDR_DATA4_EEPROM 					ADDR_BASE_VARIABLES + 3
-#define	ADDR_DATA5_EEPROM 					ADDR_BASE_VARIABLES + 4
-#define	ADDR_DATA6_EEPROM 					ADDR_BASE_VARIABLES + 5
-#define	ADDR_DATA7_EEPROM 					ADDR_BASE_VARIABLES + 6
-#define	ADDR_DATA8_EEPROM 					ADDR_BASE_VARIABLES + 7
-#define	ADDR_DATA9_EEPROM 					ADDR_BASE_VARIABLES + 8
-#define	ADDR_DATA10_EEPROM 					ADDR_BASE_VARIABLES + 9
-
-#define	ADDR_EEPROM_PRIMER_ENCENDIDO		ADDR_BASE_VARIABLES + 0
-#define	SIZE_EEPROM_PRIMER_ENCENDIDO		sizeof(uint16_t)
-
-#define	ADDR_BASE_TABLA_REPORTE_30DIAS		ADDR_EEPROM_PAGE_256
+#define	ADDR_NEXT_REPORTE 				ADDR_BASE_TABLA_REPORTE + SIZE_EEPROM_REPORTE
 
 
-//#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
-//#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21
+//  ************       Definicion de datos varios*******************************
+// ******************************************************************************
+
+#define	ADDRESS_BACKUP_EEPROM  				ADDRESS_VARIOS
+
+	#define	ADDRESS_CORTE_ALIM_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.tiempo_corte_alimentacion)
+	#define	ADDRESS_TARIFA_EEPROM  					ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.tarifa)
+	#define	ADDRESS_ESTADO_RELOJ_EEPROM  			ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.estado_reloj)
+	#define	ADDRESS_BYTE_FILL1_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.BYTE_TO_FILL1)
+	#define	ADDRESS_VEL_MAX_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.velocidad_maxima)
+	#define	ADDRESS_SEG_ESPERA_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.segundos_espera)
+	#define	ADDRESS_SEG_TARIF_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.segundos_tarifacion)
+	#define	ADDRESS_WORD_FILL1_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.WORD_TO_FILL1)
+	#define	ADDRESS_FICHAS_PULSOS_EEPROM  			ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.fichas_pulsos)
+	#define	ADDRESS_FICHAS_TIEMPO_EEPROM  			ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.fichas_tiempo)
+	#define	ADDRESS_CONTADOR_PULSOS_EEPROM  		ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.contador_pulsos)
+	#define	ADDRESS_CONTADOR_PULSOS_OLD_EEPROM  	ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.contador_pulsos_old)
+	#define	ADDRESS_DIS_OCUP_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.distancia_ocupado)
+	#define	ADDRESS_OCUP_DATE_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.ocupado_date)
+	#define	ADDRESS_COB_DATE_EEPROM  				ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.cobrando_date)
+	#define	ADDRESS_DATE_APAGADO_EEPROM  			ADDRESS_BACKUP_EEPROM + offsetof(tEEPROM,dataBACKUP.date)
+
+	#define	SIZE_CORTE_ALIM_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.tiempo_corte_alimentacion)
+	#define	SIZE_TARIFA_EEPROM  				sizeof(((tEEPROM *)0)->dataBACKUP.tarifa)
+	#define	SIZE_ESTADO_RELOJ_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.estado_reloj)
+	#define	SIZE_BYTE_FILL1_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.BYTE_TO_FILL1)
+	#define	SIZE_VEL_MAX_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.velocidad_maxima)
+	#define	SIZE_SEG_ESPERA_EEPROM				sizeof(((tEEPROM *)0)->dataBACKUP.segundos_espera)
+	#define	SIZE_SEG_TARIF_EEPROM  				sizeof(((tEEPROM *)0)->dataBACKUP.segundos_tarifacion)
+	#define	SIZE_WORD_FILL1_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.WORD_TO_FILL1)
+	#define	SIZE_FICHAS_PULSOS_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.fichas_pulsos)
+	#define	SIZE_FICHAS_TIEMPO_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.fichas_tiempo)
+	#define	SIZE_CONTADOR_PULSOS_EEPROM  		sizeof(((tEEPROM *)0)->dataBACKUP.contador_pulsos)
+	#define	SIZE_CONTADOR_PULSOS_OLD_EEPROM  	sizeof(((tEEPROM *)0)->dataBACKUP.contador_pulsos_old)
+	#define	SIZE_DIS_OCUP_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.distancia_ocupado)
+	#define	SIZE_OCUP_DATE_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.ocupado_date)
+	#define	SIZE_COB_DATE_EEPROM 				sizeof(((tEEPROM *)0)->dataBACKUP.cobrando_date)
+	#define	SIZE_DATE_APAGADO_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.date)
+
+	#define	SIZE_BACKUP_EEPROM 	(SIZE_DATE_APAGADO_EEPROM +			\
+								 SIZE_TARIFA_EEPROM +				\
+								 SIZE_ESTADO_RELOJ_EEPROM +			\
+								 SIZE_FICHAS_PULSOS_EEPROM +		\
+								 SIZE_FICHAS_TIEMPO_EEPROM +		\
+								 SIZE_CONTADOR_PULSOS_EEPROM +		\
+								 SIZE_CONTADOR_PULSOS_OLD_EEPROM +	\
+								 SIZE_SEG_ESPERA_EEPROM +			\
+								 SIZE_SEG_TARIF_EEPROM + 			\
+								 SIZE_DIS_OCUP_EEPROM + 			\
+								 SIZE_OCUP_DATE_EEPROM + 			\
+								 SIZE_COB_DATE_EEPROM + 			\
+								 SIZE_VEL_MAX_EEPROM +				\
+								 SIZE_BYTE_FILL1_EEPROM +			\
+								 SIZE_WORD_FILL1_EEPROM +			\
+								 SIZE_CORTE_ALIM_EEPROM)
 
 
-//#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_20
-//#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_21
+#define	ADDR_EEPROM_PRIMER_ENCENDIDO	ADDRESS_BACKUP_EEPROM + SIZE_BACKUP_EEPROM 			//AQUI GUARDO VARIABLES DE DISTINTO TIPO
+#define	SIZE_EEPROM_PRIMER_ENCENDIDO	sizeof(uint16_t)
 
-#define	ADDR_BASE_VAR_REPORTES				ADDR_EEPROM_PAGE_14
-#define	ADDR_BASE_TABLA_REPORTE				ADDR_EEPROM_PAGE_15
+#define	EEPROM_NRO_CORRELATIVO			ADDR_EEPROM_PRIMER_ENCENDIDO + SIZE_EEPROM_PRIMER_ENCENDIDO
+#define	SIZE_EEPROM_NRO_CORRELATIVO		sizeof(uint8_t)
 
+#define	EEPROM_NRO_TICKET			    EEPROM_NRO_CORRELATIVO + SIZE_EEPROM_NRO_CORRELATIVO
+#define	SIZE_EEPROM_NRO_TICKET		    sizeof(uint32_t)
 
-#define	ADDRESS_PROG_relojCOMUN     		ADDR_BASE_PROG_PART1
-//#define	ADDRESS_PROG_relojCOMUN     		ADDR_BASE_PROG_PART4
+#define	ADDR_EEPROM_CHOFER			    EEPROM_NRO_TICKET + SIZE_EEPROM_NRO_TICKET
+#define	SIZE_EEPROM_CHOFER			    sizeof(uint16_t)
+
+// Direccion reportes
+#define	ADDR_EEPROM_REPORTE_PUT			ADDRESS_REPORTES
+#define	SIZE_EEPROM_REPORTE_PUT			sizeof(uint32_t)
+
+#define	ADDR_EEPROM_REPORTE_INDEX 		ADDR_EEPROM_REPORTE_PUT + SIZE_EEPROM_REPORTE_PUT
+#define	SIZE_EEPROM_REPORTE_INDEX		sizeof(uint16_t)
+
+#define	ADDR_EEPROM_REPORTE_NRO_VIAJE	ADDR_EEPROM_REPORTE_INDEX + SIZE_EEPROM_REPORTE_INDEX
+#define	SIZE_EEPROM_REPORTE_NRO_VIAJE	sizeof(uint16_t)
+
+#define	ADDR_EEPROM_REPORTE_NRO_TURNO	ADDR_EEPROM_REPORTE_NRO_VIAJE + SIZE_EEPROM_REPORTE_NRO_VIAJE
+#define	SIZE_EEPROM_REPORTE_NRO_TURNO	sizeof(uint16_t)
+
+#define	ADDR_INDEX_LAST_SESION 			ADDR_EEPROM_REPORTE_NRO_TURNO + SIZE_EEPROM_REPORTE_NRO_TURNO
+#define	SIZE_INDEX_LAST_SESION			sizeof(uint16_t)
+
+//************  Definicion de datos de programacion - ocupa 3 paginas  **************
+//***********************************************************************************
+
+//datos de programacion del reloj
+#define	ADDRESS_PROG_relojCOMUN     		ADDRESS_PROG1
 #define	SIZE_PROG_relojCOMUN        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojCOMUN)
-#define	ADDRESS_PROG_relojT1D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN
-//#define	ADDRESS_PROG_relojT1D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN
+#define	ADDRESS_PROG_relojT1D 				ADDRESS_PROG1 + SIZE_PROG_relojCOMUN
 #define	SIZE_PROG_relojT1D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT1D)
-#define	ADDRESS_PROG_relojT2D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D
-//#define	ADDRESS_PROG_relojT2D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D
+#define	ADDRESS_PROG_relojT2D 				ADDRESS_PROG1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D
 #define	SIZE_PROG_relojT2D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT2D)
-#define	ADDRESS_PROG_relojT3D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D
-//#define	ADDRESS_PROG_relojT3D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D
+#define	ADDRESS_PROG_relojT3D 				ADDRESS_PROG1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D
 #define	SIZE_PROG_relojT3D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT3D)
-#define	ADDRESS_PROG_relojT4D 				ADDR_BASE_PROG_PART1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D + SIZE_PROG_relojT3D
-//#define	ADDRESS_PROG_relojT4D 				ADDR_BASE_PROG_PART4 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D + SIZE_PROG_relojT3D
+#define	ADDRESS_PROG_relojT4D 				ADDRESS_PROG1 + SIZE_PROG_relojCOMUN + SIZE_PROG_relojT1D + SIZE_PROG_relojT2D + SIZE_PROG_relojT3D
 #define	SIZE_PROG_relojT4D   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT4D)
 
-#define	ADDRESS_PROG_relojT1N 				ADDR_BASE_PROG_PART2
-//#define	ADDRESS_PROG_relojT1N 				ADDR_BASE_PROG_PART5
+//12 bytes libres
+
+//cambio a la pagina 2 para que ADDRESS_PROG_relojT4D no quede partida en dos paginas (0 y 1)(ya que generaria error en las rutinas de lectura y escritura de la spi)
+#define	ADDRESS_PROG_relojT1N 				ADDRESS_PROG1 + 128
 #define	SIZE_PROG_relojT1N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT1N)
-#define	ADDRESS_PROG_relojT2N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N
-//#define	ADDRESS_PROG_relojT2N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N
+#define	ADDRESS_PROG_relojT2N 				ADDRESS_PROG1 + 128 + SIZE_PROG_relojT1N
 #define	SIZE_PROG_relojT2N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT2N)
-#define	ADDRESS_PROG_relojT3N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N
-//#define	ADDRESS_PROG_relojT3N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N
+#define	ADDRESS_PROG_relojT3N 				ADDRESS_PROG1 + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N
 #define	SIZE_PROG_relojT3N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT3N)
-#define	ADDRESS_PROG_relojT4N 				ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N
-//#define	ADDRESS_PROG_relojT4N 				ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N
+#define	ADDRESS_PROG_relojT4N 				ADDRESS_PROG1 + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N
 #define	SIZE_PROG_relojT4N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT4N)
 
-#define	ADDRESS_PROG_relojEqPESOS 			ADDR_BASE_PROG_PART2 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
-//#define	ADDRESS_PROG_relojEqPESOS 			ADDR_BASE_PROG_PART5 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
+#define	ADDRESS_PROG_relojEqPESOS 			ADDRESS_PROG1 + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
 #define	SIZE_PROG_relojEqPESOS   	    	sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojEqPESOS)
 
-#define	ADDRESS_PROG_relojCALEND 			ADDRESS_PROG_relojEqPESOS + SIZE_PROG_relojEqPESOS
+// quedan 2 bytes linres en pagina ..
+
+//cambio a la pagina 3 para que PROG_relojCALEND no quede partida en dos paginas (2 y 3)(ya que generaria error en las rutinas de lectura y escritura de la spi)
+#define	ADDRESS_PROG_relojCALEND 			ADDRESS_PROG1 + 2*128
 #define	SIZE_PROG_relojCALEND   	    	sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojCALEND)
 
-
-#define	SIZE_PROG_RELOJ_EEPROM 	(SIZE_PROG_relojCOMUN+					\
-								 SIZE_PROG_relojT1D+					\
-								 SIZE_PROG_relojT2D+					\
-								 SIZE_PROG_relojT3D+					\
-								 SIZE_PROG_relojT4D+					\
-								 SIZE_PROG_relojT1N+					\
-								 SIZE_PROG_relojT2N+					\
-								 SIZE_PROG_relojT3N+					\
-								 SIZE_PROG_relojT4N+					\
-								 SIZE_PROG_relojEqPESOS+				\
-								 SIZE_PROG_relojCALEND)
-
-
-/* *********************** ADDRES SIZE BACKUP ***********************************************************/
-
-#define	ADDRESS_BACKUP_EEPROM  				offsetof(tEEPROM,dataBACKUP)
-#define	ADDRESS_DATE_APAGADO_EEPROM  		offsetof(tEEPROM,dataBACKUP.date)
-#define	SIZE_DATE_APAGADO_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.date)
-#define	ADDRESS_TARIFA_EEPROM  				offsetof(tEEPROM,dataBACKUP.tarifa)
-#define	SIZE_TARIFA_EEPROM  				sizeof(((tEEPROM *)0)->dataBACKUP.tarifa)
-#define	ADDRESS_ESTADO_RELOJ_EEPROM  		offsetof(tEEPROM,dataBACKUP.estado_reloj)
-#define	SIZE_ESTADO_RELOJ_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.estado_reloj)
-#define	ADDRESS_FICHAS_PULSOS_EEPROM  		offsetof(tEEPROM,dataBACKUP.fichas_pulsos)
-#define	SIZE_FICHAS_PULSOS_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.fichas_pulsos)
-#define	ADDRESS_FICHAS_TIEMPO_EEPROM  		offsetof(tEEPROM,dataBACKUP.fichas_tiempo)
-#define	SIZE_FICHAS_TIEMPO_EEPROM  			sizeof(((tEEPROM *)0)->dataBACKUP.fichas_tiempo)
-#define	ADDRESS_CONTADOR_PULSOS_EEPROM  	offsetof(tEEPROM,dataBACKUP.contador_pulsos)
-#define	SIZE_CONTADOR_PULSOS_EEPROM  		sizeof(((tEEPROM *)0)->dataBACKUP.contador_pulsos)
-#define	ADDRESS_CONTADOR_PULSOS_OLD_EEPROM  offsetof(tEEPROM,dataBACKUP.contador_pulsos_old)
-#define	SIZE_CONTADOR_PULSOS_OLD_EEPROM  	sizeof(((tEEPROM *)0)->dataBACKUP.contador_pulsos_old)
-#define	ADDRESS_SEG_ESPERA_EEPROM  				offsetof(tEEPROM,dataBACKUP.segundos_espera)
-#define	SIZE_SEG_ESPERA_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.segundos_espera)
-#define	ADDRESS_SEG_TARIF_EEPROM  				offsetof(tEEPROM,dataBACKUP.segundos_tarifacion)
-#define	SIZE_SEG_TARIF_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.segundos_tarifacion)
-#define	ADDRESS_DIS_OCUP_EEPROM  				offsetof(tEEPROM,dataBACKUP.distancia_ocupado)
-#define	SIZE_DIS_OCUP_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.distancia_ocupado)
-#define	ADDRESS_OCUP_DATE_EEPROM  				offsetof(tEEPROM,dataBACKUP.ocupado_date)
-#define	SIZE_OCUP_DATE_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.ocupado_date)
-#define	ADDRESS_COB_DATE_EEPROM  				offsetof(tEEPROM,dataBACKUP.cobrando_date)
-#define	SIZE_COB_DATE_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.cobrando_date)
-#define	ADDRESS_VEL_MAX_EEPROM  				offsetof(tEEPROM,dataBACKUP.velocidad_maxima)
-#define	SIZE_VEL_MAX_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.velocidad_maxima)
-#define	ADDRESS_CORTE_ALIM_EEPROM  				offsetof(tEEPROM,dataBACKUP.tiempo_corte_alimentacion)
-#define	SIZE_CORTE_ALIM_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.tiempo_corte_alimentacion)
-#define	ADDRESS_BYTE_FILL1_EEPROM  				offsetof(tEEPROM,dataBACKUP.BYTE_TO_FILL1)
-#define	SIZE_BYTE_FILL1_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.BYTE_TO_FILL1)
-#define	ADDRESS_WORD_FILL1_EEPROM  				offsetof(tEEPROM,dataBACKUP.WORD_TO_FILL1)
-#define	SIZE_WORD_FILL1_EEPROM 					sizeof(((tEEPROM *)0)->dataBACKUP.WORD_TO_FILL1)
-
-#define	SIZE_BACKUP_EEPROM 	(SIZE_DATE_APAGADO_EEPROM +			\
- 	 	 	 	 	 	 	 SIZE_TARIFA_EEPROM +				\
-							 SIZE_ESTADO_RELOJ_EEPROM +			\
-							 SIZE_FICHAS_PULSOS_EEPROM +		\
-							 SIZE_FICHAS_TIEMPO_EEPROM +		\
-							 SIZE_CONTADOR_PULSOS_EEPROM +		\
-							 SIZE_CONTADOR_PULSOS_OLD_EEPROM +	\
-							 SIZE_SEG_ESPERA_EEPROM +			\
-							 SIZE_SEG_TARIF_EEPROM + 			\
-							 SIZE_DIS_OCUP_EEPROM + 			\
- 	 	 	 	 	 	 	 SIZE_OCUP_DATE_EEPROM + 			\
-							 SIZE_COB_DATE_EEPROM + 			\
-							 SIZE_VEL_MAX_EEPROM +				\
-							 SIZE_BYTE_FILL1_EEPROM +			\
-							 SIZE_WORD_FILL1_EEPROM +			\
- 	 	 	 	 	 	 	 SIZE_CORTE_ALIM_EEPROM)
-
-
-//el tamaño de PROG_TICKET ES DE 220 POR LO TANTO OCUPA 2 PAGINAS (220 -128 = 92)
-//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART3+172-8 							//SUMO 174 PORQUE A PARTIR DE AHI NO FUNCIONA, NO SE PORQUE QUIZAS ESTE FALLANDO LA EEPROM. ESTO ME LLEVA A PAGINA  PAGINA 4
-#define	ADDRESS_PROG_TICKET_PAGE1     		ADDR_BASE_PROG_PART4 							//
-#define	ADDRESS_PROG_TICKET_PAGE2     		ADDR_BASE_PROG_PART5 							//
-//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART6 							//SUMO 174 PORQUE A PARTIR DE AHI NO FUNCIONA, NO SE PORQUE QUIZAS ESTE FALLANDO LA EEPROM. ESTO ME LLEVA A PAGINA  PAGINA 4
-//#define	ADDRESS_PROG_TICKET     		ADDR_BASE_PROG_PART1					//CON LA NUEVA EEPROM HUBO PROBLEMAS DE GRABACION EN LA ADDR_BASE_PROG_PART3+174
-#define	SIZE_PROG_TICKET        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET)
-
-//ADDRESS_PROG_TICKET_RECAUD ya esta en PAGINA 6
-#define	ADDRESS_PROG_TICKET_RECAUD 		ADDR_BASE_PROG_PART6
-#define	SIZE_PROG_TICKET_RECAUD    	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET_RECAUD)
-
-
-#define	ADDRESS_PROG_MOVIL     		ADDRESS_PROG_TICKET_RECAUD + SIZE_PROG_TICKET_RECAUD
+//datos de programacion del movil
+#define	ADDRESS_PROG_MOVIL     		ADDRESS_PROG_relojCALEND + SIZE_PROG_relojCALEND
 #define	SIZE_PROG_MOVIL    	        sizeof(((tEEPROM *)0)->progEEPROM.PROG_MOVIL)
 
+//quedan 74 bytes libres en pagina ..
 
-#define	EEPROM_NRO_CORRELATIVO		ADDR_BASE_VARIABLES + 10
-#define	EEPROM_NRO_TICKET			ADDR_BASE_VARIABLES + 11
-
-
+//  ************       Definicion de datos de ticket en paginas 3 paginas ***********************
+// ***********************************************************************************************
+#define	SIZE_PROG_TICKET        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET)
+#define	SIZE_PROG_TICKET_RECAUD    	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET_RECAUD)
 
 
  /* ESTRUCTURAS */
@@ -247,7 +216,7 @@
 	 void read_backup_eeprom(void);
 	 void write_backup_eeprom(void);
 	 extern void test_size(void);
-	 extern void testEEPROM(void );
+
 	 extern void levantar_variablesEEPROM (void);
 
 
@@ -257,5 +226,6 @@
 	 tEEPROM_ERROR EEPROM_clear (word* EEPROM_ptr);
 
 	 extern void borrar_EEPROM (void);
+	 extern void testAddress(void);
 
 #endif /* EEPROM_EEPROM_H_ */

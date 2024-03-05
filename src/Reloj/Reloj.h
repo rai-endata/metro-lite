@@ -98,10 +98,6 @@
 	#define BANDERA_OUT_CLK_ENABLE()       __GPIOB_CLK_ENABLE()
 	#define BANDERA_OUT_CLK_DISABLE()      __GPIOB_CLK_DISABLE()
 
-#define	ADDR_EEPROM_CHOFER				ADDR_BASE_VAR_REPORTES + sizeof(uint32_t) + 4*sizeof(uint16_t)
-//#define	ADDR_EEPROM_CHOFER					ADDR_BASE_VAR_REPORTES + sizeof(uint32_t)
-#define	SIZE_EEPROM_CHOFER					sizeof(uint16_t)
-
 
   // Estado Asignacion
   extern tASIGNACION       	  ESTADO_ASIGNACION;

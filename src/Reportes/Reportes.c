@@ -893,7 +893,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       ptr = *ptrptr;                 // Puntero
       ptr++;                          // Avanzo puntero
       
-      if(ptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE)){
+      if(ptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
         ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
       }
       
@@ -908,7 +908,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
     	ptrptr++;
     	*ptr_ptr_ptr = ptrptr;
 
-       if(ptrptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE)){
+       if(ptrptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
     	   *ptr_ptr_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
        }
      }
@@ -922,7 +922,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       ptr = *ptrptr;                 // Puntero
       
       if(ptr <= (tREG_GENERIC*)ADDR_EEPROM_REPORTE){
-        ptr = (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + DIM_REPORTE);  // Doy la vuelta al reporte
+        ptr = (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE);  // Doy la vuelta al reporte
       }
 
       ptr--;                          // Retrocedo puntero
@@ -2292,7 +2292,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       // Devuelve:
       //  0 -> Puntero fuera de Rango
       //  1 -> Punero OK
-      return(!((REPORTE_PUTptr < ADDR_EEPROM_REPORTE) || (REPORTE_PUTptr > ADDR_EEPROM_REPORTE + DIM_REPORTE)));
+      return(!((REPORTE_PUTptr < ADDR_EEPROM_REPORTE) || (REPORTE_PUTptr > ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)));
     }
     
 
@@ -2400,7 +2400,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
    byte REPORTE_chkPointer (tREG_GENERIC*far pointer){
       byte result;
       
-      if ((pointer >= ADDR_EEPROM_REPORTE) && (pointer <= ADDR_EEPROM_REPORTE + DIM_REPORTE)){
+      if ((pointer >= ADDR_EEPROM_REPORTE) && (pointer <= ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
         result = 1;
       }else{
         result = 0;

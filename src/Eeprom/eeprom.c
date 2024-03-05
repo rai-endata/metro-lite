@@ -630,38 +630,6 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
  		return(error);
     }
 
-    void testEEPROM(void ){
-
-    	byte EEPROM_AUX[20];
-        error_t status_error;
-
-    	status_error = EEPROM_WriteByte(ADDR_DATA1_EEPROM, 1 );
-        status_error = EEPROM_WriteByte(ADDR_DATA2_EEPROM, 2 );
-        status_error = EEPROM_WriteByte(ADDR_DATA3_EEPROM, 3 );
-        status_error = EEPROM_WriteByte(ADDR_DATA4_EEPROM, 4 );
-        status_error = EEPROM_WriteByte(ADDR_DATA5_EEPROM, 5 );
-        status_error = EEPROM_WriteByte(ADDR_DATA6_EEPROM, 6 );
-        status_error = EEPROM_WriteByte(ADDR_DATA7_EEPROM, 7 );
-        status_error = EEPROM_WriteByte(ADDR_DATA8_EEPROM, 8 );
-        status_error = EEPROM_WriteByte(ADDR_DATA9_EEPROM, 9 );
-        status_error = EEPROM_WriteByte(ADDR_DATA10_EEPROM, 10);
-
-        EEPROM_WriteByte(EEPROM_NRO_CORRELATIVO, nroCorrelativo_INTERNO);
-
-        EEPROM_AUX[0]  = EEPROM_ReadByte(ADDR_DATA1_EEPROM);
-        EEPROM_AUX[1]  = EEPROM_ReadByte(ADDR_DATA2_EEPROM);
-        EEPROM_AUX[2]  = EEPROM_ReadByte(ADDR_DATA3_EEPROM);
-        EEPROM_AUX[3]  = EEPROM_ReadByte(ADDR_DATA4_EEPROM);
-        EEPROM_AUX[4]  = EEPROM_ReadByte(ADDR_DATA5_EEPROM);
-        EEPROM_AUX[5]  = EEPROM_ReadByte(ADDR_DATA6_EEPROM);
-        EEPROM_AUX[6]  = EEPROM_ReadByte(ADDR_DATA7_EEPROM);
-        EEPROM_AUX[7]  = EEPROM_ReadByte(ADDR_DATA7_EEPROM);
-        EEPROM_AUX[8]  = EEPROM_ReadByte(ADDR_DATA8_EEPROM);
-        EEPROM_AUX[9]  = EEPROM_ReadByte(ADDR_DATA9_EEPROM);
-        EEPROM_AUX[10] = EEPROM_ReadByte(ADDR_DATA10_EEPROM);
-
-        EEPROM_ReadBuffer(&EEPROM_AUX,ADDR_DATA1_EEPROM,10);
-    }
 
     void levantar_variablesEEPROM (void){
     	nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();
@@ -691,4 +659,91 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
     		 		}
     		  }
       }
+
+
+    uint32_t buffAddress[100];
+
+    void testAddress(void){
+
+       		buffAddress[0] = ADDRESS_BACKUP_EEPROM;
+       		buffAddress[1] = ADDRESS_CORTE_ALIM_EEPROM;
+       		buffAddress[2] = ADDRESS_TARIFA_EEPROM;
+       		buffAddress[3] = ADDRESS_ESTADO_RELOJ_EEPROM;
+       		buffAddress[4] = ADDRESS_BYTE_FILL1_EEPROM;
+       		buffAddress[5] = ADDRESS_VEL_MAX_EEPROM;
+       		buffAddress[6] = ADDRESS_SEG_ESPERA_EEPROM;
+       		buffAddress[7] = ADDRESS_SEG_TARIF_EEPROM;
+       		buffAddress[8] = ADDRESS_WORD_FILL1_EEPROM;
+       		buffAddress[9] = ADDRESS_FICHAS_PULSOS_EEPROM;
+       		buffAddress[10] = ADDRESS_FICHAS_TIEMPO_EEPROM;
+       		buffAddress[11] = ADDRESS_CONTADOR_PULSOS_EEPROM;
+       		buffAddress[12] = ADDRESS_CONTADOR_PULSOS_OLD_EEPROM;
+       		buffAddress[13] = ADDRESS_DIS_OCUP_EEPROM;
+       		buffAddress[14] = ADDRESS_OCUP_DATE_EEPROM;
+       		buffAddress[15] = ADDRESS_COB_DATE_EEPROM;
+       		buffAddress[16] = ADDRESS_DATE_APAGADO_EEPROM;
+       		buffAddress[17] = ADDRESS_BACKUP_EEPROM + SIZE_BACKUP_EEPROM;
+
+           	buffAddress[18] = ADDR_EEPROM_PRIMER_ENCENDIDO;
+           	buffAddress[19] = ADDR_EEPROM_PRIMER_ENCENDIDO + SIZE_EEPROM_PRIMER_ENCENDIDO;
+           	buffAddress[20] = EEPROM_NRO_CORRELATIVO;			//ADDR_EEPROM_PAGE_12 (10)
+           	buffAddress[21] = EEPROM_NRO_CORRELATIVO + 1;			//ADDR_EEPROM_PAGE_12 (10)
+           	buffAddress[22] = EEPROM_NRO_TICKET;			    //ADDR_EEPROM_PAGE_12 (11)
+           	buffAddress[23] = EEPROM_NRO_TICKET + SIZE_EEPROM_NRO_TICKET;			    //ADDR_EEPROM_PAGE_12 (11)
+           	buffAddress[24] = ADDR_EEPROM_CHOFER;
+           	buffAddress[25] = ADDR_EEPROM_CHOFER + SIZE_EEPROM_CHOFER;
+
+       		buffAddress[26] = ADDRESS_PROG1;
+           	buffAddress[27] = ADDRESS_PROG_relojCOMUN + SIZE_PROG_relojCOMUN;
+           	buffAddress[28] = ADDRESS_PROG_relojT1D;
+           	buffAddress[29] = ADDRESS_PROG_relojT1D + SIZE_PROG_relojT1D;
+           	buffAddress[30] = ADDRESS_PROG_relojT2D;
+           	buffAddress[31] = ADDRESS_PROG_relojT2D + SIZE_PROG_relojT2D;
+           	buffAddress[32] = ADDRESS_PROG_relojT3D;
+           	buffAddress[33] = ADDRESS_PROG_relojT3D + SIZE_PROG_relojT3D;
+           	buffAddress[34] = ADDRESS_PROG_relojT4D;
+           	buffAddress[35] = ADDRESS_PROG_relojT4D + SIZE_PROG_relojT4D;
+
+           	buffAddress[36] = ADDRESS_PROG_relojT1N;
+           	buffAddress[37] = ADDRESS_PROG_relojT1N + SIZE_PROG_relojT1N;
+           	buffAddress[38] = ADDRESS_PROG_relojT2N;
+           	buffAddress[39] = ADDRESS_PROG_relojT2N + SIZE_PROG_relojT2N;
+           	buffAddress[40] = ADDRESS_PROG_relojT3N;
+           	buffAddress[41] = ADDRESS_PROG_relojT3N + SIZE_PROG_relojT3N;
+           	buffAddress[42] = ADDRESS_PROG_relojT4N;
+           	buffAddress[43] = ADDRESS_PROG_relojT4N + SIZE_PROG_relojT4N;
+           	buffAddress[44] = ADDRESS_PROG_relojEqPESOS;
+           	buffAddress[45] = ADDRESS_PROG_relojEqPESOS + SIZE_PROG_relojEqPESOS;
+           	buffAddress[46] = ADDRESS_PROG_relojCALEND;
+           	buffAddress[47] = ADDRESS_PROG_relojCALEND + SIZE_PROG_relojCALEND;
+
+           	buffAddress[48] = ADDRESS_PROG_MOVIL;
+           	buffAddress[49] = ADDRESS_PROG_MOVIL + SIZE_PROG_MOVIL;
+
+           	buffAddress[50] = ADDRESS_PROG2;
+           	buffAddress[51] = ADDRESS_PROG3;
+           	buffAddress[52] = ADDRESS_PROG4;
+
+           	buffAddress[53] = ADDRESS_PROG_TICKET_PAGE1;
+           	buffAddress[54] = ADDRESS_PROG_TICKET_PAGE2;
+           	buffAddress[55] = ADDRESS_PROG_TICKET_PAGE1 + SIZE_PROG_TICKET;
+
+           	buffAddress[56] = ADDRESS_PROG_TICKET_RECAUD;
+           	buffAddress[57] = ADDRESS_PROG_TICKET_RECAUD + SIZE_PROG_TICKET_RECAUD;
+
+   			buffAddress[58] = ADDR_EEPROM_REPORTE_PUT;
+       		buffAddress[59] = ADDR_EEPROM_REPORTE_PUT + SIZE_EEPROM_REPORTE_PUT;
+       		buffAddress[60] = ADDR_EEPROM_REPORTE_INDEX;
+       		buffAddress[61] = ADDR_EEPROM_REPORTE_INDEX + SIZE_EEPROM_REPORTE_INDEX;
+       		buffAddress[62] = ADDR_EEPROM_REPORTE_NRO_VIAJE;
+       		buffAddress[63] = ADDR_EEPROM_REPORTE_NRO_VIAJE + SIZE_EEPROM_REPORTE_NRO_VIAJE;
+       		buffAddress[64] = ADDR_EEPROM_REPORTE_NRO_TURNO;
+       		buffAddress[65] = ADDR_EEPROM_REPORTE_NRO_TURNO + SIZE_EEPROM_REPORTE_NRO_TURNO;
+       		buffAddress[66] = ADDR_INDEX_LAST_SESION;
+       		buffAddress[67] = ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION;
+
+           	buffAddress[68] = ADDR_BASE_TABLA_REPORTE;
+           	buffAddress[69] = ADDR_NEXT_REPORTE;
+
+           }
 
