@@ -525,9 +525,12 @@
 
   // TARIFAS
     extern byte* PROG_RELOJtarifa_getEEPROM_ptr(byte nro);
+    extern byte* pruebaPROG_RELOJtarifa_getEEPROM_ptr(byte nro);
+    extern byte* prueba1PROG_RELOJtarifa_getEEPROM_ptr(byte nro, byte* dirTarif);
   
     extern void PROG_RELOJtarifa_to_EEPROM (byte nro, byte iniGrabacion);
-    extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro);
+    //extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro);
+    extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro, byte* addressTarifa);
       #define PROG_RELOJT1D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa1D)
       #define PROG_RELOJT2D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa2D)
       #define PROG_RELOJT3D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa3D)

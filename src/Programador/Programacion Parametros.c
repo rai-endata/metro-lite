@@ -405,30 +405,30 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       // Programacion de Reloj
       error = PROG_RELOJcomunes_grabarEEPROM();     // Grabacion de Parametros de Reloj Comunes en EEPROM
       
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT1D_grabarEEPROM;         // Grabacion de Tarifa 1 Diurna en EEPROM
+      //grabacion de tarifas, pongo ADDRESS_PROG_relojCOMUN porque la direccion de tarifa esta referenciada a esta
+       for (byte i=tarifa1D; i<(tarifa4N+1); i++){
+		  error = PROG_RELOJtarifa_grabarEEPROM(i, (byte*)ADDRESS_PROG_relojCOMUN);	// Grabar Tarifa en EEPROM
+		  if (error != EEPROM_OK){
+			break;
+		  }
+
+		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck1);	// Grabar Tarifa en EEPROM
+		  if (error != EEPROM_OK){
+			break;
+		  }
+
+		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck2);	// Grabar Tarifa en EEPROM
+		  if (error != EEPROM_OK){
+			break;
+		  }
+
+		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck3);	// Grabar Tarifa en EEPROM
+		  if (error != EEPROM_OK){
+			break;
+		  }
+
       }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT2D_grabarEEPROM;         // Grabacion de Tarifa 2 Diurna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT3D_grabarEEPROM;         // Grabacion de Tarifa 3 Diurna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT4D_grabarEEPROM;         // Grabacion de Tarifa 4 Diurna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT1N_grabarEEPROM;         // Grabacion de Tarifa 1 Nocturna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT2N_grabarEEPROM;         // Grabacion de Tarifa 2 Nocturna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT3N_grabarEEPROM;         // Grabacion de Tarifa 3 Nocturna en EEPROM
-      }
-      if (error == EEPROM_OK){
-        error = PROG_RELOJT4N_grabarEEPROM;         // Grabacion de Tarifa 4 Nocturna en EEPROM
-      }
+
       if (error == EEPROM_OK){
         error = PROG_RELOJeqPesos_grabarEEPROM();   // Grabacion de Equivalencia en Pesos en EEPROM
       }

@@ -207,7 +207,7 @@
 		for (byte i=tarifa1D; i<(tarifa4N+1); i++){
 		  prgRELOJtarifa_armarDEFAULT(i);           // Armo String con parametros por defecto
 		  PROG_RELOJtarifa_to_EEPROM(i,0);		      // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-		  error = PROG_RELOJtarifa_grabarEEPROM(i);	// Grabar Tarifa en EEPROM
+		  error = PROG_RELOJtarifa_grabarEEPROM(i, (byte*)ADDRESS_PROG_relojCOMUN);	// Grabar Tarifa en EEPROM
 		  if (error != EEPROM_OK){
 			//BUZZER_play(RING_error);
 		  }
@@ -965,8 +965,6 @@
       if (prgRELOJ_COMUNES_EEPROM_F){
         prgRELOJ_COMUNES_EEPROM_F = 0;  // Bajo Bandera
         
-        EEPROM_ptr = (dword*)ADDRESS_PROG_relojCOMUN;
-        
         armarBuffer_progCOMUNES_EEPROM(EEPROM_buffer);  // Armo buffer de grabación según formato
 
         if (ELIMINAR_REPORTES){
@@ -985,10 +983,22 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojCOMUN-2] = finEEPROM_H;              // Fin de Datos
 		EEPROM_buffer[EEPROMsize_PRG_relojCOMUN-1] = finEEPROM_L;
 
-
-        grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_relojCOMUN);
-        waitToTx_upDateSuccess = 0;
+        grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN, SIZE_PROG_relojCOMUN);
         error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
+
+        if(error == EEPROM_OK){
+            grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN_bck1, SIZE_PROG_relojCOMUN);
+            error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN_bck1, EEPROMsize_PRG_relojCOMUN);
+        }
+        if(error == EEPROM_OK){
+            grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN_bck2, SIZE_PROG_relojCOMUN);
+            error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN_bck2, EEPROMsize_PRG_relojCOMUN);
+        }
+        if(error == EEPROM_OK){
+            grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN_bck3, SIZE_PROG_relojCOMUN);
+            error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN_bck3, EEPROMsize_PRG_relojCOMUN);
+        }
+        waitToTx_upDateSuccess = 0;
         //grabacion correcta ?
     	if(error == EEPROM_OK){
     		waitToTx_upDateSuccess = 1;
@@ -1068,7 +1078,33 @@
     		return((byte*) (ADDRESS_PROG_relojT1N) + ((SIZE_PROG_relojT1N) * (nro - 4 - 1)));
     	}
     }
-  
+
+
+    byte* pruebaPROG_RELOJtarifa_getEEPROM_ptr(byte nro){
+      // Nro de tarifa de 1-8
+
+    	if(nro<5){
+    		return((byte*) (ADDRESS_PROG1 + SIZE_PROG_relojCOMUN) + ((SIZE_PROG_relojT1D) * (nro - 1)));
+    	}else{
+    		return((byte*) (ADDRESS_PROG1 + 128) + ((SIZE_PROG_relojT1N) * (nro - 4 - 1)));
+    	}
+    }
+
+
+    byte* prueba1PROG_RELOJtarifa_getEEPROM_ptr(byte nro, byte* dirTarif){
+         // Nro de tarifa de 1-8
+
+    	byte* addr;
+
+    	addr = dirTarif;
+
+       	if(nro<5){
+       		return((byte*) ( addr + SIZE_PROG_relojCOMUN) + ((SIZE_PROG_relojT1D) * (nro - 1)));
+       	}else{
+       		return((byte*) (addr + 128) + ((SIZE_PROG_relojT1N) * (nro - 4 - 1)));
+       	}
+       }
+
 
 
   /* INICIAR GRABACION DE TARIFA EN EEPROM */
@@ -1085,7 +1121,7 @@
   
   /* GRABACION DE TARIFA EN EEPROM */
   /*********************************/
-    tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro){
+    tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro, byte* addressTarifa){
       tEEPROM_ERROR error;
       byte mask;
       dword* EEPROM_ptr;
@@ -1100,7 +1136,10 @@
       if ((prgEEPROM_F2 & mask) == mask){
         prgEEPROM_F2 &= ~mask;          // Bajo Bandera
         
-        EEPROM_ptr = (dword*) (PROG_RELOJtarifa_getEEPROM_ptr(nro));
+        EEPROM_ptr = (dword*) (prueba1PROG_RELOJtarifa_getEEPROM_ptr(nro, addressTarifa));
+        //EEPROM_ptr = (dword*) (prueba1PROG_RELOJtarifa_getEEPROM_ptr(nro, (byte*)ADDRESS_PROG1));
+        //EEPROM_ptr = (dword*) (pruebaPROG_RELOJtarifa_getEEPROM_ptr(nro));
+        //EEPROM_ptr = (dword*) (PROG_RELOJtarifa_getEEPROM_ptr(nro));
 
         armarBuffer_progTARIFA_EEPROM(nro, EEPROM_buffer);                    // Armo buffer de grabación según formato
 
@@ -1121,7 +1160,7 @@
 		if(error == EEPROM_OK){
 			waitToTx_upDateSuccess = 1;
 		}else{
-			//ring buzzer error
+			waitToTx_upDateSuccess = 0;
 		}
         
       }
@@ -1436,9 +1475,7 @@
       if (prgRELOJ_EQPESOS_EEPROM_F){
         prgRELOJ_EQPESOS_EEPROM_F = 0;  // Bajo Bandera
         
-        EEPROM_ptr = ADDRESS_PROG_relojEqPESOS;
         armarBuffer_progEqPESOS_EEPROM(EEPROM_buffer);  // Armo buffer de grabación según formato
-
 
         //calculo de crc de datos recibidos
 		long_relojEqPESOS_DATA = EEPROMsize_PRG_relojEqPESOS - (sizeof(((tPARAM_RELOJ_EQPESOS *)0)->checksum) + sizeof(((tPARAM_RELOJ_EQPESOS *)0)->finDATA));
@@ -1450,19 +1487,39 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-3] = *(ptrAUX+0);
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-2] = finEEPROM_H;              // Fin de Datos
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-1] = finEEPROM_L;
-        //grabar
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_relojEqPESOS);
+
+		//grabar
+		error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
         //grabacion correcta ?
 		if(error == EEPROM_OK){
-			//ring buzzer ok
 			error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
-		}else{
-			// ring buzzer error
-			//
 		}
-        
+
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS_bck1, EEPROMsize_PRG_relojEqPESOS);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS_bck1, EEPROMsize_PRG_relojEqPESOS);
+			}
+		}
+
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS_bck2, EEPROMsize_PRG_relojEqPESOS);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS_bck2, EEPROMsize_PRG_relojEqPESOS);
+			}
+		}
+
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS_bck3, EEPROMsize_PRG_relojEqPESOS);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS_bck3, EEPROMsize_PRG_relojEqPESOS);
+			}
+		}
+
       }
-      
       return(error);
     }    
 
@@ -1533,10 +1590,7 @@
       if (prgRELOJ_CALEND_EEPROM_F){
         prgRELOJ_CALEND_EEPROM_F = 0;   // Bajo Bandera
         
-        EEPROM_ptr = ADDRESS_PROG_relojCALEND;
-        
         armarBuffer_progCALEND_EEPROM(EEPROM_buffer);  // Armo buffer de grabación según formato
-
 
         //calculo de crc de datos recibidos
 		//long_relojCALEND_DATA = EEPROMsize_PRG_relojCALEND - (sizeof(((tPARAM_RELOJ_CALEND *)0)->checksum) + sizeof(((tPARAM_RELOJ_CALEND *)0)->finDATA));
@@ -1548,16 +1602,37 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojCALEND-3] = *(ptrAUX+0);
 		EEPROM_buffer[EEPROMsize_PRG_relojCALEND-2] = finEEPROM_H;              // Fin de Datos
 		EEPROM_buffer[EEPROMsize_PRG_relojCALEND-1] = finEEPROM_L;
-        //grabar
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_relojCALEND);
+
+		//grabar
+		error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojCALEND, EEPROMsize_PRG_relojCALEND);
         //grabacion correcta ?
 		if(error == EEPROM_OK){
-			//ring buzzer ok
 			error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND, EEPROMsize_PRG_relojCALEND);
-		}else{
-			//ring buzzer error
 		}
-   }
+
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojCALEND_bck1, EEPROMsize_PRG_relojCALEND);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND_bck1, EEPROMsize_PRG_relojCALEND);
+			}
+		}
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojCALEND_bck2, EEPROMsize_PRG_relojCALEND);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND_bck2, EEPROMsize_PRG_relojCALEND);
+			}
+		}
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojCALEND_bck3, EEPROMsize_PRG_relojCALEND);
+			//grabacion correcta ?
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND_bck3, EEPROMsize_PRG_relojCALEND);
+			}
+		}
+
+     }
       return(error);
     }    
 
@@ -1925,8 +2000,12 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
 	    N +=  1;
 
     	error = 0;
+    	//envio la ADDRESS_PROG_relojCOMUN porque las direcciones de tarifa estan referenciadas a esta
         PROG_RELOJtarifa_to_EEPROM(TARIFA_toUpdate, 1);
-        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck1);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck2);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck3);
 
       }
       
