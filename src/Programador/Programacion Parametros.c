@@ -39,6 +39,8 @@ tBAX_SCI RLJ_PRG_SCI;         // Datos de SCI segun protocolo BAX para RELOJ y P
 byte no_grabo_nada;
 uint8_t finPRG_TO_RESET_TO_cnt;
 
+checkEEPROM_PROG    CheckProg_status;
+tDirProg			dirProg;
 
 /*********************************************************************************************/
 /* PROTOTIPOS */
@@ -149,11 +151,10 @@ uint8_t finPRG_TO_RESET_TO_cnt;
     void PROGRAMADOR_ini (void){
       
       progPUTptr = progBuffer;
-      //inicializo punteros control serie
-      PRG_ini();
-      //levanta datos de programacion de RELOJ
-      prgRELOJ_ini();
+      PRG_ini();		//inicializo punteros control serie
 
+      //prgRELOJ_ini();			//levanta datos de programacion de RELOJ
+      iniDataProg();
       #ifdef VISOR_PROG_TICKET
       //levanta datos de programacion de TICKET
        prgTICKET_ini();                  // Parametros por defecto si no hay nada programado
@@ -162,6 +163,237 @@ uint8_t finPRG_TO_RESET_TO_cnt;
        prgMOVIL_ini();
 
     }
+
+
+    void iniDataProg(void){
+    	byte status;
+    	uint32_t dir_ProgOk;
+
+    	//chequea estado de sectores de programacion
+    	checkDataProg();
+    	if(blckPROG_OK == 0x0){
+    		//todos los sectores estan defectuosos
+    		//no se puede hacer nada, mandar un mensaje al celular
+    		//y dejar parpadeando el led de programcion
+    		status = 0;
+    		Tx_Comando_MENSAJE(EEPROM_NO_SE_PUEDE_PROGRAMAR);
+    		prog_mode = 1;
+    	}else if(blckPROG_OK == 0xF){
+    		//todos los sectores de programacion estan bien
+    		//levanto datos en ram
+    		status = 1;
+    	}else{
+    		//hay al menos un sector defectuoso
+    		//restauro y levanto datos en ram
+    		status = 2;
+    		restoreEepromProg();
+    		//para que queden las banderas  checkProg_status bien
+    		checkDataProg();
+    	}
+
+    	if(status != 0){
+			dir_ProgOk = getDirProgOk();
+			//levanta datos de programacion
+			readProgRELOJ (dir_ProgOk);
+			//ini varios
+			if(TARIFA_PESOS){
+				//muestra importe
+				fichaPESOS=1;
+			}else{
+				//muestra ficha
+				fichaPESOS=2;
+				//PUNTO_DECIMAL=3;
+			}
+			nroTARIFA_HAB_MANUAL = prgRELOJ_determineCantTarifasD_MANUAL();
+			nroTARIFA_HAB_AUTOMATICA = prgRELOJ_determineCantTarifasD_AUTOMATICA();
+		}else{
+			EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
+			HORA_source = 1;						 //para que cuando este borrado toda la eeprom pueda inicializar reportes
+		}
+    }
+
+
+    void checkDataProg(void){
+
+        	tEEPROM_ERROR error;
+
+        	error = checkSectorProg(ADDRESS_PROG1);
+        	if(error == EEPROM_OK){
+        		blckPROG1_OK = 1;
+        	}else{
+        		blckPROG1_OK = 0;
+        	}
+
+        	error = checkSectorProg(ADDRESS_PROG2);
+        	if(error == EEPROM_OK){
+        		blckPROG2_OK = 1;
+        	}else{
+        		blckPROG2_OK = 0;
+        	}
+
+        	error = checkSectorProg(ADDRESS_PROG3);
+        	if(error == EEPROM_OK){
+        		blckPROG3_OK = 1;
+        	}else{
+        		blckPROG3_OK = 0;
+        	}
+
+        	error = checkSectorProg(ADDRESS_PROG4);
+        	if(error == EEPROM_OK){
+        		blckPROG4_OK = 1;
+        	}else{
+        		blckPROG4_OK = 0;
+        	}
+        }
+
+    byte checkSectorProg(uint32_t blockProg){
+
+    	tEEPROM_ERROR error;
+    	uint32_t blgPrg;
+
+    	//check reloj comun
+    	error = chkCRC_EnEEPROM(blockProg, EEPROMsize_PRG_relojCOMUN);
+
+    	//check tarifas
+    	if(error == EEPROM_OK){
+    		//levanta desde eeprom datos de reloj comun para obtener tarifas habilitadas
+    		EEPROM_ReadBuffer((uint8_t*)(&EEPROM_PROG_relojCOMUN), blockProg, sizeof(tPARAM_RELOJ_COMUNES));
+    		error = checkProgTarifas(blockProg);
+    	}
+
+    	//check eq pesos
+    	if(error == EEPROM_OK){
+    		blgPrg = blockProg + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N; //ADDRESS_PROG_relojEqPESOS
+    		error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_relojEqPESOS);
+    	}
+
+    	//check calendario
+    	if(error == EEPROM_OK){
+    		blgPrg = blockProg + 2*128;
+    		error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_relojCALEND);
+    	}
+
+    	//check movil
+    	if(error == EEPROM_OK){
+    		blgPrg = blockProg + 2*128 + SIZE_PROG_relojCALEND;
+    		error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_MOVIL);
+    	}
+
+    	return(error);
+    }
+
+
+
+    uint32_t getDirProgOk(void){
+
+    	uint32_t blgPrg;
+    	uint32_t dirProgOk = 0;
+
+    	dirProgOk = ADDRESS_PROG1; //devuelve esta direccion por defecto
+    	if(blckPROG1_OK){
+    		dirProgOk = ADDRESS_PROG1;
+    	}else if(blckPROG2_OK){
+    		dirProgOk = ADDRESS_PROG2;
+    	}else if(blckPROG3_OK){
+    		dirProgOk = ADDRESS_PROG3;
+    	}else if(blckPROG4_OK){
+    		dirProgOk = ADDRESS_PROG4;
+    	}
+    	loadDirProg(dirProgOk);
+    	return(dirProgOk);
+    }
+
+
+    void loadDirProg(uint32_t dir){
+		addressReloj = dir;
+		addressEqPesos = dir + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N;
+		addressCalend = dir + 2*128;
+		addressMovil = dir + 2*128 + SIZE_PROG_relojCALEND;
+    }
+
+    void restoreEepromProg(void){
+    	uint32_t dir_ProgOk;
+    	uint16_t* dir_ProgWrong;
+
+    	//direccion de donde se leeran datos de programacion
+    	//para restaurar sector de programacion defectuoso
+
+    	dir_ProgOk = getDirProgOk();
+		if(!blckPROG1_OK){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG1;
+			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
+		}
+		if(!blckPROG2_OK){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG2;
+			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
+		}
+		if(!blckPROG3_OK){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG3;
+			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
+		}
+		if(!blckPROG4_OK){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG4;
+			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
+		}
+    }
+
+ void restoreSectoProg(uint32_t dir_Ok, uint16_t* dir_Wrong){
+    	//dir_ok: direccion de eeprom que contiene datos correctos de donde se sacaran los datos para ser grabados en
+    	//el sector defectuoso cuya direccion de inicio es dir_Worng
+
+    	byte nro;
+    	uint16_t* dirToWrite;
+    	byte dataToRestore[128];
+    	uint32_t eepromToread;
+
+    	byte EEPROM_buffer_test[128];
+
+    	//restaura reloj comun
+    	eepromToread = dir_Ok;
+    	dirToWrite = dir_Wrong;
+    	EEPROM_ReadBuffer(dataToRestore, eepromToread ,EEPROMsize_PRG_relojCOMUN);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, SIZE_PROG_relojCOMUN);
+        //test
+   		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCOMUN);
+
+    	//restaura tarifa
+    	for (nro = 1; nro < 9; nro++){
+			eepromToread = (uint32_t)(getDir_tarifaX_BlockProg(nro, (byte*)dir_Ok));
+			dirToWrite = (uint16_t*)(getDir_tarifaX_BlockProg(nro, (byte*)dir_Wrong));
+			EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojTARIFA);
+			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojTARIFA);
+		   //test
+			EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojTARIFA);
+    	}
+
+    	//restaura eqPesos
+    	eepromToread = dir_Ok + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N; //ADDRESS_PROG_relojEqPESOS
+    	dirToWrite = (uint32_t)dir_Wrong + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N; //ADDRESS_PROG_relojEqPESOS
+    	EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojEqPESOS);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojEqPESOS);
+	   //test
+		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojEqPESOS);
+
+
+    	//restaura calendario
+    	eepromToread = dir_Ok + 2*128;
+    	dirToWrite = (uint32_t)dir_Wrong + 2*128;
+    	EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojCALEND);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojCALEND);
+ 	   //test
+ 		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCALEND);
+
+    	//restaura Movil
+    	eepromToread = dir_Ok + 2*128 + SIZE_PROG_relojCALEND;
+    	dirToWrite = (uint32_t)dir_Wrong + 2*128 + SIZE_PROG_relojCALEND;
+    	EEPROM_ReadBuffer(dataToRestore, eepromToread, SIZE_PROG_MOVIL);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, SIZE_PROG_MOVIL);
+ 	   //test
+ 		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, SIZE_PROG_MOVIL);
+
+
+    }
+
 
   /* RECEPCION DE DATOS DE PROGRAMACION */
   /**************************************/
@@ -407,27 +639,11 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       
       //grabacion de tarifas, pongo ADDRESS_PROG_relojCOMUN porque la direccion de tarifa esta referenciada a esta
        for (byte i=tarifa1D; i<(tarifa4N+1); i++){
-		  error = PROG_RELOJtarifa_grabarEEPROM(i, (byte*)ADDRESS_PROG_relojCOMUN);	// Grabar Tarifa en EEPROM
+		  error = PROG_RELOJtarifa_grabarEEPROM(i);	// Grabar Tarifa en EEPROM
 		  if (error != EEPROM_OK){
 			break;
 		  }
-
-		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck1);	// Grabar Tarifa en EEPROM
-		  if (error != EEPROM_OK){
-			break;
-		  }
-
-		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck2);	// Grabar Tarifa en EEPROM
-		  if (error != EEPROM_OK){
-			break;
-		  }
-
-		  error = PROG_RELOJtarifa_grabarEEPROM(i, ADDRESS_PROG_relojCOMUN_bck3);	// Grabar Tarifa en EEPROM
-		  if (error != EEPROM_OK){
-			break;
-		  }
-
-      }
+		}
 
       if (error == EEPROM_OK){
         error = PROG_RELOJeqPesos_grabarEEPROM();   // Grabacion de Equivalencia en Pesos en EEPROM
@@ -435,9 +651,9 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       if (error == EEPROM_OK){
         error = PROG_RELOJcalend_grabarEEPROM();    // Grabacion de Calendario en EEPROM
         //levantar_progRELOJ();
-        if (error == EEPROM_OK){
-        	prgRELOJ_ini();
-        }
+        //if (error == EEPROM_OK){
+        //	prgRELOJ_ini();
+        //}
       }
 
       // Programacion de Ticket
@@ -448,20 +664,15 @@ uint8_t finPRG_TO_RESET_TO_cnt;
         
         if (error == EEPROM_OK){
           error = PROG_TICKET_RECAUD_grabarEEPROM();// Grabacion de Parametros de Ticket Recaudacion en EEPROM
-          if(error == EEPROM_OK){
-        	  levantar_progTICKET();
-        	  finPRG_TO_RESET_TO_cnt = FIN_PRG_TO;
-          }
         }
       #endif
             
  	//Programacion de Movil + Radio
 	if (error == EEPROM_OK){
 	  error = PROG_MOVIL_grabarEEPROM();          // Grabacion de Parametros de Movil en EEPROM
-	  EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL,ADDRESS_PROG_MOVIL,sizeof(tPARAM_MOVIL));
-      if (!TIPO_RELOJ_VALIDO){
+      //if (!TIPO_RELOJ_VALIDO){
     	 // error = EEPROM_ACCESS_ERROR;
-      }
+      //}
 	}
 
       // Fin de Grabaciones
@@ -477,21 +688,19 @@ uint8_t finPRG_TO_RESET_TO_cnt;
         // por defecto y comanda su programacion. Enviaría fin de Programacion cuando en
         // realidad el programados nunca dio la orden de grabacion
         prgREQUEST_F = 0;
-        
-        ///comparar lo grabado con lo recibido
-
-        prgFIN_F = 1;                             // Fin de Programación => Comando envio de Rta a FIN
- 
+      	finPRG_TO_RESET_TO_cnt = FIN_PRG_TO;
         no_grabo_nada=0;
+        prgFIN_F = 1;                             // Fin de Programación => Comando envio de Rta a FIN
+        PROGRAMADOR_fin();                //Fin de Programacion de Parametros aka Fin Grabacion EEPROM
+
         //BUZZER_play(RING_ok);                  // Reproduzo sonido de grabacion correcta
-       	 Buzzer_On(BEEP_PROGRAMCION_OK);
+       	// Buzzer_On(BEEP_PROGRAMCION_OK);
        	//lo suficiente como para que termine de sonar el buzzer
-       	 finPRG_TO_RESET_TO_cnt = FIN_PRG_TO;
 
       }else if (error != EEPROM_OK){
     	  prgREQUEST_F = 0;
     	  // BUZZER_play(RING_error);                  // Reproduzo sonido de error
-    	  Buzzer_On(BEEP_PROGRAMCION_ERROR);
+    	  //Buzzer_On(BEEP_PROGRAMCION_ERROR);
     	  if((tipo_de_equipo == METRO_BLUE)){
     		  prog_mode=1;
     	  }
@@ -501,8 +710,6 @@ uint8_t finPRG_TO_RESET_TO_cnt;
       //indica que hubo al menos una grabacion correcta
        no_grabo_nada=0;
       }
- 
-      
       return(error);
     }
     

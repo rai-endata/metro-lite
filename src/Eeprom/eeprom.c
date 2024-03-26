@@ -330,19 +330,19 @@ void test_size(void){
       byte buzzerRinging;
       tEEPROM_ERROR error;
 
-if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
+		if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
 
-      if (EEPROM_request && (force )){
-        EEPROM_request = 0;
+			  if (EEPROM_request && (force )){
+				EEPROM_request = 0;
 
-       // ECNFG_CCIE = 1;
-       //ECNFG_CBEIE = 1;
-        //EEPROM_grabaciones();
-        error = PROGRAMADOR_grabarEEPROM();         // Grabacion de Programacion en EEPROM
+			   // ECNFG_CCIE = 1;
+			   //ECNFG_CBEIE = 1;
+				//EEPROM_grabaciones();
+				error = PROGRAMADOR_grabarEEPROM();         // Grabacion de Programacion en EEPROM
 
-      }
-}
-}
+			  }
+		}
+    }
            word *prueba_1;
            byte prueba_2;
 
@@ -462,7 +462,7 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
 
 
 
-      error = EEPROM_OK;                            // Asumo que no hay error
+        error = EEPROM_ACCESS_ERROR;                            // Asumo que no hay error
 
         EEPROMsize_max = EEPROM_PAGE_SIZE_BYTES;              // cantidad de bytes de una pagina
 
@@ -542,7 +542,9 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
           // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
           // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
           // Esta cantidad debe ser multiplo de 4
-          tEEPROM_ERROR error;
+          tEEPROM_ERROR error1;
+          error_t error;
+
           //uint16_t EEPROMsize_max;
           //byte fin_datos;
           //byte* fin_ptr;
@@ -553,10 +555,15 @@ if( (!DA_Txing ) && (huart1.Rx_TO_cnt == 0) && (huart7.Rx_TO_cnt == 0)){
 
 
 			error = EEPROM_WriteBuffer((uint8_t*) data_buffer, EEPROM_ptr, max_size);
-			error = EEPROM_OK;                            // Asumo que no hay error
+			if(error == errNone){
+				error1 = EEPROM_OK;
+			}else{
+				error1 = EEPROM_ACCESS_ERROR;
+			}
 
 
-			return(error);
+
+			return(error1);
         }
 
 /*********************************************************************************************/

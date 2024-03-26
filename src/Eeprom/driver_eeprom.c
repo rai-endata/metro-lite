@@ -383,6 +383,7 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 	uint16_t offsetInPage;
 	uint16_t cursor=0;
 	byte status;
+	error_t error;
 
 	//first find the page the write is directed to.
 	if(addr > EEPROM_SIZE || addr+num > EEPROM_SIZE )
@@ -397,7 +398,7 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 #endif
 
 
-
+	error = errFail;
 	while(num) //si num es cero no hace nada !
 	{
 
@@ -444,10 +445,11 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 
 		EEPROM_MilliSecDelay(4);		//this could be as little as 3mS and no greater than 4mS
 		EEPROM_WaitForWIP();
-			offsetInPage=0;
+		offsetInPage=0;
+		error = errNone;
 	}
 
-	return errNone;
+	return error;
 }
 
 

@@ -772,11 +772,11 @@
   /********************/
     static byte readProgReloj_tarifa (byte value){
       // TARIFA: de 1-8
-      return(doTxBuffer_progParameter((byte*) PROG_RELOJtarifa_getEEPROM_ptr(value)));
+      //return(doTxBuffer_progParameter((byte*) PROG_RELOJtarifa_getEEPROM_ptr(value)));
+    	return(doTxBuffer_progParameter((byte*) getDir_tarifaX_BlockProg(value, ADDRESS_PROG1)));
     }
   
-  
-  /* 05 - LEER PROGRAMACION DE RELOJ (EqPESOS) */
+    /* 05 - LEER PROGRAMACION DE RELOJ (EqPESOS) */
   /*********************************************/
     static byte readProgReloj_eqpesos (byte value){
       return(doTxBuffer_progParameter((byte*) &EEPROM_PROG_relojEqPESOS));

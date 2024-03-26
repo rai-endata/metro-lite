@@ -155,8 +155,12 @@
 #define	SIZE_PROG_relojT4N   	    		sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojT4N)
 
 #define	ADDRESS_PROG_relojEqPESOS 			ADDRESS_PROG1 + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
-#define	SIZE_PROG_relojEqPESOS   	    	sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojEqPESOS)
-
+//#define	SIZE_PROG_relojEqPESOS   	    	sizeof(((tEEPROM *)0)->progEEPROM.PROG_relojEqPESOS)
+#define	SIZE_PROG_relojEqPESOS   	    	sizeof(((tPARAM_RELOJ_EQPESOS *)0)->hab)      +  \
+											sizeof(((tPARAM_RELOJ_EQPESOS *)0)->diurna)   +  \
+											sizeof(((tPARAM_RELOJ_EQPESOS *)0)->nocturna) +  \
+											sizeof(((tPARAM_RELOJ_EQPESOS *)0)->checksum) +  \
+											sizeof(((tPARAM_RELOJ_EQPESOS *)0)->finDATA)
 // quedan 2 bytes linres en pagina ..
 
 //cambio a la pagina 3 para que PROG_relojCALEND no quede partida en dos paginas (2 y 3)(ya que generaria error en las rutinas de lectura y escritura de la spi)
@@ -176,8 +180,13 @@
 #define	ADDRESS_PROG_relojEqPESOS_bck3	ADDRESS_PROG4 + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N
 
 #define	ADDRESS_PROG_relojCALEND_bck1	ADDRESS_PROG2 + 2*128
+#define	ADDRESS_PROG_MOVIL_bck1    		ADDRESS_PROG_relojCALEND_bck1 + SIZE_PROG_relojCALEND
+
 #define	ADDRESS_PROG_relojCALEND_bck2	ADDRESS_PROG3 + 2*128
+#define	ADDRESS_PROG_MOVIL_bck2    		ADDRESS_PROG_relojCALEND_bck2 + SIZE_PROG_relojCALEND
+
 #define	ADDRESS_PROG_relojCALEND_bck3	ADDRESS_PROG4 + 2*128
+#define	ADDRESS_PROG_MOVIL_bck3    		ADDRESS_PROG_relojCALEND_bck3 + SIZE_PROG_relojCALEND
 
 
 

@@ -49,6 +49,8 @@
   #define MENSAJE13		0x0D		//Se ha cerrado el turno, AUTOMATICAMENTE, por falta de espacio para reportes
   #define MENSAJE14		0x0E		//Sincronizando el Reloj
   #define MENSAJE15		0x0F		//Tipo de equipo o reloj desconocido, verifique programacion de reloj
+  #define MENSAJE16		0x10		//reloj desconocido, verifique programacion de reloj
+  #define MENSAJE17		0x11		//Verifique la programacion deL reloj
 
   /* ESTRUCTURAS */
   /***************/  

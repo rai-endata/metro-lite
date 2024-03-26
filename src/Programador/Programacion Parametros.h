@@ -134,6 +134,29 @@
     }tPRG_ERROR;
   
 
+    typedef struct{
+		uint32_t 	dirRljCmn;
+		uint32_t	dirEqPesos;
+		uint32_t	dirCalend;
+		uint32_t	dirMovil;
+     }tDirProg;
+
+
+    typedef union{
+         byte Byte;
+         struct{
+			byte 		addressProg1           :1;       //
+			byte 		addressProg2           :1;       //
+			byte 		addressProg3           :1;       //
+			byte 		addressProg4           :1;       //
+         }Bits;
+		struct{
+			byte addressProg          :4;        // Tarifas Diurnas Habilitadas
+		}MergedBits;
+
+
+       }checkEEPROM_PROG;
+
 /*----------------------------------------------------------------------------------*/
 /* BANDERAS DE PARAMETROS CORRECTOS */
 /*----------------------------------*/    
@@ -194,6 +217,19 @@
       #define prgGEO_FENCE_13_14_OK_F       _prgOK_F4.Bits.wr_GF13_14
       #define prgGEO_FENCE_15_16_OK_F       _prgOK_F4.Bits.wr_GF15_16
     
+    extern checkEEPROM_PROG		CheckProg_status;
+      #define prgOK_ADDRESS		CheckProg_status.Byte
+      #define blckPROG1_OK		CheckProg_status.Bits.addressProg1
+	  #define blckPROG2_OK	 	CheckProg_status.Bits.addressProg2
+	  #define blckPROG3_OK	 	CheckProg_status.Bits.addressProg3
+	  #define blckPROG4_OK	 	CheckProg_status.Bits.addressProg4
+	  #define blckPROG_OK	 	CheckProg_status.MergedBits.addressProg
+
+    extern tDirProg		dirProg;
+	 #define	addressReloj	dirProg.dirRljCmn
+	 #define	addressEqPesos	dirProg.dirEqPesos
+	 #define	addressCalend	dirProg.dirCalend
+	 #define	addressMovil	dirProg.dirMovil
 
 /*----------------------------------------------------------------------------------*/
 /* BANDERAS DE GRANACION DE PARAMETROS */
@@ -247,6 +283,7 @@
       #define prgGEO_FENCE_11_12_EEPROM_F   _prgEEPROM_F4.Bits.wr_GF11_12
       #define prgGEO_FENCE_13_14_EEPROM_F   _prgEEPROM_F4.Bits.wr_GF13_14
       #define prgGEO_FENCE_15_16_EEPROM_F   _prgEEPROM_F4.Bits.wr_GF15_16
+
 
 /*----------------------------------------------------------------------------------*/
 
@@ -315,6 +352,14 @@
     extern void PROGRAMADOR_chkRx (void);
     extern void PROGRAMADOR_startTx(byte CMD, byte subCMD, byte* DATA_buffer);
     extern void PROGRAMADOR_startTxRTA(byte CMD);
+
+    extern void iniDataProg(void);
+    extern void checkDataProg(void);
+    extern byte checkSectorProg(uint32_t blockProg);
+    extern uint32_t getDirProgOk(void);
+    extern void loadDirProg(uint32_t dir);
+    extern void restoreEepromProg(void);
+    extern void restoreSectoProg(uint32_t dir_Ok, uint16_t* dir_Wrong);
     
     extern tPRG_ERROR PROGRAMADOR_chkN (byte N_Rx, byte N_expect);
     

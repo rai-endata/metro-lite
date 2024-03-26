@@ -1265,6 +1265,17 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 					exit = 1;
 		}
 
+		if(subCMD == MENSAJE16 && !exit){
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Verifique programacion de reloj");
+					i=i+k;
+					exit = 1;
+		}
+
+		if(subCMD == MENSAJE17 && !exit){
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Verifique la programacion del equipo");
+					i=i+k;
+					exit = 1;
+		}
 
 		CMD_MENSAJE.N = N_CMD + i;
 

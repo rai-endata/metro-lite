@@ -128,7 +128,8 @@
 	#define EEPROMsize_PRG_relojCOMUN       (sizeof(tPARAM_RELOJ_COMUNES))
 	#define EEPROMsize_PRG_relojTARIFA      (sizeof(tPARAM_RELOJ_TARIFA))
 
-	#define EEPROMsize_PRG_relojEqPESOS     (sizeof(tPARAM_RELOJ_EQPESOS))
+	//#define EEPROMsize_PRG_relojEqPESOS     (sizeof(tPARAM_RELOJ_EQPESOS))
+	#define EEPROMsize_PRG_relojEqPESOS		SIZE_PROG_relojEqPESOS
 	#define EEPROMsize_PRG_relojCALEND      (sizeof(tPARAM_RELOJ_CALEND) * dim_Feriados)
 	#define EEPROMsize_PRG_MOVIL            (sizeof(tPARAM_MOVIL))
 	#define EEPROMsize_PRG_RADIO            (sizeof(tPARAM_RADIO))
@@ -402,7 +403,7 @@
     // - t.Ficha ---> TIEMPO FICHA
     
     typedef struct{
-     	 uint8_t hab;                   // Habilitacion
+     	  uint8_t hab;                   // Habilitacion
           tEQPESOS diurna;            	// Equivalencia Diurna
           tEQPESOS nocturna;          	// Equivalencia Nocturna
           uint16_t checksum;     		//
@@ -491,6 +492,8 @@
     extern void PROG_readRELOJkate (byte N);
     extern void PROG_writeRELOJkate (byte N);
     
+    extern tEEPROM_ERROR checkProgTarifas(uint32_t progBlock);
+    extern tEEPROM_ERROR readTarifa(byte nro, uint32_t addressTarifa);
     extern void PROG_readRELOJcomun (byte N);
     extern void PROG_writeRELOJcomun (byte N);
       extern void PROG_readRELOJ_T1D (byte N);
@@ -524,13 +527,14 @@
   
 
   // TARIFAS
-    extern byte* PROG_RELOJtarifa_getEEPROM_ptr(byte nro);
-    extern byte* pruebaPROG_RELOJtarifa_getEEPROM_ptr(byte nro);
-    extern byte* prueba1PROG_RELOJtarifa_getEEPROM_ptr(byte nro, byte* dirTarif);
+   // extern byte* PROG_RELOJtarifa_getEEPROM_ptr(byte nro);
+    //extern byte* pruebaPROG_RELOJtarifa_getEEPROM_ptr(byte nro);
+    extern byte* getDir_tarifaX_BlockProg(byte nro, byte* dirBlockProg);
   
     extern void PROG_RELOJtarifa_to_EEPROM (byte nro, byte iniGrabacion);
-    //extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro);
-    extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro, byte* addressTarifa);
+    extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro);
+    //extern tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro, byte* addressTarifa);
+
       #define PROG_RELOJT1D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa1D)
       #define PROG_RELOJT2D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa2D)
       #define PROG_RELOJT3D_grabarEEPROM    PROG_RELOJtarifa_grabarEEPROM(tarifa3D)
@@ -598,6 +602,8 @@
     extern tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread);
     extern void levantar_progRELOJ (void);
     extern void levantar_progTICKET (void);
+    extern void readProgRELOJ (uint32_t blockProg);
+    extern void readProgTICKET (uint32_t blockProg1, uint32_t blockProg2, uint32_t blockProg3);
 
 
   /* AIR UPDATE */

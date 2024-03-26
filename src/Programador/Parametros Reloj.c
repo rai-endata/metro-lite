@@ -137,37 +137,56 @@
 	//eeprom_ptr = (byte*) &EEPROM_PROG_relojCOMUN; // Puntero a Inicio de Parametros Comunes (CONSTANTE)
 	 //dataEEPROM = EEPROM_ReadByte(ADDRESS_PROG_relojCOMUN);
 	//EEPROM_ReadBuffer(&dataEEPROM,ADDRESS_PROG_relojCOMUN,1);
-
+/*
 	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
 	//if(error != EEPROM_OK){
 	if(error != EEPROM_OK){
 		progProgramacionPorDefecto();
 	}
-
 	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
 	if(error == EEPROM_OK){
+    	 //levanta desde eeprom datos de reloj comun para obtener el valor de seleccionManualTarifas
+    	 EEPROM_ReadBuffer(&EEPROM_PROG_relojCOMUN, ADDRESS_PROG_relojCOMUN, sizeof(tPARAM_RELOJ_COMUNES));
 		if(seleccionManualTarifas){
 			tarifa_max = prgRELOJ_determineCantTarifasD_MANUAL() + prgRELOJ_determineCantTarifasN_MANUAL();
 		}else{
 			tarifa_max = prgRELOJ_determineCantTarifasD_AUTOMATICA() + prgRELOJ_determineCantTarifasN_AUTOMATICA();
 		}
-
 	}
+
 	nro = 1;
 	while((error == EEPROM_OK) && (nro < tarifa_max+1)){
-		EEPROM_ptr = (dword*) (PROG_RELOJtarifa_getEEPROM_ptr(nro));
+		EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, ADDRESS_PROG1));
 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
 		nro++;
 	}
-	if(error ==EEPROM_OK){
-		error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
-	}
-	if(error ==EEPROM_OK){
-		error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND, EEPROMsize_PRG_relojCALEND);
+*/
+
+    /*
+	error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
+	if(error == EEPROM_OK){
+		//levanta desde eeprom datos de reloj comun para obtener tarifas habilitadas
+		EEPROM_ReadBuffer(&EEPROM_PROG_relojCOMUN, ADDRESS_PROG_relojCOMUN, sizeof(tPARAM_RELOJ_COMUNES));
+		error = checkProgTarifas(ADDRESS_PROG1);
 	}
 
+	if(error == EEPROM_OK){
+		error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
+	}
+	if(error == EEPROM_OK){
+		error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND, EEPROMsize_PRG_relojCALEND);
+	}
+*/
+
+    checkDataProg();
+    error = EEPROM_CHECK_SUM;
+    if(blckPROG1_OK){
+    	error = EEPROM_OK;
+    }
+
     if (error == EEPROM_OK){
-    	levantar_progRELOJ();
+    	//levantar_progRELOJ();
+    	readProgRELOJ (ADDRESS_PROG1);
 		//ini varios
 		if(TARIFA_PESOS){
 			//muestra importe
@@ -185,6 +204,87 @@
 	  HORA_source = 1;						 //para que cuando este borrado toda la eeprom pueda inicializar reportes
     }
 }
+
+
+  tEEPROM_ERROR checkProgTarifas(uint32_t progBlock){
+
+   uint32_t 		EEPROM_ptr;
+   byte 			nro;
+   tEEPROM_ERROR 	error;
+
+   	   nro = 0;
+	   if (T1D_hab){
+			nro = 1;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+	   //para prueba
+	   readTarifa(1, progBlock);
+
+	   if (T2D_hab && error == EEPROM_OK){
+			nro = 2;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+	   //para prueba
+	   readTarifa(2, progBlock);
+
+	   if (T3D_hab && error == EEPROM_OK ){
+			nro = 3;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+
+		if (T4D_hab && error == EEPROM_OK){
+			nro = 4;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+
+		if (T1N_hab && error == EEPROM_OK){
+			nro = 5;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+	   //para prueba
+	   readTarifa(5, progBlock);
+
+		if (T2N_hab && error == EEPROM_OK){
+			nro = 6;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+		if (T3N_hab && error == EEPROM_OK){
+			nro = 7;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+		if (T4N_hab && error == EEPROM_OK){
+			nro = 8;
+			EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, progBlock));
+			error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		}
+		if(nro == 0){
+			error = EEPROM_CHECK_SUM;
+		}
+		return (error);
+  }
+
+  tEEPROM_ERROR readTarifa(byte nro, uint32_t  addressTarifa){
+
+      	byte EEPROM_buffer_test[EEPROMsize_PRG_relojTARIFA];
+      	tEEPROM_ERROR error;
+      	dword* EEPROM_ptr;
+      	uint32_t dir;
+
+      	dir = (uint32_t)addressTarifa;
+
+      	EEPROM_ptr = (uint32_t) (getDir_tarifaX_BlockProg(nro, addressTarifa));
+
+      	//para prueba
+      	EEPROM_ReadBuffer(&EEPROM_buffer_test, EEPROM_ptr, sizeof(tPARAM_RELOJ_TARIFA));
+  }
+
 
   static void progProgramacionPorDefecto(void){
        tEEPROM_ERROR error;
@@ -207,7 +307,7 @@
 		for (byte i=tarifa1D; i<(tarifa4N+1); i++){
 		  prgRELOJtarifa_armarDEFAULT(i);           // Armo String con parametros por defecto
 		  PROG_RELOJtarifa_to_EEPROM(i,0);		      // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
-		  error = PROG_RELOJtarifa_grabarEEPROM(i, (byte*)ADDRESS_PROG_relojCOMUN);	// Grabar Tarifa en EEPROM
+		  error = PROG_RELOJtarifa_grabarEEPROM(i);	// Grabar Tarifa en EEPROM
 		  if (error != EEPROM_OK){
 			//BUZZER_play(RING_error);
 		  }
@@ -961,7 +1061,7 @@
       byte EEPROM_buffer[EEPROMsize_PRG_relojCOMUN];
       uint16_t long_relojCOMUN_DATA;
       
-      error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;
       if (prgRELOJ_COMUNES_EEPROM_F){
         prgRELOJ_COMUNES_EEPROM_F = 0;  // Bajo Bandera
         
@@ -1006,6 +1106,8 @@
     		//ring buzzer error
     	}
 
+      }else{
+    	  error = EEPROM_OK;
       }
       
       return(error);
@@ -1069,6 +1171,7 @@
 
   /* OBTENER PUNTERO A TARIFA EN EEPROM */
   /**************************************/
+/*
     byte* PROG_RELOJtarifa_getEEPROM_ptr(byte nro){
       // Nro de tarifa de 1-8
 
@@ -1090,13 +1193,13 @@
     	}
     }
 
-
-    byte* prueba1PROG_RELOJtarifa_getEEPROM_ptr(byte nro, byte* dirTarif){
+*/
+    byte* getDir_tarifaX_BlockProg(byte nro, byte* dirBlockProg){
          // Nro de tarifa de 1-8
 
     	byte* addr;
 
-    	addr = dirTarif;
+    	addr = dirBlockProg;
 
        	if(nro<5){
        		return((byte*) ( addr + SIZE_PROG_relojCOMUN) + ((SIZE_PROG_relojT1D) * (nro - 1)));
@@ -1121,6 +1224,8 @@
   
   /* GRABACION DE TARIFA EN EEPROM */
   /*********************************/
+
+   /*
     tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro, byte* addressTarifa){
       tEEPROM_ERROR error;
       byte mask;
@@ -1129,14 +1234,18 @@
       uint8_t* ptrAUX;
       uint16_t valorCRC;
       byte EEPROM_buffer[EEPROMsize_PRG_relojTARIFA];
+
+      byte EEPROM_buffer_test[EEPROMsize_PRG_relojTARIFA];
+
       uint16_t long_relojTARIFA_DATA;
       
-      error = EEPROM_OK;                // Asumo que no hay error
+     // error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       mask = (byte) potencia(2,nro - 1);
       if ((prgEEPROM_F2 & mask) == mask){
         prgEEPROM_F2 &= ~mask;          // Bajo Bandera
         
-        EEPROM_ptr = (dword*) (prueba1PROG_RELOJtarifa_getEEPROM_ptr(nro, addressTarifa));
+        EEPROM_ptr = (dword*) (getDir_tarifaX_BlockProg(nro, addressTarifa));
         //EEPROM_ptr = (dword*) (prueba1PROG_RELOJtarifa_getEEPROM_ptr(nro, (byte*)ADDRESS_PROG1));
         //EEPROM_ptr = (dword*) (pruebaPROG_RELOJtarifa_getEEPROM_ptr(nro));
         //EEPROM_ptr = (dword*) (PROG_RELOJtarifa_getEEPROM_ptr(nro));
@@ -1156,6 +1265,10 @@
         //grabar
         grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		//para prueba
+	    EEPROM_ReadBuffer(&EEPROM_buffer_test, EEPROM_ptr, sizeof(tPARAM_RELOJ_TARIFA));
+	    readTarifa(nro, addressTarifa);
+
         //grabacion correcta ?
 		if(error == EEPROM_OK){
 			waitToTx_upDateSuccess = 1;
@@ -1167,6 +1280,92 @@
       
       return(error);
     }    
+
+*/
+
+    tEEPROM_ERROR PROG_RELOJtarifa_grabarEEPROM (byte nro){
+       tEEPROM_ERROR error;
+       byte mask;
+       dword* EEPROM_ptr;
+
+       uint8_t* ptrAUX;
+       uint16_t valorCRC;
+       byte EEPROM_buffer[EEPROMsize_PRG_relojTARIFA];
+
+       byte EEPROM_buffer_test[EEPROMsize_PRG_relojTARIFA];
+
+       uint16_t long_relojTARIFA_DATA;
+
+      // error = EEPROM_OK;                // Asumo que no hay error
+       error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
+       mask = (byte) potencia(2,nro - 1);
+       if ((prgEEPROM_F2 & mask) == mask){
+
+    	   // Bajo Bandera de oden de grabacion
+    	  prgEEPROM_F2 &= ~mask;
+
+         // Armo buffer de grabación según formato
+         armarBuffer_progTARIFA_EEPROM(nro, EEPROM_buffer);
+         //calculo de crc de datos recibidos
+ 		long_relojTARIFA_DATA = EEPROMsize_PRG_relojTARIFA - (sizeof(((tPARAM_RELOJ_TARIFA *)0)->checksum) + sizeof(((tPARAM_RELOJ_TARIFA *)0)->finDATA));
+ 		valorCRC = GetCrc16(&EEPROM_buffer, long_relojTARIFA_DATA );
+ 		//pongo crc en buffer de grabacion
+ 		ptrAUX = &valorCRC;
+ 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-4] = *(ptrAUX+1);
+ 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-3] = *(ptrAUX+0);
+ 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-2] = finEEPROM_H;              // Fin de Datos
+ 		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-1] = finEEPROM_L;
+
+ 		//grabar tarifa n en distintos sectores de eeprom
+        EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG1));
+ 		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+ 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+
+ 		//para prueba
+		//readTarifa(nro, EEPROM_ptr);
+ 		//grabacion correcta en sector 1?
+  		if(error == EEPROM_OK){
+  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG2));
+  			grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  			//para prueba
+  		    //readTarifa(nro, EEPROM_ptr);
+  		}
+        //grabacion correcta en sector 2?
+  		if(error == EEPROM_OK){
+  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG3));
+  	 		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  			//para prueba
+  		    //readTarifa(nro, EEPROM_ptr);
+  		}
+
+  		//grabacion correcta en sector 3?
+  		if(error == EEPROM_OK){
+  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG4));
+  	 		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+  			//para prueba
+  		    //readTarifa(nro, EEPROM_ptr);
+  		}
+
+         //grabacion correcta ?
+ 		if(error == EEPROM_OK){
+ 			waitToTx_upDateSuccess = 1;
+ 		}else{
+ 			waitToTx_upDateSuccess = 0;
+ 		}
+
+       }else{
+    	   error = EEPROM_OK;
+       }
+
+       return(error);
+     }
+
+		//para prueba
+//	    EEPROM_ReadBuffer(&EEPROM_buffer_test, EEPROM_ptr, sizeof(tPARAM_RELOJ_TARIFA));
+//	    readTarifa(nro, addressTarifa);
 
 
   /* ARMAR BUFFER DE GRABACION DE TARIFA */
@@ -1471,16 +1670,21 @@
 	  uint16_t valorCRC;
 	  uint16_t long_relojEqPESOS_DATA;
 
-      error = EEPROM_OK;                // Asumo que no hay error
+	  //test
+	 // byte EEPROM_buffer_test[EEPROMsize_PRG_relojEqPESOS];
+
+      //error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgRELOJ_EQPESOS_EEPROM_F){
-        prgRELOJ_EQPESOS_EEPROM_F = 0;  // Bajo Bandera
+    	  // Bajo Bandera que da orden de grababacion
+    	prgRELOJ_EQPESOS_EEPROM_F = 0;
         
-        armarBuffer_progEqPESOS_EEPROM(EEPROM_buffer);  // Armo buffer de grabación según formato
+        // Armo buffer de grabación según formato
+        armarBuffer_progEqPESOS_EEPROM(EEPROM_buffer);
 
         //calculo de crc de datos recibidos
 		long_relojEqPESOS_DATA = EEPROMsize_PRG_relojEqPESOS - (sizeof(((tPARAM_RELOJ_EQPESOS *)0)->checksum) + sizeof(((tPARAM_RELOJ_EQPESOS *)0)->finDATA));
 		valorCRC = GetCrc16(&EEPROM_buffer, long_relojEqPESOS_DATA);
-
 		//pongo crc en buffer de grabacion
 		ptrAUX = &valorCRC;
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-4] = *(ptrAUX+1);
@@ -1488,8 +1692,12 @@
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-2] = finEEPROM_H;              // Fin de Datos
 		EEPROM_buffer[EEPROMsize_PRG_relojEqPESOS-1] = finEEPROM_L;
 
-		//grabar
+		//grabar eqPesos en los distintos sectores de grabacion
 		error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
+		//para prueba
+		byte EEPROM_buffer_test[EEPROMsize_PRG_relojEqPESOS];
+		EEPROM_ReadBuffer(&EEPROM_buffer_test, ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
+
         //grabacion correcta ?
 		if(error == EEPROM_OK){
 			error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
@@ -1519,6 +1727,8 @@
 			}
 		}
 
+      }else{
+    	  error = EEPROM_OK;
       }
       return(error);
     }    
@@ -1586,7 +1796,8 @@
       byte EEPROM_buffer[EEPROMsize_PRG_relojCALEND];
      // uint16_t long_relojCALEND_DATA;
       
-      error = EEPROM_OK;                // Asumo que no hay error
+      //error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgRELOJ_CALEND_EEPROM_F){
         prgRELOJ_CALEND_EEPROM_F = 0;   // Bajo Bandera
         
@@ -1632,6 +1843,8 @@
 			}
 		}
 
+     }else{
+    	 error = EEPROM_OK;
      }
       return(error);
     }    
@@ -1697,7 +1910,10 @@ void read_relojCOMUN_eeprom(uint8_t* buffer_backup){
 	uint32_t size;
 	size = SIZE_PROG_relojCOMUN;
 
-	address_eeprom = ADDRESS_PROG_relojCOMUN;
+	//address_eeprom = ADDRESS_PROG_relojCOMUN;
+	getDirProgOk();
+	address_eeprom = addressReloj;
+
 		//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojCOMUN);
 }
@@ -1715,8 +1931,11 @@ void read_relojCOMUN_eeprom(uint8_t* buffer_backup){
 	uint32_t size;
 	size = SIZE_PROG_relojT1D;
 
-	address_eeprom = ADDRESS_PROG_relojT1D;
-		//me fijo si hubo corte de alimentacion
+	//address_eeprom = ADDRESS_PROG_relojT1D;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(1, address_eeprom); 	//traigo direccion de tarifa del sector
+
+	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT1D);
 }
 
@@ -1730,9 +1949,12 @@ void read_relojT2D_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT2D;
-		//me fijo si hubo corte de alimentacion
-		EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT2D);
+	//address_eeprom = ADDRESS_PROG_relojT2D;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(2, address_eeprom); 	//traigo direccion de tarifa del sector
+
+	//me fijo si hubo corte de alimentacion
+	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT2D);
 }
 
 
@@ -1745,8 +1967,11 @@ void read_relojT3D_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT3D;
-		//me fijo si hubo corte de alimentacion
+	//address_eeprom = ADDRESS_PROG_relojT3D;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(3, address_eeprom); 	//traigo direccion de tarifa del sector
+
+	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT3D);
 }
 
@@ -1762,7 +1987,10 @@ void read_relojT4D_eeprom(uint8_t* buffer_backup){
 	uint32_t size;
 	size = SIZE_PROG_relojT4D;
 
-	address_eeprom = ADDRESS_PROG_relojT4D;
+	//address_eeprom = ADDRESS_PROG_relojT4D;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(4, address_eeprom); 	//traigo direccion de tarifa del sector
+
 	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT4D);
 }
@@ -1776,7 +2004,10 @@ void read_relojT1N_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT1N;
+	//address_eeprom = ADDRESS_PROG_relojT1N;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(5, address_eeprom); 	//traigo direccion de tarifa del sector
+
 	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT1N);
 }
@@ -1790,7 +2021,10 @@ void read_relojT2N_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT2N;
+	//address_eeprom = ADDRESS_PROG_relojT2N;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(6, address_eeprom); 	//traigo direccion de tarifa del sector
+
 	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT2N);
 }
@@ -1804,8 +2038,10 @@ void read_relojT3N_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT3N;
-		//me fijo si hubo corte de alimentacion
+	//address_eeprom = ADDRESS_PROG_relojT3N;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(7, address_eeprom); 	//traigo direccion de tarifa del sector
+	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT3N);
 }
 
@@ -1818,8 +2054,11 @@ void read_relojT4N_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojT4N;
-		//me fijo si hubo corte de alimentacion
+	//address_eeprom = ADDRESS_PROG_relojT4N;
+	address_eeprom = getDirProgOk();								//traigo sector de programacion
+	address_eeprom = getDir_tarifaX_BlockProg(8, address_eeprom); 	//traigo direccion de tarifa del sector
+
+	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojT4N);
 }
 
@@ -1834,8 +2073,11 @@ void read_relojEqPESOS_eeprom(uint8_t* buffer_backup){
 	uint32_t size;
 	size = SIZE_PROG_relojEqPESOS;
 
-	address_eeprom = ADDRESS_PROG_relojEqPESOS;
-		//me fijo si hubo corte de alimentacion
+	//address_eeprom = ADDRESS_PROG_relojEqPESOS;
+	getDirProgOk();
+	address_eeprom = addressEqPesos;
+
+	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojEqPESOS);
 }
 
@@ -1851,7 +2093,10 @@ void read_relojCALEND_eeprom(uint8_t* buffer_backup){
 	uint32_t addr;
 	uint32_t address_eeprom;
 
-	address_eeprom = ADDRESS_PROG_relojCALEND;
+	//address_eeprom = ADDRESS_PROG_relojCALEND;
+	getDirProgOk();
+	address_eeprom = addressCalend;
+
 	//me fijo si hubo corte de alimentacion
 	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_relojCALEND);
 }
@@ -1893,7 +2138,7 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
 
 	//levanta desde eeprom datos en buffer
 	 EEPROM_ReadBuffer(RAM_buffer,addrEEPROM ,longTOread);
-	 //calculo de crc
+	 //calculo de crc de datos levantados desde eeprom
 	  valorCRC = GetCrc16(RAM_buffer, longTOread-4);
 	 //levanto crc guardado en eeprom
 	 ptrAUX = &CRC_EEPROM;
@@ -2002,10 +2247,7 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
     	error = 0;
     	//envio la ADDRESS_PROG_relojCOMUN porque las direcciones de tarifa estan referenciadas a esta
         PROG_RELOJtarifa_to_EEPROM(TARIFA_toUpdate, 1);
-        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN);
-        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck1);
-        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck2);
-        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate, ADDRESS_PROG_relojCOMUN_bck3);
+        PROG_RELOJtarifa_grabarEEPROM(TARIFA_toUpdate);
 
       }
       
@@ -2225,6 +2467,154 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
     }
 
 
+    void readProgRELOJ (uint32_t blockProg){
+
+    		 uint32_t blgPrg;
+
+        	//levanta desde eeprom datos de reloj comun
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojCOMUN,blockProg,sizeof(tPARAM_RELOJ_COMUNES));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojCOMUN.pulsosKm, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojCOMUN.carreraBandera, 2);
+
+        	 //levanta desde eeprom datos de tarifa 1 DIURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(1, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT1D,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1D.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeorm datos de tarifa 2 DIURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(2, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT2D,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2D.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeprom datos de tarifa 3 DIURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(3, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT3D,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3D.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeprom datos de tarifa 4 DIURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(4, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT4D,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4D.tarifa.valorFichaTiempo, 2);
+
+        	 //levanta desde eeprom datos de tarifa 1 NOCTURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(5, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT1N,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT1N.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeprom datos de tarifa 2 NOCTURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(6, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT2N, blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT2N.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeprom datos de tarifa 3 DIURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(7, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT3N,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT3N.tarifa.valorFichaTiempo, 2);
+        	 //levanta desde eeprom datos de tarifa 4 NOCTURNA
+        	 blgPrg = (uint32_t)getDir_tarifaX_BlockProg(8, blockProg);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojT4N,blgPrg,sizeof(tPARAM_RELOJ_TARIFA));
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.distFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.distInicial, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.horaInicio, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.tiempoFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.tiempoGracia, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojT4N.tarifa.valorFichaTiempo, 2);
+
+        	 //levanta desde eeprom datos de equivalencia en pesos
+        	 //EEPROM_ReadBuffer(&EEPROM_AUX,ADDRESS_PROG_relojEqPESOS,(sizeof(tPARAM_RELOJ_EQPESOS)));
+        	 //EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS,ADDRESS_PROG_relojEqPESOS,(sizeof(tPARAM_RELOJ_EQPESOS)));
+        	 //levanto de esta forma porque hacendolo como esta comentad arriba se corre un byte y guarda los datos en los elmentos de la estructura
+        	 //en forma errornea.
+        	 blgPrg = blockProg + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N; //ADDRESS_PROG_relojEqPESOS
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.hab, blgPrg, 1);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.bajadaBandera, blgPrg+1, 2);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.valorFicha, blgPrg+3, 2);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.diurna.valorFichaTiempo, blgPrg+5, 2);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.bajadaBandera, blgPrg+7, 2);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.valorFicha, blgPrg+9, 2);
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS.nocturna.valorFichaTiempo, blgPrg+11, 2);
+/*
+        	 blgPrg = blockProg + 128 + SIZE_PROG_relojT1N + SIZE_PROG_relojT2N + SIZE_PROG_relojT3N  + SIZE_PROG_relojT4N; //ADDRESS_PROG_relojEqPESOS
+        	 EEPROM_ReadBuffer(&EEPROM_PROG_relojEqPESOS, blgPrg, SIZE_PROG_relojEqPESOS);
+*/
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.diurna.valorFichaTiempo, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.bajadaBandera, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.valorFicha, 2);
+        	 convert_bigINDIAN_to_litleINDIAN (&EEPROM_PROG_relojEqPESOS.nocturna.valorFichaTiempo, 2);
+
+
+        	 //levanta desde eeprom datos de CALENDARIO
+        	blgPrg = blockProg + 2*128;
+        	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[0],  blgPrg + 0*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[1],  blgPrg + 1*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[2],  blgPrg + 2*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[3],  blgPrg + 3*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[4],  blgPrg + 4*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[5],  blgPrg + 5*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[6],  blgPrg + 6*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[7],  blgPrg + 7*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[8],  blgPrg + 8*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[9],  blgPrg + 9*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[10], blgPrg + 10*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[11], blgPrg + 11*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[12], blgPrg + 12*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[13], blgPrg + 13*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[14], blgPrg + 14*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[15], blgPrg + 15*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[16], blgPrg + 16*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[17], blgPrg + 17*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[18], blgPrg + 18*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+         	EEPROM_ReadBuffer(&EEPROM_PROG_relojCALEND[19], blgPrg + 19*longitudFECHA_CALENDARIO, longitudFECHA_CALENDARIO);
+        }
+/*
     void levantar_progTICKET (void){
 
     uint8_t* EEPROM_PROG_TICKET_ptr;
@@ -2240,3 +2630,20 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
     // testEEPROM();
     }
 
+*/
+
+
+    void readProgTICKET (uint32_t blockProg1, uint32_t blockProg2, uint32_t blockProg3){
+
+	    uint8_t* EEPROM_PROG_TICKET_ptr;
+
+	     //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
+	 	 EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, blockProg1, 128);
+
+	 	 EEPROM_PROG_TICKET_ptr = &EEPROM_PROG_TICKET;
+	 	 EEPROM_PROG_TICKET_ptr += 128;
+	 	 EEPROM_ReadBuffer(EEPROM_PROG_TICKET_ptr, blockProg2, sizeof(tPRG_TICKET)-128);
+
+	     EEPROM_ReadBuffer(&EEPROM_PROG_TICKET_RECAUD, blockProg3, sizeof(tPRG_TICKET_RECAUD));
+	    // testEEPROM();
+	}

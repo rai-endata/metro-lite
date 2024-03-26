@@ -16,8 +16,15 @@
     */
 
 
-char versionFIRMWARE[] =  "v2.0.3";
-char fechaFIRMWARE[] =  " (05/05/2024)";
+
+char versionFIRMWARE[] =  "v2.1.0";
+char fechaFIRMWARE[] =  " (26/04/2024)";
+
+//version v2.1.0
+//Ya no hay programacion por defecto
+//crea 4 sectores de programacion para programacion de reloj y Movil y tickets
+//todavia no recupera los tckets si hay error en algun sector, si lo hace con reloj y movil
+
 
 //version v2.0.3
 //reordena direcciones de eeprom

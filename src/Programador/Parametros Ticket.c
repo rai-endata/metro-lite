@@ -84,7 +84,10 @@
 	 //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET,ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
 	// EEPROM_ReadBuffer(&EEPROM_AUX,ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
 	 //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET_RECAUD,ADDRESS_PROG_TICKET_RECAUD,sizeof(tPRG_TICKET_RECAUD));
-     levantar_progTICKET();
+
+      //levantar_progTICKET();
+      readProgTICKET(ADDRESS_PROG_TICKET_PAGE1, ADDRESS_PROG_TICKET_PAGE2, ADDRESS_PROG_TICKET_RECAUD);
+
 
  }
 
@@ -418,7 +421,8 @@
       //tPRG_TICKET EEPROM_buffer;
       byte EEPROM_buffer[EEPROMsize_PROG_TICKET];
       
-      error = EEPROM_OK;                // Asumo que no hay error
+      //error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgTICKET_EEPROM_F){
         prgTICKET_EEPROM_F = 0;          // Bajo Bandera
 
@@ -434,6 +438,7 @@
 			EEPROM_buffer_ptr_aux += 128;
 			error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
         }
+
 
         //guardar ticket backup1
         if (error == EEPROM_OK){
@@ -469,13 +474,18 @@
 				EEPROM_buffer_ptr_aux += 128;
 				error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
 			}
+
         }
+
+
 
 		//PRUEBA
 		//uint8_t buffer_prog[EEPROMsize_PROG_TICKET];
 		//read_TICKET_eeprom((uint8_t*)&buffer_prog);
 
 
+      }else{
+    	  error = EEPROM_OK;
       }
       
       return(error);
@@ -582,15 +592,15 @@
         dword* EEPROM_ptr;
       byte EEPROM_buffer[sizeof(tPRG_TICKET_RECAUD)];
       
-      error = EEPROM_OK;                // Asumo que no hay error
+      //error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgTICKET_RECAUD_EEPROM_F){
         prgTICKET_RECAUD_EEPROM_F = 0;  // Bajo Bandera
         //armar buffer
         armarBuffer_progTICKET_RECAUD_EEPROM(&EEPROM_buffer);  // Armo buffer de grabación según formato
         //guardar ticket recaudacion
-        if (error == EEPROM_OK){
-        	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD, SIZE_PROG_TICKET_RECAUD);
-        }
+       	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD, SIZE_PROG_TICKET_RECAUD);
+
         //guardar ticket recaudacion backup1
         if (error == EEPROM_OK){
         	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck1, SIZE_PROG_TICKET_RECAUD);
@@ -603,6 +613,12 @@
         if (error == EEPROM_OK){
         	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck3, SIZE_PROG_TICKET_RECAUD);
         }
+        if(error == EEPROM_OK){
+        	readProgTICKET(ADDRESS_PROG_TICKET_PAGE1, ADDRESS_PROG_TICKET_PAGE2, ADDRESS_PROG_TICKET_RECAUD);
+        }
+
+      }else{
+    	  error = EEPROM_OK;
       }
       
       return(error);

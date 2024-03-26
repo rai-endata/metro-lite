@@ -166,7 +166,6 @@ uint16_t pauseTx_to_cnt;
 	}
 
 
-
 	void clear_TxPendiente (void){
 	  // Devuelve el comando que este pendiente por Tx, en caso de haberlo.
 	  // Si no hay pendiente, devuelve el comando inválido: CMD_NULL

@@ -245,11 +245,12 @@
       byte EEPROM_buffer[EEPROMsize_PRG_MOVIL];
       uint16_t long_MOVIL_DATA;
 
-      error = EEPROM_OK;                // Asumo que no hay error
+      //error = EEPROM_OK;                // Asumo que no hay error
+      error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgMOVIL_EEPROM_F){
          prgMOVIL_EEPROM_F = 0;          // Bajo Bandera
 
-        EEPROM_ptr = ADDRESS_PROG_MOVIL;
+
 
         armarBuffer_progMOVIL_EEPROM(EEPROM_buffer);  // Armo buffer de grabación según formato
 
@@ -265,10 +266,37 @@
 		EEPROM_buffer[EEPROMsize_PRG_MOVIL-1] = finEEPROM_L;
 
 
-        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, (uint16_t*) EEPROM_ptr, SIZE_PROG_MOVIL);
+        error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL, SIZE_PROG_MOVIL);
         if(error == EEPROM_OK){
         	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, EEPROMsize_PRG_MOVIL);
         }
+        if(error == EEPROM_OK){
+        	 error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck1, SIZE_PROG_MOVIL);
+             if(error == EEPROM_OK){
+              	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck1, EEPROMsize_PRG_MOVIL);
+              }
+        }
+
+		if(error == EEPROM_OK){
+			error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck2, SIZE_PROG_MOVIL);
+            if(error == EEPROM_OK){
+             	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck2, EEPROMsize_PRG_MOVIL);
+             }
+
+		}
+
+		if(error == EEPROM_OK){
+			 error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck3, SIZE_PROG_MOVIL);
+             if(error == EEPROM_OK){
+              	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck3, EEPROMsize_PRG_MOVIL);
+              }
+
+		}
+		if(error == EEPROM_OK){
+			EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL, ADDRESS_PROG_MOVIL, sizeof(tPARAM_MOVIL));
+		}
+      }else{
+    	  error = EEPROM_OK;
       }
 
       return(error);
@@ -312,7 +340,10 @@
     	uint32_t size;
     	size = 88;
 
-    	address_eeprom = ADDRESS_PROG_MOVIL;
+    	//address_eeprom = ADDRESS_PROG_MOVIL;
+    	getDirProgOk();
+    	address_eeprom = addressMovil;
+
     		//me fijo si hubo corte de alimentacion
     	EEPROM_ReadBuffer(buffer_backup,address_eeprom,SIZE_PROG_MOVIL);
 

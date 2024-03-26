@@ -562,7 +562,7 @@
 					// El comando se encuentra en la 2da posición del buffer
 					//setTO_Bluetooth(TO_BLUETOOTH_3);
 					Rx_cmd = RxDA_buffer[1];        								//Extraigo comando
-					if(EQUIPO_METRO_LITE_RELOJ_INTERNO ||
+					if(  EQUIPO_METRO_LITE_RELOJ_INTERNO ||
 					  (((EQUIPO_METRO_BLUE) || (EQUIPO_METRO_LITE_RELOJ_BANDERITA) || (EQUIPO_MINI_BLUE_RELOJ_BANDERITA)) && !CMD_ACTIONS)){
 						//prueba (envia comandos recibidos por puerto serie)
 						//Enviar_BUFFER_Rx_porPuertoSerie ((byte*) RxDA_buffer, N_Rx_App);
@@ -596,7 +596,9 @@
 							Tabla_RxRTA_DA[Rx_cmd](RxDA_buffer);  			// Proceso Respuesta
 						  }
 					}else{
-						Tx_Comando_MENSAJE(EQUIPO_O_RELOJ_DESCONOCIDO);
+						if(!(RELOJ_INTERNO)){
+							Tx_Comando_MENSAJE(RELOJ_DESCONOCIDO);
+						}
 					}
 
 				}
@@ -1077,7 +1079,8 @@
 				 		i++;
 				  }
 */
-				//leer dato
+				/*
+				//leer dato (transmite por la serie direccion, dato recibido y dato grabado)
 				EEPROM_ReadBuffer(&DATOS_LEIDO, ptrTABLA, 1);
 
 				i=0;
@@ -1091,6 +1094,7 @@
 				bufferTx[i++] = 0x0A;
 
 				print_and_wait((byte*)&bufferTx, i);
+				*/
 			}
 
 	static void borrarTABLA_REPORTES_BUFFER_Rx (byte* Rx_data_ptr){

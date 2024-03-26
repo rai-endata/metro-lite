@@ -157,7 +157,6 @@ int main(void)
 	MX_TIM2_Init4();
 	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
 
-
 	VA_UART_ini();
 	DA_iniRx();
 	DA_iniTx();
