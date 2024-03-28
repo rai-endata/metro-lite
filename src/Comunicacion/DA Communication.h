@@ -50,8 +50,10 @@
   #define MENSAJE14		0x0E		//Sincronizando el Reloj
   #define MENSAJE15		0x0F		//Tipo de equipo o reloj desconocido, verifique programacion de reloj
   #define MENSAJE16		0x10		//reloj desconocido, verifique programacion de reloj
-  #define MENSAJE17		0x11		//Verifique la programacion deL reloj
-
+  #define MENSAJE17		0x11		//Verifique la programacion del reloj y del movil
+  #define MENSAJE18		0x12		//Verifique la programacion del reloj
+  #define MENSAJE19		0x13		//Verifique la programacion del movil
+  #define MENSAJE20		0x14		//El equipo esta en modo PROGRAMACION
   /* ESTRUCTURAS */
   /***************/  
 

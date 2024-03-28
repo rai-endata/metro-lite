@@ -178,9 +178,10 @@
 	}
 */
 
-    checkDataProg();
+    checkDataProgReloj();
+    checkDataProgMovil();
     error = EEPROM_CHECK_SUM;
-    if(blckPROG1_OK){
+    if(blckPROG1_RELOJ && blckPROG1_MOVIL){
     	error = EEPROM_OK;
     }
 
@@ -1085,7 +1086,23 @@
 
         grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN, SIZE_PROG_relojCOMUN);
         error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN, EEPROMsize_PRG_relojCOMUN);
-
+        if(error == EEPROM_OK){
+        	//este es un parche por un tema del programador
+        	//cuando el programador programa la eeprom solo guardo datos en el primer sector
+        	//porque si guardo en todos los sectores, en el programador salta un mensaje de error de grabacion por timeout
+        	//los demas sectores los guardo cuando se reinicia el metrolite
+        	//para asegurarme guarde los nuevos datos guardados guardo 0xff en la cabecera de cada sector para que de error
+        	// de checksum al del sector y copie los datos programados, y no se quede con la programacion anterior
+        	//en el chequeo de arranque
+			EEPROM_buffer[0] = 0xff;
+			EEPROM_buffer[1] = 0xff;
+			EEPROM_buffer[2] = finEEPROM_H;              // Fin de Datos
+			EEPROM_buffer[3] = finEEPROM_L;
+        	grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG2, 4);
+        	grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG3, 4);
+        	grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG4, 4);
+        }
+ /*
         if(error == EEPROM_OK){
             grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN_bck1, SIZE_PROG_relojCOMUN);
             error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN_bck1, EEPROMsize_PRG_relojCOMUN);
@@ -1098,6 +1115,7 @@
             grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_relojCOMUN_bck3, SIZE_PROG_relojCOMUN);
             error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCOMUN_bck3, EEPROMsize_PRG_relojCOMUN);
         }
+  */
         waitToTx_upDateSuccess = 0;
         //grabacion correcta ?
     	if(error == EEPROM_OK){
@@ -1316,38 +1334,26 @@
  		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-2] = finEEPROM_H;              // Fin de Datos
  		EEPROM_buffer[EEPROMsize_PRG_relojTARIFA-1] = finEEPROM_L;
 
- 		//grabar tarifa n en distintos sectores de eeprom
+ 		//para prueba
+		//readTarifa(nro, EEPROM_ptr);
+ 		//grabacion en sector 2
+ 		EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG2));
+		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+
+		//grabacion en sector 3
+		EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG3));
+		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+		//para prueba
+		//readTarifa(nro, EEPROM_ptr);
+
+		//grabacion en sector 4
+		EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG4));
+		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
+
+ 		//grabacion en sector 1
         EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG1));
  		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
  		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-
- 		//para prueba
-		//readTarifa(nro, EEPROM_ptr);
- 		//grabacion correcta en sector 1?
-  		if(error == EEPROM_OK){
-  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG2));
-  			grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  			//para prueba
-  		    //readTarifa(nro, EEPROM_ptr);
-  		}
-        //grabacion correcta en sector 2?
-  		if(error == EEPROM_OK){
-  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG3));
-  	 		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  			//para prueba
-  		    //readTarifa(nro, EEPROM_ptr);
-  		}
-
-  		//grabacion correcta en sector 3?
-  		if(error == EEPROM_OK){
-  			EEPROM_ptr = (uint16_t*)(getDir_tarifaX_BlockProg(nro, ADDRESS_PROG4));
-  	 		grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  	 		error = chkCRC_EnEEPROM(EEPROM_ptr, EEPROMsize_PRG_relojTARIFA);
-  			//para prueba
-  		    //readTarifa(nro, EEPROM_ptr);
-  		}
 
          //grabacion correcta ?
  		if(error == EEPROM_OK){
@@ -1694,15 +1700,16 @@
 
 		//grabar eqPesos en los distintos sectores de grabacion
 		error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
+
 		//para prueba
-		byte EEPROM_buffer_test[EEPROMsize_PRG_relojEqPESOS];
-		EEPROM_ReadBuffer(&EEPROM_buffer_test, ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
+		//byte EEPROM_buffer_test[EEPROMsize_PRG_relojEqPESOS];
+		//EEPROM_ReadBuffer(&EEPROM_buffer_test, ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
 
         //grabacion correcta ?
 		if(error == EEPROM_OK){
 			error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS, EEPROMsize_PRG_relojEqPESOS);
 		}
-
+/*
 		if(error == EEPROM_OK){
 			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojEqPESOS_bck1, EEPROMsize_PRG_relojEqPESOS);
 			//grabacion correcta ?
@@ -1726,7 +1733,7 @@
 				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojEqPESOS_bck3, EEPROMsize_PRG_relojEqPESOS);
 			}
 		}
-
+*/
       }else{
     	  error = EEPROM_OK;
       }
@@ -1821,6 +1828,7 @@
 			error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND, EEPROMsize_PRG_relojCALEND);
 		}
 
+/*
 		if(error == EEPROM_OK){
 			error = grabar_buffer_EEPROM((uint16_t*)(&EEPROM_buffer), ADDRESS_PROG_relojCALEND_bck1, EEPROMsize_PRG_relojCALEND);
 			//grabacion correcta ?
@@ -1842,7 +1850,7 @@
 				error = chkCRC_EnEEPROM(ADDRESS_PROG_relojCALEND_bck3, EEPROMsize_PRG_relojCALEND);
 			}
 		}
-
+*/
      }else{
     	 error = EEPROM_OK;
      }

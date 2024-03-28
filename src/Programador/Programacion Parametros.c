@@ -169,27 +169,41 @@ tDirProg			dirProg;
     	byte status;
     	uint32_t dir_ProgOk;
 
-    	//chequea estado de sectores de programacion
-    	checkDataProg();
-    	if(blckPROG_OK == 0x0){
+    	//chequea estado de sectores de programacion del reloj y el movil
+    	checkDataProgReloj();
+    	checkDataProgMovil();
+
+    	if((blckPROG1_RELOJ && blckPROG1_MOVIL) ||
+		  (blckPROG2_RELOJ && blckPROG2_MOVIL)  ||
+		  (blckPROG3_RELOJ && blckPROG3_MOVIL)  ||
+		  (blckPROG4_RELOJ && blckPROG4_MOVIL)){
+	      //hay al menos un sector que no esta defectuoso
+			//restauro y levanto datos en ram
+			status = 2;
+			restoreEepromProg();
+			checkDataProgReloj();
+			checkDataProgMovil();
+		}else if (blckPROG_RELOJ == 0xff || blckPROG_MOVIL == 0xff){
+			//todos los sectores de programacion estan bien
+			//levanto datos en ram
+			status = 1;
+		}else{
     		//todos los sectores estan defectuosos
     		//no se puede hacer nada, mandar un mensaje al celular
     		//y dejar parpadeando el led de programcion
     		status = 0;
-    		Tx_Comando_MENSAJE(EEPROM_NO_SE_PUEDE_PROGRAMAR);
     		prog_mode = 1;
-    	}else if(blckPROG_OK == 0xF){
-    		//todos los sectores de programacion estan bien
-    		//levanto datos en ram
-    		status = 1;
-    	}else{
-    		//hay al menos un sector defectuoso
-    		//restauro y levanto datos en ram
-    		status = 2;
-    		restoreEepromProg();
-    		//para que queden las banderas  checkProg_status bien
-    		checkDataProg();
-    	}
+    		if((blckPROG_RELOJ == 0) && (blckPROG_MOVIL == 0) ){
+    			Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ_Y_MOVIL);
+    		}else if((blckPROG_RELOJ == 0)){
+				//mensaje error programacion de reloj
+				Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ);
+
+    		}else{
+				//mensaje error programacion del movil
+				Tx_Comando_MENSAJE(VERIFIQUE_PROG_MOVIL);
+    		}
+		}
 
     	if(status != 0){
 			dir_ProgOk = getDirProgOk();
@@ -213,40 +227,79 @@ tDirProg			dirProg;
     }
 
 
-    void checkDataProg(void){
+    byte checkDataProgReloj(void){
 
         	tEEPROM_ERROR error;
+        	byte status;
 
-        	error = checkSectorProg(ADDRESS_PROG1);
+        	error = checkSectorProgReloj(ADDRESS_PROG1);
         	if(error == EEPROM_OK){
-        		blckPROG1_OK = 1;
+        		blckPROG1_RELOJ = 1;
         	}else{
-        		blckPROG1_OK = 0;
+        		blckPROG1_RELOJ = 0;
         	}
 
-        	error = checkSectorProg(ADDRESS_PROG2);
+        	error = checkSectorProgReloj(ADDRESS_PROG2);
         	if(error == EEPROM_OK){
-        		blckPROG2_OK = 1;
+        		blckPROG2_RELOJ = 1;
         	}else{
-        		blckPROG2_OK = 0;
+        		blckPROG2_RELOJ = 0;
         	}
 
-        	error = checkSectorProg(ADDRESS_PROG3);
+        	error = checkSectorProgReloj(ADDRESS_PROG3);
         	if(error == EEPROM_OK){
-        		blckPROG3_OK = 1;
+        		blckPROG3_RELOJ = 1;
         	}else{
-        		blckPROG3_OK = 0;
+        		blckPROG3_RELOJ = 0;
         	}
 
-        	error = checkSectorProg(ADDRESS_PROG4);
+        	error = checkSectorProgReloj(ADDRESS_PROG4);
         	if(error == EEPROM_OK){
-        		blckPROG4_OK = 1;
+        		blckPROG4_RELOJ = 1;
         	}else{
-        		blckPROG4_OK = 0;
+        		blckPROG4_RELOJ = 0;
         	}
+        	status = (byte)blckPROG_RELOJ;
+        	return(status);
         }
 
-    byte checkSectorProg(uint32_t blockProg){
+    byte checkDataProgMovil(void){
+
+            	tEEPROM_ERROR error;
+            	byte status;
+
+            	error = checkSectorProgMovil(ADDRESS_PROG1);
+            	if(error == EEPROM_OK){
+            		blckPROG1_MOVIL = 1;
+            	}else{
+            		blckPROG1_MOVIL = 0;
+            	}
+
+            	error = checkSectorProgMovil(ADDRESS_PROG2);
+            	if(error == EEPROM_OK){
+            		blckPROG2_MOVIL = 1;
+            	}else{
+            		blckPROG2_MOVIL = 0;
+            	}
+
+            	error = checkSectorProgMovil(ADDRESS_PROG3);
+            	if(error == EEPROM_OK){
+            		blckPROG3_MOVIL = 1;
+            	}else{
+            		blckPROG3_MOVIL = 0;
+            	}
+
+            	error = checkSectorProgMovil(ADDRESS_PROG4);
+            	if(error == EEPROM_OK){
+            		blckPROG4_MOVIL = 1;
+            	}else{
+            		blckPROG4_MOVIL = 0;
+            	}
+            	status = (byte)blckPROG_MOVIL;
+            	return(status);
+      }
+
+    byte checkSectorProgReloj(uint32_t blockProg){
 
     	tEEPROM_ERROR error;
     	uint32_t blgPrg;
@@ -273,15 +326,20 @@ tDirProg			dirProg;
     		error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_relojCALEND);
     	}
 
-    	//check movil
-    	if(error == EEPROM_OK){
-    		blgPrg = blockProg + 2*128 + SIZE_PROG_relojCALEND;
-    		error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_MOVIL);
-    	}
-
     	return(error);
     }
 
+
+    byte checkSectorProgMovil(uint32_t blockProg){
+
+        	tEEPROM_ERROR error;
+        	uint32_t blgPrg;
+
+        	//check movil
+			blgPrg = blockProg + 2*128 + SIZE_PROG_relojCALEND;
+			error = chkCRC_EnEEPROM(blgPrg, EEPROMsize_PRG_MOVIL);
+        	return(error);
+        }
 
 
     uint32_t getDirProgOk(void){
@@ -290,13 +348,13 @@ tDirProg			dirProg;
     	uint32_t dirProgOk = 0;
 
     	dirProgOk = ADDRESS_PROG1; //devuelve esta direccion por defecto
-    	if(blckPROG1_OK){
+    	if(blckPROG1_RELOJ && blckPROG1_MOVIL){
     		dirProgOk = ADDRESS_PROG1;
-    	}else if(blckPROG2_OK){
+    	}else if(blckPROG2_RELOJ && blckPROG2_MOVIL){
     		dirProgOk = ADDRESS_PROG2;
-    	}else if(blckPROG3_OK){
+    	}else if(blckPROG3_RELOJ && blckPROG3_MOVIL){
     		dirProgOk = ADDRESS_PROG3;
-    	}else if(blckPROG4_OK){
+    	}else if(blckPROG4_RELOJ && blckPROG3_MOVIL){
     		dirProgOk = ADDRESS_PROG4;
     	}
     	loadDirProg(dirProgOk);
@@ -319,19 +377,19 @@ tDirProg			dirProg;
     	//para restaurar sector de programacion defectuoso
 
     	dir_ProgOk = getDirProgOk();
-		if(!blckPROG1_OK){
+		if((!blckPROG1_RELOJ) || (!blckPROG1_MOVIL)){
 			dir_ProgWrong = (uint16_t*)ADDRESS_PROG1;
 			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
 		}
-		if(!blckPROG2_OK){
+		if((!blckPROG2_RELOJ) || (!blckPROG2_MOVIL)){
 			dir_ProgWrong = (uint16_t*)ADDRESS_PROG2;
 			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
 		}
-		if(!blckPROG3_OK){
+		if((!blckPROG3_RELOJ) || (!blckPROG3_MOVIL)){
 			dir_ProgWrong = (uint16_t*)ADDRESS_PROG3;
 			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
 		}
-		if(!blckPROG4_OK){
+		if((!blckPROG4_RELOJ) || (!blckPROG4_MOVIL)){
 			dir_ProgWrong = (uint16_t*)ADDRESS_PROG4;
 			restoreSectoProg(dir_ProgOk, dir_ProgWrong);
 		}
@@ -650,11 +708,12 @@ tDirProg			dirProg;
       }
       if (error == EEPROM_OK){
         error = PROG_RELOJcalend_grabarEEPROM();    // Grabacion de Calendario en EEPROM
-        //levantar_progRELOJ();
-        //if (error == EEPROM_OK){
-        //	prgRELOJ_ini();
-        //}
       }
+
+	  //Programacion de Movil + Radio
+	  if (error == EEPROM_OK){
+	    error = PROG_MOVIL_grabarEEPROM();          // Grabacion de Parametros de Movil en EEPROM
+	  }
 
       // Programacion de Ticket
       #ifdef VISOR_PROG_TICKET
@@ -667,13 +726,6 @@ tDirProg			dirProg;
         }
       #endif
             
- 	//Programacion de Movil + Radio
-	if (error == EEPROM_OK){
-	  error = PROG_MOVIL_grabarEEPROM();          // Grabacion de Parametros de Movil en EEPROM
-      //if (!TIPO_RELOJ_VALIDO){
-    	 // error = EEPROM_ACCESS_ERROR;
-      //}
-	}
 
       // Fin de Grabaciones
       if ((error == EEPROM_OK) && prgREQUEST_F){

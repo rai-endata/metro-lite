@@ -281,7 +281,6 @@
 	    Rx_comando_1D,
 		Rx_comando_1E,
 		Rx_comando_1F,
-
 		Rx_comando_20,
 	    Rx_comando_21,
 	    Rx_comando_22,
@@ -1548,79 +1547,82 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 			sinCONEXION_CENTRAL=0;
 			appConectada_ACentral = 1;
+			if(!prog_mode){
+				if(datosSC_cntWORD == 0){
+					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+						N 	= *Rx_data_ptr++;               // Extraigo N
+						cmd = *Rx_data_ptr++;               // Extraigo CMD
+						//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
+						tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
+						SaveDatGps(Rx_data_ptr, OCUP);
+		                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
+		                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
+		                // o bien desde fuera de servicio por sensor de asiento
+		                	if (seleccionManualTarifas){
+		                						if(tarifa > 4){
+		                						//tarifa invalida
+		                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+		                							Tx_Comando_MENSAJE(TARIFA_INVALIDA);
+		                						}else if(tarifa > nroTARIFA_HAB_MANUAL){
+		                						//tarifa no programada
+		                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
+		                							Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
+		                						}else{
+		                							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		                							paseOCUPADO_APP=1;
+		                							tarifa_1_4 = tarifa;
+		                							setTARIFA_MANUAL();
+		                							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+		                							//envia valor de viaje para que muestre bajada de bandera
+		                							Tx_Valor_VIAJE();
+		                						}
+		                	}else{
+		                						tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
+		                						//set tarifa a mostrar en display
+		                						if(tarifa_1_8 < 5){
+		                							tarifa_1_4 = tarifa_1_8;
+		                						}else{
+		                							tarifa_1_4 = tarifa_1_8 - 4;
+		                						}
 
-			if(datosSC_cntWORD == 0){
-				if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
-					N 	= *Rx_data_ptr++;               // Extraigo N
-					cmd = *Rx_data_ptr++;               // Extraigo CMD
-					//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
-					tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
-					SaveDatGps(Rx_data_ptr, OCUP);
-	                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
-	                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
-	                // o bien desde fuera de servicio por sensor de asiento
-	                	if (seleccionManualTarifas){
-	                						if(tarifa > 4){
-	                						//tarifa invalida
-	                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-	                							Tx_Comando_MENSAJE(TARIFA_INVALIDA);
-	                						}else if(tarifa > nroTARIFA_HAB_MANUAL){
-	                						//tarifa no programada
-	                							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_OTROS);
-	                							Tx_Comando_MENSAJE(TARIFA_NO_PROGRAMADA);
-	                						}else{
-	                							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-	                							paseOCUPADO_APP=1;
-	                							tarifa_1_4 = tarifa;
-	                							setTARIFA_MANUAL();
-	                							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-	                							//envia valor de viaje para que muestre bajada de bandera
-	                							Tx_Valor_VIAJE();
-	                						}
-	                	}else{
-	                						tarifa_1_8 = TARIFA_AUTO_getNroTarifa();
-	                						//set tarifa a mostrar en display
-	                						if(tarifa_1_8 < 5){
-	                							tarifa_1_4 = tarifa_1_8;
-	                						}else{
-	                							tarifa_1_4 = tarifa_1_8 - 4;
-	                						}
+		                						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		                						paseOCUPADO_APP=1;
+		                						if(tarifa != tarifa_1_4){
+		                							tarifa = tarifa_1_4;
+		                							Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
+		                						}
 
-	                						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-	                						paseOCUPADO_APP=1;
-	                						if(tarifa != tarifa_1_4){
-	                							tarifa = tarifa_1_4;
-	                							Tx_Comando_MENSAJE(TARIFA_AUTOMATICA);
-	                						}
+		                						Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+		                						//envia valor de viaje para que muestre bajada de bandera
+		                						Tx_Valor_VIAJE();
+		                	}
 
-	                						Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-	                						//envia valor de viaje para que muestre bajada de bandera
-	                						Tx_Valor_VIAJE();
-	                	}
+		                }else if(ESTADO_RELOJ==COBRANDO){
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+							Tx_Valor_VIAJE();
+		                }else if(ESTADO_RELOJ==OCUPADO){
+		 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+		 					Tx_Valor_VIAJE();
+		                }else if (ESTADO_RELOJ==LIBRE){
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+		                } else{
+		                	TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		                }
+					}else{
+						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+						Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+					}
 
-	                }else if(ESTADO_RELOJ==COBRANDO){
-						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-						Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
-						Tx_Valor_VIAJE();
-	                }else if(ESTADO_RELOJ==OCUPADO){
-	 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-	 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-	 					Tx_Valor_VIAJE();
-	                }else if (ESTADO_RELOJ==LIBRE){
-						TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-						Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
-	                } else{
-	                	TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-	                }
 				}else{
-					TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
-					Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+					Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
 				}
-
-			}else{
-				Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
-			}
+		}else{
+			Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
 		}
+	}
 
 		/* RECEPCION DE  */
 		/*****************/
@@ -1742,7 +1744,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 						sinCONEXION_CENTRAL=1;
 						yaTrasmitioUltimo_cmdReloj = 0;
-
+						if(!prog_mode){
 						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
@@ -1804,6 +1806,9 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						}else{
 							TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
 							Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+						}
+						}else{
+							Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
 						}
 					}
 

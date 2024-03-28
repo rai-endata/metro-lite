@@ -17,8 +17,16 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.0";
-char fechaFIRMWARE[] =  " (26/04/2024)";
+char versionFIRMWARE[] =  "v2.1.1";
+char fechaFIRMWARE[] =  " (28/04/2024)";
+
+//version v2.1.1
+//En la version anterior cuando se programaba desde el programador
+//se guardababa los datos en los cuatro sectores de eeprom, esto demoraba la
+//respuesta al programador y este daba error por timeout. Para sortear este inconveniente
+//cuando se programa se guarda solo en un sector, y cuando se inicia el equipo se guarda en los restantes sectores.
+
+
 
 //version v2.1.0
 //Ya no hay programacion por defecto
@@ -36,8 +44,6 @@ char fechaFIRMWARE[] =  " (26/04/2024)";
 //modificacion de funciones TURNO_getCantViajesAsiento_turno, TURNO_getCantErroresAsiento_turno()
 // y TURNO_calcKmTotales_turno() para tener en cuento los errores de timeout y error de rango de direcciones.
 //(el error de recudacion total y viaje total se habia dado en versiones anteriores debido a un timeout (TO_F))
-
-
 
 //version v2.0.1
 //fusion con rama agregaMiniblue en el que se realizo los sgtes cambios:

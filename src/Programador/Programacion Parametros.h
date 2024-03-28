@@ -145,17 +145,21 @@
     typedef union{
          byte Byte;
          struct{
-			byte 		addressProg1           :1;       //
-			byte 		addressProg2           :1;       //
-			byte 		addressProg3           :1;       //
-			byte 		addressProg4           :1;       //
+			byte 		addressProg1_RELOJ    :1;       //
+			byte 		addressProg2_RELOJ    :1;       //
+			byte 		addressProg3_RELOJ    :1;       //
+			byte 		addressProg4_RELOJ    :1;       //
+			byte 		addressProg1_MOVIL	  :1;       //
+			byte 		addressProg2_MOVIL    :1;       //
+			byte 		addressProg3_MOVIL    :1;       //
+			byte 		addressProg4_MOVIL    :1;       //
          }Bits;
-		struct{
-			byte addressProg          :4;        // Tarifas Diurnas Habilitadas
-		}MergedBits;
+        struct{
+			byte addressProg_RELOJ     :4;        //
+			byte addressProg_MOVIL     :4;        //
+        }MergedBits;
 
-
-       }checkEEPROM_PROG;
+      }checkEEPROM_PROG;
 
 /*----------------------------------------------------------------------------------*/
 /* BANDERAS DE PARAMETROS CORRECTOS */
@@ -219,11 +223,17 @@
     
     extern checkEEPROM_PROG		CheckProg_status;
       #define prgOK_ADDRESS		CheckProg_status.Byte
-      #define blckPROG1_OK		CheckProg_status.Bits.addressProg1
-	  #define blckPROG2_OK	 	CheckProg_status.Bits.addressProg2
-	  #define blckPROG3_OK	 	CheckProg_status.Bits.addressProg3
-	  #define blckPROG4_OK	 	CheckProg_status.Bits.addressProg4
-	  #define blckPROG_OK	 	CheckProg_status.MergedBits.addressProg
+      #define blckPROG1_RELOJ		CheckProg_status.Bits.addressProg1_RELOJ
+	  #define blckPROG2_RELOJ	 	CheckProg_status.Bits.addressProg2_RELOJ
+	  #define blckPROG3_RELOJ	 	CheckProg_status.Bits.addressProg3_RELOJ
+	  #define blckPROG4_RELOJ	 	CheckProg_status.Bits.addressProg4_RELOJ
+	  #define blckPROG_RELOJ	 	CheckProg_status.MergedBits.addressProg_RELOJ
+
+	  #define blckPROG1_MOVIL		CheckProg_status.Bits.addressProg1_MOVIL
+	  #define blckPROG2_MOVIL	 	CheckProg_status.Bits.addressProg2_MOVIL
+	  #define blckPROG3_MOVIL	 	CheckProg_status.Bits.addressProg3_MOVIL
+	  #define blckPROG4_MOVIL	 	CheckProg_status.Bits.addressProg4_MOVIL
+	  #define blckPROG_MOVIL	 	CheckProg_status.MergedBits.addressProg_MOVIL
 
     extern tDirProg		dirProg;
 	 #define	addressReloj	dirProg.dirRljCmn
@@ -354,8 +364,12 @@
     extern void PROGRAMADOR_startTxRTA(byte CMD);
 
     extern void iniDataProg(void);
-    extern void checkDataProg(void);
-    extern byte checkSectorProg(uint32_t blockProg);
+    extern byte checkDataProgReloj(void);
+    extern byte checkDataProgMovil(void);
+
+    extern byte checkSectorProgReloj(uint32_t blockProg);
+    extern byte checkSectorProgMovil(uint32_t blockProg);
+
     extern uint32_t getDirProgOk(void);
     extern void loadDirProg(uint32_t dir);
     extern void restoreEepromProg(void);

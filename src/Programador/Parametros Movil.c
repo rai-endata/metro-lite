@@ -270,35 +270,47 @@
         if(error == EEPROM_OK){
         	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL, EEPROMsize_PRG_MOVIL);
         }
+
         if(error == EEPROM_OK){
-        	 error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck1, SIZE_PROG_MOVIL);
-             if(error == EEPROM_OK){
-              	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck1, EEPROMsize_PRG_MOVIL);
-              }
+				//este es un parche por un tema del programador
+				//cuando el programador programa la eeprom solo guardo datos en el primer sector
+				//porque si guardo en todos los sectores, en el programador salta un mensaje de error de grabacion por timeout
+				//los demas sectores los guardo cuando se reinicia el metrolite
+				//para asegurarme guarde los nuevos datos guardados guardo 0xff en la cabecera de cada sector para que de error
+				// de checksum al del sector y copie los datos programados, y no se quede con la programacion anterior
+				//en el chequeo de arranque
+				EEPROM_buffer[0] = 0xff;
+				EEPROM_buffer[1] = 0xff;
+				EEPROM_buffer[2] = finEEPROM_H;              // Fin de Datos
+				EEPROM_buffer[3] = finEEPROM_L;
+				grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_MOVIL_bck1, 4);
+				grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_MOVIL_bck2, 4);
+				grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_MOVIL_bck3, 4);
         }
+/*
+        		if(error == EEPROM_OK){
+        			error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck2, SIZE_PROG_MOVIL);
+                    if(error == EEPROM_OK){
+                     	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck2, EEPROMsize_PRG_MOVIL);
+                     }
 
-		if(error == EEPROM_OK){
-			error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck2, SIZE_PROG_MOVIL);
-            if(error == EEPROM_OK){
-             	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck2, EEPROMsize_PRG_MOVIL);
-             }
+        		}
 
-		}
+        		if(error == EEPROM_OK){
+        			 error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck3, SIZE_PROG_MOVIL);
+                     if(error == EEPROM_OK){
+                      	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck3, EEPROMsize_PRG_MOVIL);
+                      }
 
-		if(error == EEPROM_OK){
-			 error = grabar_buffer_EEPROM((uint16_t*) EEPROM_buffer, ADDRESS_PROG_MOVIL_bck3, SIZE_PROG_MOVIL);
-             if(error == EEPROM_OK){
-              	error = chkCRC_EnEEPROM(ADDRESS_PROG_MOVIL_bck3, EEPROMsize_PRG_MOVIL);
-              }
+        		}
 
-		}
-		if(error == EEPROM_OK){
-			EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL, ADDRESS_PROG_MOVIL, sizeof(tPARAM_MOVIL));
-		}
-      }else{
-    	  error = EEPROM_OK;
-      }
-
+        		if(error == EEPROM_OK){
+        			EEPROM_ReadBuffer(&EEPROM_PROG_MOVIL, ADDRESS_PROG_MOVIL, sizeof(tPARAM_MOVIL));
+        		}
+*/
+       }else{
+          	  error = EEPROM_OK;
+            }
       return(error);
     }    
     

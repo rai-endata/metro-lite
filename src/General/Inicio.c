@@ -289,7 +289,7 @@ void check_corte_alimentacion(void){
 	  		ResetDatGps(LIB);
 	  		quitar_asignado;
 	  		Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-	  		setTEST_DISPLAY();
+	  		//setTEST_DISPLAY();
 	      }
 	      //leo valor de corteALIMETACION
 	      //EEPROM_ReadBuffer((uint8_t*) &corteALIMENTACION,ADDRESS_BACKUP_EEPROM,1);
