@@ -1682,7 +1682,7 @@
       //error = EEPROM_OK;                // Asumo que no hay error
       error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgRELOJ_EQPESOS_EEPROM_F){
-    	  // Bajo Bandera que da orden de grababacion
+    	// Bajo Bandera que da orden de grababacion
     	prgRELOJ_EQPESOS_EEPROM_F = 0;
         
         // Armo buffer de grabación según formato
@@ -2114,12 +2114,13 @@ void read_TICKET_eeprom(uint8_t* buffer_backup){
 	uint32_t address_eeprom;
 	uint32_t size_eeprom;
 
-	size_eeprom = SIZE_PROG_TICKET;
-	address_eeprom = ADDRESS_PROG_TICKET_PAGE1;
-	EEPROM_ReadBuffer(buffer_backup,address_eeprom,128);
+	//size_eeprom = SIZE_PROG_TICKET;
+	//address_eeprom = ADDRESS_PROG_TICKET_PAGE1;
+	EEPROM_ReadBuffer(buffer_backup, ADDRESS_PROG_TICKET_PAGE1, SIZE_PROG_TICKET);
 
-	address_eeprom = ADDRESS_PROG_TICKET_PAGE2;
-	EEPROM_ReadBuffer(buffer_backup+128,address_eeprom,size_eeprom-128);
+	//EEPROM_ReadBuffer(buffer_backup,address_eeprom,128);
+	//address_eeprom = ADDRESS_PROG_TICKET_PAGE2;
+	//EEPROM_ReadBuffer(buffer_backup+128,address_eeprom,size_eeprom-128);
 
 }
 
@@ -2142,7 +2143,7 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
     tEEPROM_ERROR status;
     //byte RAM_buffer[longTOread];
 
-    byte RAM_buffer[EEPROMsize_PRG_MAX];
+    byte RAM_buffer[300];
 
 	//levanta desde eeprom datos en buffer
 	 EEPROM_ReadBuffer(RAM_buffer,addrEEPROM ,longTOread);
@@ -2641,17 +2642,3 @@ tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread){
 */
 
 
-    void readProgTICKET (uint32_t blockProg1, uint32_t blockProg2, uint32_t blockProg3){
-
-	    uint8_t* EEPROM_PROG_TICKET_ptr;
-
-	     //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
-	 	 EEPROM_ReadBuffer(&EEPROM_PROG_TICKET, blockProg1, 128);
-
-	 	 EEPROM_PROG_TICKET_ptr = &EEPROM_PROG_TICKET;
-	 	 EEPROM_PROG_TICKET_ptr += 128;
-	 	 EEPROM_ReadBuffer(EEPROM_PROG_TICKET_ptr, blockProg2, sizeof(tPRG_TICKET)-128);
-
-	     EEPROM_ReadBuffer(&EEPROM_PROG_TICKET_RECAUD, blockProg3, sizeof(tPRG_TICKET_RECAUD));
-	    // testEEPROM();
-	}

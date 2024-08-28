@@ -1247,7 +1247,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		}
 
 		if(subCMD == MENSAJE13 && !exit){
-				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"TURNO CERRADO, por falta de espacio para reportes");
+				k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Se ha cerrado el turno, AUTOMATICAMENTE, por falta de espacio para reportes");
 				i=i+k;
 				exit = 1;
 		}
@@ -1266,7 +1266,7 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		}
 
 		if(subCMD == MENSAJE16 && !exit){
-					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Verifique programacion de reloj");
+					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"Reloj desconocido. Verifique programacion de reloj");
 					i=i+k;
 					exit = 1;
 		}

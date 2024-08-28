@@ -27,6 +27,7 @@
 #define OFF_DIGITO		0
 
 #define TO_DISPLAY_ON	1
+#define TO_DISPLAY_OFF	0
 
 #define DISPLAY_OFF			0
 #define DISPLAY_ON_IMPORTE	1
@@ -916,6 +917,7 @@ void off_display (void ){
 	status_display = DISPLAY_OFF;
 	toggle_dsply = 0;
 	toggle_dsplyTARIFA =0;
+	to_dsply_on=TO_DISPLAY_OFF;
 	HAL_GPIO_WritePin(PUERTO_CATODO_DIGITO_0, PIN_CATODO_DIGITO_0, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(PUERTO_CATODO_DIGITO_1, PIN_CATODO_DIGITO_1, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(PUERTO_CATODO_DIGITO_2, PIN_CATODO_DIGITO_2, GPIO_PIN_RESET);

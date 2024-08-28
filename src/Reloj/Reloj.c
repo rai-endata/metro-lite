@@ -1599,7 +1599,7 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
             if (REPORTES_HABILITADOS){
               (void)REPORTE_queueSesion(1);   // Inicio de Sesion con chofer 1
               //parche
-              (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(), 0, 0, 0, 0, SIN_CONEXION_CENTRAL);
+              (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), nroChofer, 0, 0, 0, 0, SIN_CONEXION_CENTRAL);
             }
           #endif
         }
@@ -1682,7 +1682,8 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
             if (REPORTES_HABILITADOS){
               //(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, 0);
             	// Guardo reporte -> datos de f.servicio (porque la nueva sesion siempre es en fuera de servicio)
-             (void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, CON_CONEXION_CENTRAL);
+
+            	(void)REPORTE_queueFueraServ (RELOJ_getDateCambio(), nroChofer,kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, CON_CONEXION_CENTRAL);
 
               // Guardo reporte -> nueva SESION
               (void)REPORTE_queueSesion (nroChofer);

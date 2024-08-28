@@ -136,6 +136,7 @@
 	#define EEPROMsize_MSJ_PREGRABADO       60
 	#define EEPROMsize_HORA_APAGADO         8
 	#define EEPROMsize_PRG_TICKET           (sizeof(tPRG_TICKET))
+    #define EEPROMsize_PRG_TICKET_RECAUD    (sizeof(tPRG_TICKET_RECAUD))
 	#define EEPROMsize_PRG_GEO_FENCE        (sizeof(tPARAM_GEOFENCE))
 
    
@@ -603,7 +604,7 @@
     extern void levantar_progRELOJ (void);
     extern void levantar_progTICKET (void);
     extern void readProgRELOJ (uint32_t blockProg);
-    extern void readProgTICKET (uint32_t blockProg1, uint32_t blockProg2, uint32_t blockProg3);
+
 
 
   /* AIR UPDATE */

@@ -79,16 +79,13 @@
 			if (error != EEPROM_OK){
 			  //BUZZER_play(RING_error);
 			}
+      }else{
+    	  checkTicketProg();
       }
-	 //levanta desde eprom datos de reloj comun
-	 //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET,ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
-	// EEPROM_ReadBuffer(&EEPROM_AUX,ADDRESS_PROG_TICKET,sizeof(tPRG_TICKET));
-	 //EEPROM_ReadBuffer(&EEPROM_PROG_TICKET_RECAUD,ADDRESS_PROG_TICKET_RECAUD,sizeof(tPRG_TICKET_RECAUD));
 
-      //levantar_progTICKET();
-      readProgTICKET(ADDRESS_PROG_TICKET_PAGE1, ADDRESS_PROG_TICKET_PAGE2, ADDRESS_PROG_TICKET_RECAUD);
-
-
+	  //levantar_progTICKET();
+	  EEPROM_ReadBuffer((uint8_t*)(&EEPROM_PROG_TICKET), (uint32_t)ADDRESS_PROG_TICKET_PAGE1, sizeof(tPRG_TICKET));
+	  EEPROM_ReadBuffer((uint8_t*)(&EEPROM_PROG_TICKET_RECAUD), (uint32_t)ADDRESS_PROG_TICKET_RECAUD, sizeof(tPRG_TICKET_RECAUD));
  }
 
 
@@ -106,12 +103,12 @@
       error = PROGRAMADOR_chkN (N, N_lectura);    // Comparo que el N recibido se igual al esperado
       
       if (error == PRG_OK){
-    	  read_TICKET_eeprom((uint8_t*)&buffer_prog);
+    	  //read_TICKET_eeprom((uint8_t*)&buffer_prog);
+    	  EEPROM_ReadBuffer((uint8_t*)(&buffer_prog), ADDRESS_PROG_TICKET_PAGE1, SIZE_PROG_TICKET);
 	  	  buffer_prog[EEPROMsize_PROG_TICKET]   = 0xdf;
 	  	  buffer_prog[EEPROMsize_PROG_TICKET+1] = 0x0a;
 
           //PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETtext, (byte*) &EEPROM_PROG_TICKET);
-
     	  PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETtext, (uint8_t*)&buffer_prog);
       }
     }
@@ -128,12 +125,13 @@
           error = PROGRAMADOR_chkN (N, N_lectura);    // Comparo que el N recibido se igual al esperado
 
           if (error == PRG_OK){
-        	  read_TICKET_RECAUD_eeprom((uint8_t*)&buffer_prog);
-        	  PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETracaud, (byte*) &EEPROM_PROG_TICKET_RECAUD);
+        	  //read_TICKET_RECAUD_eeprom((uint8_t*)&buffer_prog);
+        	  //PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETracaud, (byte*) &EEPROM_PROG_TICKET_RECAUD);
+        	  EEPROM_ReadBuffer((uint8_t*)(&buffer_prog), ADDRESS_PROG_TICKET_RECAUD, SIZE_PROG_TICKET_RECAUD);
+        	  PROGRAMADOR_startTx(CMD_LECTURA+0x80, subCMD_TICKETracaud, (uint8_t*)&buffer_prog);
           }
         }
 
-  
   /* PROGRAMAR PARAMETROS DE TICKET */
   /**********************************/
  void PROG_writeTICKET (byte N){
@@ -420,6 +418,9 @@
 
       //tPRG_TICKET EEPROM_buffer;
       byte EEPROM_buffer[EEPROMsize_PROG_TICKET];
+      byte EEPROM_test[EEPROMsize_PROG_TICKET];
+      uint16_t valorCRC, longTicketData;
+      uint8_t* ptrAUX;
       
       //error = EEPROM_OK;                // Asumo que no hay error
       error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
@@ -428,15 +429,29 @@
 
         //armar buffer
         armarBuffer_progTICKET_EEPROM(&EEPROM_buffer);  // Armo buffer de grabación según formato
+		//calculo de crc de datos recibidos
+        longTicketData = EEPROMsize_PRG_TICKET - (sizeof(((tPRG_TICKET *)0)->checksum) + sizeof(((tPRG_TICKET *)0)->finEEPROM));
+		valorCRC = GetCrc16(&EEPROM_buffer, longTicketData );
+		//pongo crc en buffer de grabacion
+		ptrAUX = &valorCRC;
+		EEPROM_buffer[EEPROMsize_PRG_TICKET-4] = *(ptrAUX+1);
+		EEPROM_buffer[EEPROMsize_PRG_TICKET-3] = *(ptrAUX+0);
+		EEPROM_buffer[EEPROMsize_PRG_TICKET-2] = finEEPROM_H;              // Fin de Datos
+		EEPROM_buffer[EEPROMsize_PRG_TICKET-1] = finEEPROM_L;
 
         //guardar ticket
         EEPROM_ptr = ADDRESS_PROG_TICKET_PAGE1;
-        error = grabar_buffer_EEPROM_TICKET((uint16_t*)EEPROM_buffer, (uint16_t*)EEPROM_ptr, 128);
+		error = grabar_buffer_EEPROM_TICKET((uint16_t*)EEPROM_buffer, (uint16_t*)EEPROM_ptr, 128);
         if (error == EEPROM_OK){
 			EEPROM_ptr = ADDRESS_PROG_TICKET_PAGE2;
 			EEPROM_buffer_ptr_aux = &EEPROM_buffer;
 			EEPROM_buffer_ptr_aux += 128;
-			error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
+			error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, EEPROMsize_PRG_TICKET-128);
+			//PARA PRUEBA
+			//EEPROM_ReadBuffer(EEPROM_test, ADDRESS_PROG_TICKET_PAGE1 , EEPROMsize_PRG_TICKET);
+			 if(error == EEPROM_OK){
+	        	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1, EEPROMsize_PRG_TICKET);
+			 }
         }
 
 
@@ -449,6 +464,9 @@
 				EEPROM_buffer_ptr_aux = &EEPROM_buffer;
 				EEPROM_buffer_ptr_aux += 128;
 				error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
+				 if(error == EEPROM_OK){
+		        	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck1, EEPROMsize_PRG_TICKET);
+				 }
 			}
         }
 
@@ -461,6 +479,9 @@
 				EEPROM_buffer_ptr_aux = &EEPROM_buffer;
 				EEPROM_buffer_ptr_aux += 128;
 				error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
+				 if(error == EEPROM_OK){
+		        	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck2, EEPROMsize_PRG_TICKET);
+				 }
 			}
         }
 
@@ -473,16 +494,15 @@
 				EEPROM_buffer_ptr_aux = &EEPROM_buffer;
 				EEPROM_buffer_ptr_aux += 128;
 				error = grabar_buffer_EEPROM_TICKET((uint16_t*) EEPROM_buffer_ptr_aux, (uint16_t*) EEPROM_ptr, SIZE_PROG_TICKET-128);
+				 if(error == EEPROM_OK){
+		        	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck3, EEPROMsize_PRG_TICKET);
+				 }
 			}
 
         }
-
-
-
 		//PRUEBA
 		//uint8_t buffer_prog[EEPROMsize_PROG_TICKET];
 		//read_TICKET_eeprom((uint8_t*)&buffer_prog);
-
 
       }else{
     	  error = EEPROM_OK;
@@ -591,30 +611,59 @@
       tEEPROM_ERROR error;
         dword* EEPROM_ptr;
       byte EEPROM_buffer[sizeof(tPRG_TICKET_RECAUD)];
-      
+      byte EEPROM_test[sizeof(tPRG_TICKET_RECAUD)];
+      uint16_t valorCRC, longTicketRecData;
+      uint8_t* ptrAUX;
+
       //error = EEPROM_OK;                // Asumo que no hay error
       error = EEPROM_ERROR_MASK;                //si no entra en el if el nro de tarifa no esta programada o hay algun error
       if (prgTICKET_RECAUD_EEPROM_F){
         prgTICKET_RECAUD_EEPROM_F = 0;  // Bajo Bandera
+
+
         //armar buffer
         armarBuffer_progTICKET_RECAUD_EEPROM(&EEPROM_buffer);  // Armo buffer de grabación según formato
+		//calculo de crc de datos recibidos
+        longTicketRecData = 1;
+        valorCRC = GetCrc16(&EEPROM_buffer, longTicketRecData );
+		//pongo crc en buffer de grabacion
+		ptrAUX = &valorCRC;
+		EEPROM_buffer[EEPROMsize_PRG_TICKET_RECAUD-9] = *(ptrAUX+1);
+		EEPROM_buffer[EEPROMsize_PRG_TICKET_RECAUD-8] = *(ptrAUX+0);
+		EEPROM_buffer[EEPROMsize_PRG_TICKET_RECAUD-7] = finEEPROM_H;              // Fin de Datos
+		EEPROM_buffer[EEPROMsize_PRG_TICKET_RECAUD-6] = finEEPROM_L;
+
         //guardar ticket recaudacion
-       	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD, SIZE_PROG_TICKET_RECAUD);
+        EEPROM_ptr = ADDRESS_PROG_TICKET_RECAUD;
+		error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, (uint16_t*)EEPROM_ptr, EEPROMsize_PRG_TICKET_RECAUD);
+		EEPROM_ReadBuffer(EEPROM_test, ADDRESS_PROG_TICKET_RECAUD , EEPROMsize_PRG_TICKET_RECAUD);
+		 if(error == EEPROM_OK){
+        	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD, longTicketRecData + 4);
+		 }
 
         //guardar ticket recaudacion backup1
         if (error == EEPROM_OK){
         	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck1, SIZE_PROG_TICKET_RECAUD);
+			 if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck1, longTicketRecData + 4);
+
+			 }
+
         }
         //guardar ticket recaudacion backup2
         if (error == EEPROM_OK){
         	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck2, SIZE_PROG_TICKET_RECAUD);
+			 if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck2, longTicketRecData + 4);
+			 }
         }
         //guardar ticket recaudacion backup3
         if (error == EEPROM_OK){
-        	error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck3, SIZE_PROG_TICKET_RECAUD);
-        }
-        if(error == EEPROM_OK){
-        	readProgTICKET(ADDRESS_PROG_TICKET_PAGE1, ADDRESS_PROG_TICKET_PAGE2, ADDRESS_PROG_TICKET_RECAUD);
+			error = grabar_buffer_EEPROM((uint16_t*)EEPROM_buffer, ADDRESS_PROG_TICKET_RECAUD_bck3, SIZE_PROG_TICKET_RECAUD);
+			if(error == EEPROM_OK){
+				error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck3, longTicketRecData + 4);
+			 }
+
         }
 
       }else{

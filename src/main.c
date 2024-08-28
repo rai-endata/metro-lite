@@ -137,6 +137,10 @@ int main(void)
 	set_tipo_de_equipo();
 	if((tipo_de_equipo != MINI_BLUE)){
 		SystemClock_Config();
+		if((tipo_de_equipo == METRO_BLUE)){
+			//ini_display_7seg();
+			 off_display();
+		}
 	}else{
 		SystemClock_Config_sinRTC();
 	}
@@ -239,6 +243,10 @@ int main(void)
 
 		    checkTime();
 			firstDATE();
+		#ifdef VISOR_REPORTES
+		   REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
+		#endif
+
 		}
 
 #ifdef RELOJ_DEBUG
@@ -266,6 +274,11 @@ void ModoPROGRAMACION (void){
 		pasarCMDS_BUFFER_to_TxBUFFER();		//pasa datos del buffer del comando a transmitir al buffer de transmisión
 		DA_Tx();							//pasa datos del buffer de transmisión al buffer de salida e inicia la transmisión
 		//****************************
+
+		#ifdef VISOR_REPORTES
+		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
+		#endif
+
 	}
 }
 

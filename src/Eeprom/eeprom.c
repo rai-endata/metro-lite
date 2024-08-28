@@ -654,17 +654,20 @@ void test_size(void){
     		 while(i < 64*1024){
     		 		//EEPROM_WriteByte_irqDisable((uint32_t) ptrEEPROM, 0xff);
     		 		EEPROM_WriteByte(aux_TABLA, 0xff);
-    		 		dato = EEPROM_ReadByte(aux_TABLA);
-    		 		if(dato != 0xff){
-    		 			__NOP();
-    		 		}
+    		 		//dato = EEPROM_ReadByte(aux_TABLA);
+    		 		//if(dato != 0xff){
+    		 			//__NOP();
+    		 		//}
     		 		aux_TABLA++;
     		 		i++;
     		 		if(i == k){
     		 			k = i +20;
     		 			HAL_GPIO_TogglePin(BANDERA_OUT_PORT, BANDERA_OUT_PIN);
     		 		}
-    		  }
+    		 }
+   			 //resetea el equipo
+   			 //NVIC_SystemReset();
+
       }
 
 

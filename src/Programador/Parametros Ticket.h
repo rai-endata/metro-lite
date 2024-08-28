@@ -34,8 +34,9 @@
       byte PATENTE[10 + 1 + 1 + 1];         // ID + FONT + Patente + fin_cadena
       byte LICENCIA[10 + 1 + 1 + 1];        // ID + FONT + Licencia + fin_cadena
       byte IVA[15 + 1 + 1 + 1];             // ID + FONT + IVA + fin_cadena
+      uint16_t checksum;     				//
       byte finEEPROM[2];                    // Fin de EEPROM
-      byte makeItMod4[2];                   // Para completar tamaño multiplo de 4
+      //byte makeItMod4[2];                   // Para completar tamaño multiplo de 4
     }tPRG_TICKET;   
     
     
@@ -44,8 +45,9 @@
     // LA LONGITUD TOTAL DE LA ESTRUCTURA DEBE SER MULTIPLO DE 4
     typedef struct{
       byte chofer;
+      uint16_t checksum;
       byte finEEPROM[2];                    // Fin de EEPROM
-      byte makeItMod4[1];                   // Para completar tamaño multiplo de 4
+      byte makeItMod4[3];                   // Para completar tamaño multiplo de 4
     }tPRG_TICKET_RECAUD;   
    
     

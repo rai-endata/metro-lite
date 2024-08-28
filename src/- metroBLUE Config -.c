@@ -17,15 +17,17 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.1";
-char fechaFIRMWARE[] =  " (28/04/2024)";
+char versionFIRMWARE[] =  "v2.1.2";
+char fechaFIRMWARE[] =  " (28/08/2024)";
+//char versionFIRMWARE[] =  "VERSION DE PRUEBA";
+//char fechaFIRMWARE[] =  " (16/08/2024)";
 
-//version v2.1.1
+
+//version v2.1.1 - 28/04/2024
 //En la version anterior cuando se programaba desde el programador
 //se guardababa los datos en los cuatro sectores de eeprom, esto demoraba la
 //respuesta al programador y este daba error por timeout. Para sortear este inconveniente
 //cuando se programa se guarda solo en un sector, y cuando se inicia el equipo se guarda en los restantes sectores.
-
 
 
 //version v2.1.0

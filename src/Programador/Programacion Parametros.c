@@ -194,20 +194,33 @@ tDirProg			dirProg;
     		status = 0;
     		prog_mode = 1;
     		if((blckPROG_RELOJ == 0) && (blckPROG_MOVIL == 0) ){
-    			Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ_Y_MOVIL);
+				//mensaje error programacion de reloj
+    			if(prog_mode){
+    				Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+    			}else{
+        			Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ_Y_MOVIL);
+    			}
+
     		}else if((blckPROG_RELOJ == 0)){
 				//mensaje error programacion de reloj
-				Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ);
-
+    			if(prog_mode){
+    				Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+    			}else{
+    				Tx_Comando_MENSAJE(VERIFIQUE_PROG_RELOJ);
+    			}
     		}else{
 				//mensaje error programacion del movil
-				Tx_Comando_MENSAJE(VERIFIQUE_PROG_MOVIL);
+    			if(prog_mode){
+    				Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+    			}else{
+    				Tx_Comando_MENSAJE(VERIFIQUE_PROG_MOVIL);
+    			}
     		}
 		}
 
     	if(status != 0){
 			dir_ProgOk = getDirProgOk();
-			//levanta datos de programacion
+			//levanta datos de programacion de reloj
 			readProgRELOJ (dir_ProgOk);
 			//ini varios
 			if(TARIFA_PESOS){
@@ -224,6 +237,40 @@ tDirProg			dirProg;
 			EEPROM_PROG_MOVIL.tipoReloj = INTERNO; //para que cuando este borrado toda la eeprom SE PUEDA CONSULTAR LA VERSION DE FIRMWARE
 			HORA_source = 1;						 //para que cuando este borrado toda la eeprom pueda inicializar reportes
 		}
+    }
+
+
+    void checkTicketProg(void){
+        	byte status;
+        	uint32_t dir_ProgOk;
+
+        	//chequea estado de sectores de programacion del ticket y restaura si por lo menos un sector esta ok
+        	checkDataProgTicket();
+        	if ((!((byte)blckPROG_TICKET == 0x0f)) && ((byte)blckPROG_TICKET != 0x00)){
+				if(blckPROG1_TICKET ||
+				   blckPROG2_TICKET ||
+				   blckPROG3_TICKET ||
+				   blckPROG4_TICKET){
+				  //hay al menos un sector que no esta defectuoso
+					//restauro y levanto datos en ram
+					restoreTicket();
+					checkDataProgTicket();
+				}
+        	}
+
+        	//chequea estado de sectores de programacion del ticket recaudacion y restaura si por lo menos un sector esta ok
+        	checkDataProgTicketRecaud();
+        	if (!((byte)blckPROG_TICKET_RECAUD == 0x0f) && ((byte)blckPROG_TICKET_RECAUD != 0x00)){
+        		if (blckPROG1_TICKET_RECAUD ||
+						  blckPROG2_TICKET_RECAUD ||
+						  blckPROG3_TICKET_RECAUD ||
+						  blckPROG4_TICKET_RECAUD){
+						  //hay al menos un sector que no esta defectuoso
+						  //restauro y levanto datos en ram
+						  restoreTicketRecaud();
+						  checkDataProgTicketRecaud();
+				}
+        	}
     }
 
 
@@ -342,6 +389,82 @@ tDirProg			dirProg;
         }
 
 
+
+    byte checkDataProgTicket(void){
+
+               	tEEPROM_ERROR error;
+               	byte status;
+
+               	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1, EEPROMsize_PRG_TICKET);
+               	if(error == EEPROM_OK){
+               		blckPROG1_TICKET = 1;
+               	}else{
+               		blckPROG1_TICKET = 0;
+               	}
+
+               	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck1, EEPROMsize_PRG_TICKET);
+               	if(error == EEPROM_OK){
+               		blckPROG2_TICKET = 1;
+               	}else{
+               		blckPROG2_TICKET = 0;
+               	}
+
+               	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck2, EEPROMsize_PRG_TICKET);
+               	if(error == EEPROM_OK){
+               		blckPROG3_TICKET = 1;
+               	}else{
+               		blckPROG3_TICKET = 0;
+               	}
+
+               	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_PAGE1_bck3, EEPROMsize_PRG_TICKET);
+               	if(error == EEPROM_OK){
+               		blckPROG4_TICKET = 1;
+               	}else{
+               		blckPROG4_TICKET = 0;
+               	}
+
+            	status = (byte)blckPROG_TICKET;
+            	return(status);
+         }
+
+    byte checkDataProgTicketRecaud(void){
+
+                  	tEEPROM_ERROR error;
+                  	byte status;
+
+                  	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD, 5);
+                  	if(error == EEPROM_OK){
+                  		blckPROG1_TICKET_RECAUD = 1;
+                  	}else{
+                  		blckPROG1_TICKET_RECAUD = 0;
+                  	}
+
+                  	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck1, 5);
+                  	if(error == EEPROM_OK){
+                  		blckPROG2_TICKET_RECAUD = 1;
+                  	}else{
+                  		blckPROG2_TICKET_RECAUD = 0;
+                  	}
+
+                  	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck2, 5);
+                  	if(error == EEPROM_OK){
+                  		blckPROG3_TICKET_RECAUD = 1;
+                  	}else{
+                  		blckPROG3_TICKET_RECAUD = 0;
+                  	}
+
+                  	error = chkCRC_EnEEPROM(ADDRESS_PROG_TICKET_RECAUD_bck3, 5);
+                  	if(error == EEPROM_OK){
+                  		blckPROG4_TICKET_RECAUD = 1;
+                  	}else{
+                  		blckPROG4_TICKET_RECAUD = 0;
+                  	}
+
+                  	status = (byte)blckPROG_TICKET_RECAUD;
+                	return(status);
+            }
+
+
     uint32_t getDirProgOk(void){
 
     	uint32_t blgPrg;
@@ -361,6 +484,44 @@ tDirProg			dirProg;
     	return(dirProgOk);
     }
 
+
+    uint32_t getDirTicket(void){
+
+      	uint32_t blgPrg;
+      	uint32_t dirProgOk = 0;
+
+      	dirProgOk = ADDRESS_PROG_TICKET_PAGE1; //devuelve esta direccion por defecto
+      	if(blckPROG1_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_PAGE1;
+      	}else if(blckPROG2_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_PAGE1_bck1;
+      	}else if(blckPROG3_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_PAGE1_bck2;;
+      	}else if(blckPROG4_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_PAGE1_bck3;;
+      	}
+      	addressTicket = dirProgOk;
+      	return(dirProgOk);
+      }
+
+    uint32_t getDirTicketRecaud(void){
+
+      	uint32_t blgPrg;
+      	uint32_t dirProgOk = 0;
+
+      	dirProgOk = ADDRESS_PROG1; //devuelve esta direccion por defecto
+      	if(blckPROG1_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_RECAUD;
+      	}else if(blckPROG2_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_RECAUD_bck1;
+      	}else if(blckPROG3_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_RECAUD_bck2;;
+      	}else if(blckPROG4_TICKET){
+      		dirProgOk = ADDRESS_PROG_TICKET_RECAUD_bck3;;
+      	}
+      	addressTicketRecaud = dirProgOk;
+      	return(dirProgOk);
+      }
 
     void loadDirProg(uint32_t dir){
 		addressReloj = dir;
@@ -395,6 +556,70 @@ tDirProg			dirProg;
 		}
     }
 
+
+
+    void restoreTicket(void){
+		uint32_t dir_ProgOk;
+		uint16_t* dir_ProgWrong;
+    	byte dataToRestore[SIZE_PROG_TICKET];
+
+
+		//direccion de donde se leeran datos de programacion
+		//para restaurar sector de programacion defectuoso
+    	if ((!(blckPROG_TICKET == 0x0f)) && (blckPROG_TICKET != 0x00)){
+			dir_ProgOk = getDirTicket();
+			if((!blckPROG1_TICKET)){
+				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1;
+			}
+			if((!blckPROG2_TICKET)){
+				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck1;
+			}
+			if((!blckPROG3_TICKET)){
+				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck2;
+			}
+			if((!blckPROG4_TICKET)){
+				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck3;
+			}
+			//restaura DATOS
+			EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
+			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dir_ProgWrong, 128);
+			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore + 128), dir_ProgWrong, SIZE_PROG_TICKET-128);
+
+			//test
+			//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dir_ProgWrong, SIZE_PROG_TICKET);
+
+    	}
+    }
+
+    void restoreTicketRecaud(void){
+		uint32_t dir_ProgOk;
+		uint16_t* dir_ProgWrong;
+    	byte dataToRestore[128];
+
+		//direccion de donde se leeran datos de programacion
+		//para restaurar sector de programacion defectuoso
+
+		dir_ProgOk = getDirTicketRecaud();
+		if((!blckPROG1_TICKET_RECAUD)){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_RECAUD;
+		}
+		if((!blckPROG2_TICKET_RECAUD)){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_RECAUD_bck1;
+		}
+		if((!blckPROG3_TICKET_RECAUD)){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_RECAUD_bck2;
+		}
+		if((!blckPROG4_TICKET_RECAUD)){
+			dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_RECAUD_bck3;
+		}
+    	//restaura DATOS
+    	EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET_RECAUD);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
+ 	    //test
+ 		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
+     }
+
+
  void restoreSectoProg(uint32_t dir_Ok, uint16_t* dir_Wrong){
     	//dir_ok: direccion de eeprom que contiene datos correctos de donde se sacaran los datos para ser grabados en
     	//el sector defectuoso cuya direccion de inicio es dir_Worng
@@ -403,8 +628,7 @@ tDirProg			dirProg;
     	uint16_t* dirToWrite;
     	byte dataToRestore[128];
     	uint32_t eepromToread;
-
-    	byte EEPROM_buffer_test[128];
+    	//byte EEPROM_buffer_test[128];
 
     	//restaura reloj comun
     	eepromToread = dir_Ok;
@@ -412,7 +636,7 @@ tDirProg			dirProg;
     	EEPROM_ReadBuffer(dataToRestore, eepromToread ,EEPROMsize_PRG_relojCOMUN);
     	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, SIZE_PROG_relojCOMUN);
         //test
-   		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCOMUN);
+   		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCOMUN);
 
     	//restaura tarifa
     	for (nro = 1; nro < 9; nro++){
@@ -421,7 +645,7 @@ tDirProg			dirProg;
 			EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojTARIFA);
 			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojTARIFA);
 		   //test
-			EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojTARIFA);
+			//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojTARIFA);
     	}
 
     	//restaura eqPesos
@@ -430,7 +654,7 @@ tDirProg			dirProg;
     	EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojEqPESOS);
     	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojEqPESOS);
 	   //test
-		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojEqPESOS);
+		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojEqPESOS);
 
 
     	//restaura calendario
@@ -439,7 +663,7 @@ tDirProg			dirProg;
     	EEPROM_ReadBuffer(dataToRestore, eepromToread, EEPROMsize_PRG_relojCALEND);
     	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, EEPROMsize_PRG_relojCALEND);
  	   //test
- 		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCALEND);
+ 		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, EEPROMsize_PRG_relojCALEND);
 
     	//restaura Movil
     	eepromToread = dir_Ok + 2*128 + SIZE_PROG_relojCALEND;
@@ -447,7 +671,7 @@ tDirProg			dirProg;
     	EEPROM_ReadBuffer(dataToRestore, eepromToread, SIZE_PROG_MOVIL);
     	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dirToWrite, SIZE_PROG_MOVIL);
  	   //test
- 		EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, SIZE_PROG_MOVIL);
+ 		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dirToWrite, SIZE_PROG_MOVIL);
 
 
     }

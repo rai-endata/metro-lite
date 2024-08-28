@@ -227,6 +227,9 @@
     }tVIAJE;
 
   
+
+
+
   /* TIPO DE DATOS */
   /*****************/
     #define SESION_typeINI    0
@@ -369,6 +372,7 @@
 
     extern void chkPerdidaDatosTurno (void);
     extern byte getColaReportes (void);
+    extern void ini_newReg_ptr(void);
 
   /* TIMER */
   /*********/

@@ -192,6 +192,20 @@ void SOURCE_DATE_Ini (void){
        	  VISOR_firstBoot = 1;
        	  EEPROM_write(EEPROM_PRIMER_ENCENDIDO, valorPrimerEncendido); // Grabar Word en EEPROM
        	  EEPROM_ReadBuffer(&PRUEBA,EEPROM_PRIMER_ENCENDIDO,SIZE_EEPROM_PRIMER_ENCENDIDO);
+       	  //RELOJ_INTERNO_reOpenTurno();
+
+		#ifdef VISOR_REPORTES
+		   if (HORA_RTC){
+			  REPORTES_HABILITADOS = 1;
+			}else{
+			  REPORTES_HABILITADOS = 0;
+			}
+		  #else
+			REPORTES_HABILITADOS = 0;
+		  #endif
+
+	      ini_newReg_ptr();					// Inicializo puntero PUT y GET de cola
+       	  RELOJ_INTERNO_newSesion(1);
 
        	}
        }

@@ -139,24 +139,40 @@
 		uint32_t	dirEqPesos;
 		uint32_t	dirCalend;
 		uint32_t	dirMovil;
+		uint32_t	dirTicket;
+		uint32_t	dirTicketRecaud;
      }tDirProg;
 
 
     typedef union{
-         byte Byte;
+         word Word;
          struct{
-			byte 		addressProg1_RELOJ    :1;       //
-			byte 		addressProg2_RELOJ    :1;       //
-			byte 		addressProg3_RELOJ    :1;       //
-			byte 		addressProg4_RELOJ    :1;       //
-			byte 		addressProg1_MOVIL	  :1;       //
-			byte 		addressProg2_MOVIL    :1;       //
-			byte 		addressProg3_MOVIL    :1;       //
-			byte 		addressProg4_MOVIL    :1;       //
+			byte 		prog1RELOJ    :1;       //
+			byte 		prog2RELOJ    :1;       //
+			byte 		prog3RELOJ    :1;       //
+			byte 		prog4RELOJ    :1;       //
+
+			byte 		prog1MOVIL	  :1;       //
+			byte 		prog2MOVIL    :1;       //
+			byte 		prog3MOVIL    :1;       //
+			byte 		prog4MOVIL    :1;       //
+
+			byte 		prog1TICKET    :1;       //
+			byte 		prog2TICKET    :1;       //
+			byte 		prog3TICKET    :1;       //
+			byte 		prog4TICKET    :1;       //
+
+			byte 		prog1TICKET_RECAUD    :1;       //
+			byte 		prog2TICKET_RECAUD    :1;       //
+			byte 		prog3TICKET_RECAUD    :1;       //
+			byte 		prog4TICKET_RECAUD    :1;       //
          }Bits;
-        struct{
-			byte addressProg_RELOJ     :4;        //
-			byte addressProg_MOVIL     :4;        //
+
+         struct{
+			byte progRELOJ     		  :4;        //
+			byte progMOVIL     		  :4;        //
+			byte progTICKET     	  :4;        //
+			byte progTICKET_RECAUD    :4;        //
         }MergedBits;
 
       }checkEEPROM_PROG;
@@ -222,24 +238,38 @@
       #define prgGEO_FENCE_15_16_OK_F       _prgOK_F4.Bits.wr_GF15_16
     
     extern checkEEPROM_PROG		CheckProg_status;
-      #define prgOK_ADDRESS		CheckProg_status.Byte
-      #define blckPROG1_RELOJ		CheckProg_status.Bits.addressProg1_RELOJ
-	  #define blckPROG2_RELOJ	 	CheckProg_status.Bits.addressProg2_RELOJ
-	  #define blckPROG3_RELOJ	 	CheckProg_status.Bits.addressProg3_RELOJ
-	  #define blckPROG4_RELOJ	 	CheckProg_status.Bits.addressProg4_RELOJ
-	  #define blckPROG_RELOJ	 	CheckProg_status.MergedBits.addressProg_RELOJ
+      #define prgOK_ADDRESS		CheckProg_status.Word
+      #define blckPROG1_RELOJ		CheckProg_status.Bits.prog1RELOJ
+	  #define blckPROG2_RELOJ	 	CheckProg_status.Bits.prog2RELOJ
+	  #define blckPROG3_RELOJ	 	CheckProg_status.Bits.prog3RELOJ
+	  #define blckPROG4_RELOJ	 	CheckProg_status.Bits.prog4RELOJ
+	  #define blckPROG_RELOJ	 	CheckProg_status.MergedBits.progRELOJ
 
-	  #define blckPROG1_MOVIL		CheckProg_status.Bits.addressProg1_MOVIL
-	  #define blckPROG2_MOVIL	 	CheckProg_status.Bits.addressProg2_MOVIL
-	  #define blckPROG3_MOVIL	 	CheckProg_status.Bits.addressProg3_MOVIL
-	  #define blckPROG4_MOVIL	 	CheckProg_status.Bits.addressProg4_MOVIL
-	  #define blckPROG_MOVIL	 	CheckProg_status.MergedBits.addressProg_MOVIL
+	  #define blckPROG1_MOVIL		CheckProg_status.Bits.prog1MOVIL
+	  #define blckPROG2_MOVIL	 	CheckProg_status.Bits.prog2MOVIL
+	  #define blckPROG3_MOVIL	 	CheckProg_status.Bits.prog3MOVIL
+	  #define blckPROG4_MOVIL	 	CheckProg_status.Bits.prog4MOVIL
+	  #define blckPROG_MOVIL	 	CheckProg_status.MergedBits.progMOVIL
+
+	  #define blckPROG1_TICKET		CheckProg_status.Bits.prog1TICKET
+	  #define blckPROG2_TICKET	 	CheckProg_status.Bits.prog2TICKET
+	  #define blckPROG3_TICKET	 	CheckProg_status.Bits.prog3TICKET
+	  #define blckPROG4_TICKET	 	CheckProg_status.Bits.prog4TICKET
+	  #define blckPROG_TICKET	 	CheckProg_status.MergedBits.progTICKET
+
+	  #define blckPROG1_TICKET_RECAUD		CheckProg_status.Bits.prog1TICKET_RECAUD
+	  #define blckPROG2_TICKET_RECAUD	 	CheckProg_status.Bits.prog2TICKET_RECAUD
+	  #define blckPROG3_TICKET_RECAUD	 	CheckProg_status.Bits.prog3TICKET_RECAUD
+	  #define blckPROG4_TICKET_RECAUD	 	CheckProg_status.Bits.prog4TICKET_RECAUD
+	  #define blckPROG_TICKET_RECAUD	 	CheckProg_status.MergedBits.progTICKET_RECAUD
 
     extern tDirProg		dirProg;
-	 #define	addressReloj	dirProg.dirRljCmn
-	 #define	addressEqPesos	dirProg.dirEqPesos
-	 #define	addressCalend	dirProg.dirCalend
-	 #define	addressMovil	dirProg.dirMovil
+	 #define	addressReloj		dirProg.dirRljCmn
+	 #define	addressEqPesos		dirProg.dirEqPesos
+	 #define	addressCalend		dirProg.dirCalend
+	 #define	addressMovil		dirProg.dirMovil
+	 #define	addressTicket		dirProg.dirTicket
+	 #define	addressTicketRecaud	dirProg.dirTicketRecaud
 
 /*----------------------------------------------------------------------------------*/
 /* BANDERAS DE GRANACION DE PARAMETROS */
@@ -369,12 +399,19 @@
 
     extern byte checkSectorProgReloj(uint32_t blockProg);
     extern byte checkSectorProgMovil(uint32_t blockProg);
+    extern byte checkDataProgTicket(void);
+    extern byte checkDataProgTicketRecaud(void);
 
     extern uint32_t getDirProgOk(void);
+    extern uint32_t getDirTicket(void);
+    extern uint32_t getDirTicketRecaud(void);
+
     extern void loadDirProg(uint32_t dir);
     extern void restoreEepromProg(void);
     extern void restoreSectoProg(uint32_t dir_Ok, uint16_t* dir_Wrong);
-    
+    extern void restoreTicket(void);
+    extern void restoreTicketRecaud(void);
+
     extern tPRG_ERROR PROGRAMADOR_chkN (byte N_Rx, byte N_expect);
     
     extern byte* PROGRAMADOR_addRxData (tBAX_SCI* BAX_SCI_ptr);

@@ -207,9 +207,7 @@
       uint16_t valor;
       
        //uint32_t* addressEEPROM_REPORTE_PUT;
-
-      newReg_PUTptr = newRegistro;      // Inicializo puntero PUT de cola
-      newReg_GETptr = newRegistro;      // Inicializo puntero GET de cola
+      ini_newReg_ptr();					// Inicializo puntero PUT y GET de cola
       newReg_queue_cnt = 0;             // Reseteo contador de Registros encolados
       valor = 0;
       #ifdef VISOR_REPORTES
@@ -222,12 +220,14 @@
           //LIMPIA TABLA DE REPOSTES
           //clear_tabREPORTES();
           // PRIMER ENCENDIDO o RESET REPORTES
-          REPORTE_PUTptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
+          //REPORTE_PUTptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
+          REPORTE_PUTptr = ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
           data_ptr = (byte*) &REPORTE_PUTptr;           			// Guardo puntero PUT en EEPROM
           //FLASH_setDontTouchIRQ();                        		// No modificar IRQ al grabar FLASH
           REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_PUT, data_ptr, (uint16_t) 4); // Grabar PUT ptr
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
           EEPROM_write(ADDR_EEPROM_REPORTE_INDEX, valor);
+          EEPROM_write(ADDR_INDEX_LAST_SESION, valor);
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
           EEPROM_write(ADDR_EEPROM_REPORTE_NRO_VIAJE, 1);
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
@@ -236,6 +236,7 @@
 		//tomo datos de eeprom
 		EEPROM_ReadBuffer((uint8_t*)&REPORTE_PUTptr,ADDR_EEPROM_REPORTE_PUT,SIZE_EEPROM_REPORTE_PUT);
 		EEPROM_ReadBuffer((uint8_t*)&REPORTE_INDEX,ADDR_EEPROM_REPORTE_INDEX,SIZE_EEPROM_REPORTE_INDEX);
+		EEPROM_ReadBuffer((uint8_t*)&INDEX_LAST_SESION,ADDR_INDEX_LAST_SESION,SIZE_INDEX_LAST_SESION);
 		EEPROM_ReadBuffer((uint8_t*)&REPORTE_NRO_VIAJE,ADDR_EEPROM_REPORTE_NRO_VIAJE,SIZE_EEPROM_REPORTE_NRO_VIAJE);
 		EEPROM_ReadBuffer((uint8_t*)&REPORTE_NRO_TURNO, ADDR_EEPROM_REPORTE_NRO_TURNO,SIZE_EEPROM_REPORTE_NRO_TURNO);
 		nroChofer = RELOJ_INTERNO_getChofer();
@@ -893,10 +894,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       ptr = *ptrptr;                 // Puntero
       ptr++;                          // Avanzo puntero
       
-      if(ptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
-        ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
+      //if(ptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
+       // ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
+      //}
+
+      if(ptr >= (ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
+        ptr = ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
       }
-      
+
       *ptrptr = ptr;                 // Actualizo puntero REAL
     }
 
@@ -908,9 +913,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
     	ptrptr++;
     	*ptr_ptr_ptr = ptrptr;
 
-       if(ptrptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
-    	   *ptr_ptr_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
+       //if(ptrptr >= (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
+       //	   *ptr_ptr_ptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
+       //}
+
+       if(ptrptr >= (ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE)){
+           	   *ptr_ptr_ptr = ADDR_EEPROM_REPORTE;          // Doy la vuelta al reporte
        }
+
      }
 
 
@@ -921,9 +931,14 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
       
       ptr = *ptrptr;                 // Puntero
       
-      if(ptr <= (tREG_GENERIC*)ADDR_EEPROM_REPORTE){
-        ptr = (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE);  // Doy la vuelta al reporte
+      //if(ptr <= (tREG_GENERIC*)ADDR_EEPROM_REPORTE){
+       // ptr = (tREG_GENERIC*)(ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE);  // Doy la vuelta al reporte
+      //}
+
+      if(ptr <= ADDR_EEPROM_REPORTE){
+        ptr = (ADDR_EEPROM_REPORTE + SIZE_EEPROM_REPORTE);  // Doy la vuelta al reporte
       }
+
 
       ptr--;                          // Retrocedo puntero
       
@@ -1851,7 +1866,7 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
               	 //no hay viajes
               	  sesiones = 0xff;
                 } else if(sesiones == 1){
-              	 //si hay una sola sesion sig nifica que la sesion inicial
+              	 //si hay una sola sesion significa que la sesion inicial
               	 //es la de arranque y la direccion de esta sesion aun no fue guardada porque coincide con
               	 //el inicio de tabla
               	  EEPROM_ReadBuffer(&aux_search, search_ptr, sizeof(tREG_GENERIC));
@@ -2570,13 +2585,17 @@ void chkPerdidaDatosTurno (void){
         }else if (numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 6)){
         	if (RELOJ_LIBRE || RELOJ_FUERA_SERVICIO){
                 RELOJ_INTERNO_reOpenTurno();
-                REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
+                REPORTES_grabarFlash();           	//lo saco porque entra en un lazo algebraico
                 print_ticket_turno(0);
+
+        		//RELOJ_INTERNO_newSesion(1);				//cierro sesion
+
         	}else if (numero_reg_del_turno >= (NUMERO_DE_REGISTROS_DE_TABLA - 3)){
 	        	// CONDICION LIMITE => Fuerzo nueva sesion e imprimo reporte de turno
 				  RELOJ_INTERNO_reOpenTurno();
-				  REPORTES_grabarFlash();           	// Grabacion de reportes en FLASH
+				  REPORTES_grabarFlash();           	//lo saco porque entra en un lazo algebraico
 				  print_ticket_turno(0);
+        		//RELOJ_INTERNO_newSesion(1);				//cierro sesion
         	}
         }
     }
@@ -3232,6 +3251,11 @@ tREG_LIBRE* get_regLIBRE_date ( tREG_GENERIC* INI_ptr, byte nro_viaje){
       if (REPORTES_delay_cnt != 0){
         REPORTES_delay_cnt--;
       }
+    }
+
+    void ini_newReg_ptr(void){
+        newReg_PUTptr = newRegistro;      // Inicializo puntero PUT de cola
+        newReg_GETptr = newRegistro;      // Inicializo puntero GET de cola
     }
 
 #endif

@@ -595,11 +595,19 @@
 							Tabla_RxRTA_DA[Rx_cmd](RxDA_buffer);  			// Proceso Respuesta
 						  }
 					}else{
+						//lo dejo solo en ocupado
 						if(!(RELOJ_INTERNO)){
-							Tx_Comando_MENSAJE(RELOJ_DESCONOCIDO);
-						}
-					}
+						   if(Rx_cmd < 0x80){
 
+							 if(prog_mode){
+								Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+							 }else{
+								Tx_Comando_MENSAJE(RELOJ_DESCONOCIDO);
+							 }
+						  }
+						}
+
+					}
 				}
 				// Si recibí algo, mas alla de que sea  coherente o no, avanzo
 				// el GET dentro del GPA, xq ya procese lo que acabo de recibir
@@ -1384,6 +1392,24 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 					Tx_Comando_MENSAJE(DEBE_REALIZAR_UN_VIAJE);
 					//RELOJ_INTERNO_newSesion(nroChofer);
 				}
+
+			}else{
+				//el reloj no esta en descanso por alguna razon
+				//como inicio de turno solo puedo recibir en descanso
+				//fuerzo el pase a descanso y luego inicio el turno
+				Pase_a_FUERA_SERVICIO();
+                //inicio turno
+				aux16 = getViajes_Parcial();
+				if(aux16 != 0){
+					RELOJ_INTERNO_newSesion(nroChofer);
+					if(!(EQUIPO_METRO_LITE_RELOJ_BANDERITA)){
+						Tx_Comando_MENSAJE(SESION_CERRADA_EXITOSAMENTE);
+					}
+				}else{
+					Tx_Comando_MENSAJE(DEBE_REALIZAR_UN_VIAJE);
+					//RELOJ_INTERNO_newSesion(nroChofer);
+				}
+
 
 			}
 		}
