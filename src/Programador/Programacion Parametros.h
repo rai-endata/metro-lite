@@ -169,10 +169,10 @@
          }Bits;
 
          struct{
-			byte progRELOJ     		  :4;        //
-			byte progMOVIL     		  :4;        //
-			byte progTICKET     	  :4;        //
-			byte progTICKET_RECAUD    :4;        //
+			byte progRELOJ     		  :4;        // 0x000f
+			byte progMOVIL     		  :4;        // 0x00f0
+			byte progTICKET     	  :4;        // 0x0f00
+			byte progTICKET_RECAUD    :4;        // 0xf000
         }MergedBits;
 
       }checkEEPROM_PROG;

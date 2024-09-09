@@ -17,10 +17,15 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.2";
-char fechaFIRMWARE[] =  " (28/08/2024)";
-//char versionFIRMWARE[] =  "VERSION DE PRUEBA";
-//char fechaFIRMWARE[] =  " (16/08/2024)";
+char versionFIRMWARE[] =  "v2.1.3";
+char fechaFIRMWARE[] =  " (29/09/2024)";
+
+//Version v2.1.3 - 09/09/24
+//error en ticket recaudacion
+
+//Version v2.1.2 - 28/08/24
+//  Corrige  error que se da en el arranque despues que la eeprom ha sido borrada totalmente
+
 
 
 //version v2.1.1 - 28/04/2024

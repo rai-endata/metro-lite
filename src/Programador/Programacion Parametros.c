@@ -173,20 +173,20 @@ tDirProg			dirProg;
     	checkDataProgReloj();
     	checkDataProgMovil();
 
-    	if((blckPROG1_RELOJ && blckPROG1_MOVIL) ||
-		  (blckPROG2_RELOJ && blckPROG2_MOVIL)  ||
-		  (blckPROG3_RELOJ && blckPROG3_MOVIL)  ||
-		  (blckPROG4_RELOJ && blckPROG4_MOVIL)){
-	      //hay al menos un sector que no esta defectuoso
-			//restauro y levanto datos en ram
+    	if (blckPROG_RELOJ == 0xf || blckPROG_MOVIL == 0xf){
+    		//todos los sectores de programacion estan bien
+    		//levanto datos en ram
+    		status = 1;
+   		}else if((blckPROG1_RELOJ && blckPROG1_MOVIL) ||
+   				(blckPROG2_RELOJ && blckPROG2_MOVIL)  ||
+				(blckPROG3_RELOJ && blckPROG3_MOVIL)  ||
+				(blckPROG4_RELOJ && blckPROG4_MOVIL)){
+	        //hay al menos un sector que no esta defectuoso
+			//restauro y levanto datos.
 			status = 2;
 			restoreEepromProg();
 			checkDataProgReloj();
 			checkDataProgMovil();
-		}else if (blckPROG_RELOJ == 0xff || blckPROG_MOVIL == 0xff){
-			//todos los sectores de programacion estan bien
-			//levanto datos en ram
-			status = 1;
 		}else{
     		//todos los sectores estan defectuosos
     		//no se puede hacer nada, mandar un mensaje al celular
@@ -246,7 +246,8 @@ tDirProg			dirProg;
 
         	//chequea estado de sectores de programacion del ticket y restaura si por lo menos un sector esta ok
         	checkDataProgTicket();
-        	if ((!((byte)blckPROG_TICKET == 0x0f)) && ((byte)blckPROG_TICKET != 0x00)){
+        	if ((blckPROG_TICKET != 0xf) && //= 0xf no hace falta restaurar
+        		(blckPROG_TICKET != 0x0)){  //= 0x0 no se puede restaurar
 				if(blckPROG1_TICKET ||
 				   blckPROG2_TICKET ||
 				   blckPROG3_TICKET ||
@@ -260,15 +261,16 @@ tDirProg			dirProg;
 
         	//chequea estado de sectores de programacion del ticket recaudacion y restaura si por lo menos un sector esta ok
         	checkDataProgTicketRecaud();
-        	if (!((byte)blckPROG_TICKET_RECAUD == 0x0f) && ((byte)blckPROG_TICKET_RECAUD != 0x00)){
+        	if ( (blckPROG_TICKET_RECAUD != 0xf) &&   //= 0xf no hace falta restaurar
+        		 (blckPROG_TICKET_RECAUD != 0x0)){	  //= 0x0 no se puede restaturar
         		if (blckPROG1_TICKET_RECAUD ||
-						  blckPROG2_TICKET_RECAUD ||
-						  blckPROG3_TICKET_RECAUD ||
-						  blckPROG4_TICKET_RECAUD){
-						  //hay al menos un sector que no esta defectuoso
-						  //restauro y levanto datos en ram
-						  restoreTicketRecaud();
-						  checkDataProgTicketRecaud();
+					blckPROG2_TICKET_RECAUD ||
+					blckPROG3_TICKET_RECAUD ||
+					blckPROG4_TICKET_RECAUD){
+					//hay al menos un sector que no esta defectuoso
+					//restauro y levanto datos en ram
+					restoreTicketRecaud();
+					checkDataProgTicketRecaud();
 				}
         	}
     }
@@ -509,7 +511,7 @@ tDirProg			dirProg;
       	uint32_t blgPrg;
       	uint32_t dirProgOk = 0;
 
-      	dirProgOk = ADDRESS_PROG1; //devuelve esta direccion por defecto
+      	dirProgOk = ADDRESS_PROG_TICKET_RECAUD; //devuelve esta direccion por defecto
       	if(blckPROG1_TICKET){
       		dirProgOk = ADDRESS_PROG_TICKET_RECAUD;
       	}else if(blckPROG2_TICKET){
@@ -614,7 +616,7 @@ tDirProg			dirProg;
 		}
     	//restaura DATOS
     	EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET_RECAUD);
-    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
  	    //test
  		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
      }
