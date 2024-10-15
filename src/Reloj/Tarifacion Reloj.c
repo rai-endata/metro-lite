@@ -398,7 +398,6 @@
     }
 
 
-
     void tarifarRELOJ (void){
 		if(ESTADO_RELOJ==OCUPADO){
 			RELOJ_tarifacion();

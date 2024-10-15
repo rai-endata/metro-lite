@@ -12,7 +12,7 @@
   //#include "- Visor Config -.h"
   //#include "General\HAL.h"                      // Hardware Abstraction Layer
   #include "Manejo de Buffers.h"
-
+  #include "Eeprom.h"
     
 /*********************************************************************************************/
 /* PROTOTIPOS */
@@ -28,7 +28,6 @@
   static void verificar_iniWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
   static void verificar_fin_buffer (byte** ptr_address, byte* ptr_ini_address, uint16_t buffer_long);
   static void verificar_finWord_buffer (word** ptr_address, word* ptr_ini_address, uint16_t buffer_long);
-
 
   static void guardarWord_en_buffer (word** ptr_address, word data_in);
   static word extraerWord_de_buffer (word** ptr_address);

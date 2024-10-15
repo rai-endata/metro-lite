@@ -338,6 +338,8 @@ void rtc_write_backup_reg(uint32_t BackupRegister, uint32_t data) {
  			//_Error_Handler(__FILE__, __LINE__);
  			//MX_RTC_Init();
  		}
+		//actualizo RTC_Date
+		rtc__actDATE();
 
 
 

@@ -1146,7 +1146,6 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 				}else{
 					TICKET_PARCIAL_setFin(sesion_ptrs[MENU_REPORTE_TURNO_index], finTURNO_ptr);   // Puntero a inicio de turno seleccionado
 
-
 					//date inicio turno
 					k = string_copy_returnN(&comandoMENSAJE_Buffer[i],"\Inicio:    "); //7 espacios
 					i=i+k;

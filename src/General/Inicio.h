@@ -15,7 +15,9 @@ typedef union {
   }Bits;
 }inicioFLAGS1;
 
-extern byte 		corteALIMENTACION;
+extern byte corteALIMENTACION;
+extern byte viajeInconcluso;
+
 extern inicioFLAGS1             	_inicio_F1;
      #define inicio_F1             	_inicio_F1.Byte
      #define INICIO_microCorte     	_inicio_F1.Bits.microCorte
@@ -25,10 +27,12 @@ extern inicioFLAGS1             	_inicio_F1;
 	 #define PVD_OFF			 	_inicio_F1.Bits.pvd_off
 
 
-#define valorPrimerEncendido      0x55AA
-//const uint16_t FLASH_PRIMER_ENCENDIDO = {NULL};
-//const uint16_t FLASH_PRIMER_ENCENDIDO[] = {0x0000};
-#define EEPROM_PRIMER_ENCENDIDO   ADDR_EEPROM_PRIMER_ENCENDIDO
+#define valorPrimerEncendido    0x55AA
+#define EEPROM_PRIMER_ENCENDIDO ADDR_EEPROM_PRIMER_ENCENDIDO
+
+#define rxCorteLargoPrevio           0x0000
+#define noRxCorteLargoPrevio         0x0100
+#define EEPROM_YA_HUBO_CORTE_LARGO ADDR_EEPROM_YA_HUBO_CORTE_LARGO
 
 
 extern tDATE HoraApagado;
@@ -41,5 +45,7 @@ extern void borrarPrimerEncendido (void);
 extern void determinePrimerEncendido (void);
 
 extern void check_corte_alimentacion(void);
+extern void set_rxCorteLargoPrevio(void);
+extern void set_noRxCorteLargoPrevio(byte estado_reloj);
 
 #endif

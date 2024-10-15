@@ -19,13 +19,26 @@
 //tEEPROM dataEE;
 
 
-void write_backup_eeprom(void){
+void write_backup_eeprom(byte motivoBackup){
+
+	//motivoBackup
+	//0: se colgo el equipo (HardFault_Handler)
+	//1: se desconecto la alimentacion del equipo ( HAL_PWR_PVDCallback)
+    //1 guarda desconexion de alimentacion para reportar en ticket de turno
+    //motivo backup lo guardo en primer LSB
+	//ultimo viaje inconcluos lo guardo en segundo LSB
 
 	byte* ptrDIR;
 	uint8_t buffer_backup[128];
+	uint8_t aux;
+
     uint8_t i=0;
 
-	buffer_backup[i] = 1; i++;
+    aux = motivoBackup;
+    if(viajeInconcluso){
+      aux = aux | 0x2;
+    }
+	buffer_backup[i] = aux; i++;
 	buffer_backup[i] = tarifa_1_8; i++;
 	buffer_backup[i] = ESTADO_RELOJ; i++;
 
@@ -112,6 +125,7 @@ void read_backup_eeprom(void){
 	uint8_t* ptrDIR;
 	uint8_t buffer_backup[128];
     uint8_t i=0;
+    uint8_t aux;
 
     uint32_t addr;
     uint32_t address_eeprom;
@@ -120,7 +134,12 @@ void read_backup_eeprom(void){
     	//me fijo si hubo corte de alimentacion
     	EEPROM_ReadBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,SIZE_BACKUP_EEPROM);
 
-    	corteALIMENTACION = buffer_backup[i]; i++;
+    	aux = buffer_backup[i]; i++;
+    	corteALIMENTACION = aux & 0x1;
+    	aux = aux & 0x2;
+    	if(aux){
+    	   viajeInconcluso = 1;
+    	}
     	tarifa_1_8		  = buffer_backup[i]; i++;
 
     	if(tarifa_1_8 < 5){
@@ -229,7 +248,7 @@ void read_horaAPAGADO_eeprom(void){
 	HoraApagado.hora[2]  = buffer_backup[i];
 }
 
-
+/*
 void test_size(void){
 
 	uint32_t addr1,addr2,addr3,addr4,addr5,addr6;
@@ -278,7 +297,7 @@ void test_size(void){
 	addr14 =ADDRESS_CORTE_ALIM_EEPROM;
 
 }
-
+*/
 //RUTINAS IMPORTADAS DE PROYECTO ANTERIOR PARA COMPATIBILIDAD DE USO DE RUTINAS
 //******************************************************************************
 
@@ -298,9 +317,10 @@ void test_size(void){
 
   /* INICIALIZACION DE EEPROM */
   /****************************/
+  /*
     void EEPROM_ini (byte initee){
     }
-
+*/
 
   /* INICIAR GRABACION DE EEPROM */
   /*******************************/
@@ -343,11 +363,12 @@ void test_size(void){
 			  }
 		}
     }
-           word *prueba_1;
-           byte prueba_2;
+  //         word *prueba_1;
+  //         byte prueba_2;
 
   /* GRABACION DE UN BYTE EN EEPROM */
   /**********************************/
+ /*
     tEEPROM_ERROR grabar_byte_EEPROM (byte dato, uint16_t* EEPROM_ptr, byte mask){
       // Rutina que dada una variable en EEPROM, (4bytes) graba solamente 1 byte
       // de esa variable y el resto lo deja como esta. La mascara indica que
@@ -405,9 +426,12 @@ void test_size(void){
       return(error);
     }
 
+*/
 
   /* GRABACION DE WORD EN EEPROM */
   /*******************************/
+
+  /*
     tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask){
       // Rutina que dada una variable en EEPROM, (4bytes) graba solamente 2 bytes
       // (word) de esa variable y el resto lo deja como esta. La mascara indica que
@@ -444,11 +468,11 @@ void test_size(void){
 
       return(error);
     }
-
+*/
 
   /* GRABACION DE UN BUFFER EN EEPROM */
   /************************************/
-    tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size){
+    tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t max_size){
       // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
       // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
       // Esta cantidad debe ser multiplo de 4
@@ -467,7 +491,7 @@ void test_size(void){
         EEPROMsize_max = EEPROM_PAGE_SIZE_BYTES;              // cantidad de bytes de una pagina
 
         fin_datos = 0;                              // Reseteo Variable
-        fin_ptr = (byte*) data_buffer;
+        fin_ptr = (byte*) ptrRam;
         while ((EEPROMsize_max != 0) && !(fin_datos)){
 
           EEPROMsize_max--;                         // Voy decrementando cantidad de 4bytes a grabar
@@ -477,15 +501,15 @@ void test_size(void){
             fin_datos = 1;                          // Llegue al fin => Lo grabo y salgo
           }
 
-          //error = EEPROM_clear(EEPROM_ptr);                 // Borro Direccion de EEPROM donde voy a grabar los datos. Borro 2 WORDS
-          //page = (word)EEPROM_ptr/128;
-          error = EEPROM_write(EEPROM_ptr, *data_buffer);   // Grabar Word en EEPROM
+          //error = EEPROM_clear(ptrEeprom);                 // Borro Direccion de EEPROM donde voy a grabar los datos. Borro 2 WORDS
+          //page = (word)ptrEeprom/128;
+          error = EEPROM_write(ptrEeprom, *ptrRam);   // Grabar Word en EEPROM
 
-          //j = ((word)EEPROM_ptr - (128*3 + 172))/2;
-          //copia[j] = *data_buffer;
+          //j = ((word)ptrEeprom - (128*3 + 172))/2;
+          //copia[j] = *ptrRam;
 
-          EEPROM_ptr++;                             		// Avanzo puntero de EEPROM
-          data_buffer++;                            		// Avanzo Puntero de Datos
+          ptrEeprom++;                             		// Avanzo puntero de EEPROM
+          ptrRam++;                            		// Avanzo Puntero de Datos
 
 
           if (!fin_datos){
@@ -500,13 +524,13 @@ void test_size(void){
             if ((*fin_ptr == finEEPROM_H) && (*(fin_ptr+1) == finEEPROM_L)){
               fin_datos = 1;                        // Llegue al fin => Lo grabo y salgo
             }
-            error = EEPROM_write(EEPROM_ptr, *data_buffer); // Grabar Word en EEPROM
+            error = EEPROM_write(ptrEeprom, *ptrRam); // Grabar Word en EEPROM
 
-            //j = ((word)EEPROM_ptr - (128*3 + 172))/2;
-            //copia[j] = *data_buffer;
+            //j = ((word)ptrEeprom - (128*3 + 172))/2;
+            //copia[j] = *ptrRam;
 
-            EEPROM_ptr++;                           // Avanzo puntero de EEPROM
-            data_buffer++;                          // Avanzo Puntero de Datos
+            ptrEeprom++;                           // Avanzo puntero de EEPROM
+            ptrRam++;                          // Avanzo Puntero de Datos
 
             // chequeo condicion |XX|XX|XX|DF||0A|
             fin_ptr++;
@@ -521,10 +545,10 @@ void test_size(void){
           }else{
             // Si llegue al fin de datos, en el word anterior, ahora graba CEROS para rellenar el
             // word que falta para completar los 4 bytes
-            error = EEPROM_write(EEPROM_ptr,(word) 0x0000); // Grabar Word en EEPROM
+            error = EEPROM_write(ptrEeprom,(word) 0x0000); // Grabar Word en EEPROM
 
-           // j = (((word)EEPROM_ptr - (128*3 + 172)))/2;
-           // copia[j] = *data_buffer;
+           // j = (((word)ptrEeprom - (128*3 + 172)))/2;
+           // copia[j] = *ptrRam;
 
           }
         }
@@ -538,7 +562,7 @@ void test_size(void){
 
     /* GRABACION DE UN BUFFER EN EEPROM */
       /************************************/
-        tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size){
+        tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t max_size){
           // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
           // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
           // Esta cantidad debe ser multiplo de 4
@@ -554,7 +578,7 @@ void test_size(void){
 
 
 
-			error = EEPROM_WriteBuffer((uint8_t*) data_buffer, EEPROM_ptr, max_size);
+			error = EEPROM_WriteBuffer((uint8_t*) ptrRam, ptrEeprom, max_size);
 			if(error == errNone){
 				error1 = EEPROM_OK;
 			}else{
@@ -573,19 +597,18 @@ void test_size(void){
   /* ESCRITURA DE 1 WORD EN EEPROM */
   /*********************************/
 
-    tEEPROM_ERROR EEPROM_write (word* EEPROM_ptr, word dato){
+    tEEPROM_ERROR EEPROM_write (word* ptrEeprom, word dato){
       // Programa 1 word en la EEPROM, en la direccion pasada como argumento
       tEEPROM_ERROR error;
-      uint16_t buffer_backup[1];
-      uint32_t address_eeprom;
+      uint16_t bufferWord[1];
+      uint32_t addressEeprom;
       error_t err;
 
-      error = EEPROM_OK;                // Asumo que no hay error
+        error = EEPROM_OK;                // Asumo que no hay error
 
-  		buffer_backup[0] = dato;
-  		address_eeprom = EEPROM_ptr;
+  		bufferWord[0] = dato;
 
-  		err = EEPROM_WriteBuffer((uint8_t*) &buffer_backup, address_eeprom, (uint16_t)2);
+  		err = EEPROM_WriteBuffer((uint8_t*) &bufferWord, (uint32_t)ptrEeprom, (uint16_t)2);
         if(err != errNone){
         	//para debug
        // 	uint8_t stop=1;

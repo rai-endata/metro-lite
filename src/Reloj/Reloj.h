@@ -308,8 +308,8 @@
     extern void cambioRELOJ_timer (void);
     extern void RELOJ_clearMOTIVO_paseOCUPADO(void);
 
-    extern void cobrandoDATE_enFLASH (byte forced);
-    extern void ocupadoDATE_enFLASH (byte forced);
+    //extern void cobrandoDATE_enFLASH (byte forced);
+    //extern void ocupadoDATE_enFLASH (byte forced);
     extern void  SaveDatGps(byte* data_ptr, byte estado);
     extern void  ResetDatGps(byte estado);
 
@@ -329,7 +329,7 @@
     extern void rearmar_y_TX_cmdOcupado(byte nroViaje, byte status);
     extern void rearmar_y_TX_cmdLibre(byte nroViaje);
     extern byte chkCmd_Reloj(byte Rx_cmd);
-    extern void guardar_dateLIBRE(void);
-    extern void guardar_dateOCUPADO(void);
+    extern void corregir_dateLIBRE(void);
+    extern void corregir_dateOCUPADO(void);
 
 #endif

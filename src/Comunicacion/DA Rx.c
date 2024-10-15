@@ -28,6 +28,7 @@
 #include ".\Cx - Visor Android\Rx-VA.h"
 #include "Air Update.h"
 #include "Constantes.h"
+#include "Inicio.h"
 
 
 //#include "usart1.h"
@@ -71,6 +72,8 @@
 	static void Print_turno (byte* Rx_data_ptr);
 	static void Rx_Borrar_toda_la_eeprom (byte* Rx_data_ptr);
 	static void UpdateSuccess_Rx (byte* Rx_data_ptr);
+	static void SimulaCorteAlimentacion(void);
+	static void SimulaMicroCorte(void);
 
 	byte RxDA_buffer[255];                    // Buffer de Recepcion de datos desde la Central
 
@@ -369,8 +372,8 @@
 	    Rx_comando_70,
 	    Rx_comando_71,
 	    Rx_comando_72,
-	    Rx_comando_73,
-	    Rx_comando_74,
+		SimulaMicroCorte,
+	    SimulaCorteAlimentacion,
 	    Rx_Borrar_toda_la_eeprom,
 		Leer_reporteTURNO_PARCIAL,
 	    Print_turno,
@@ -589,6 +592,8 @@
 								//cuando se transmite comando sin conexion
 								//espero la respuesta para transmitir el sgte.
 								esperarRespuesta_cmdReloj = 0;
+								//sirve para indicar que fue recibido comando reloj despues de un arranque
+								set_rxCorteLargoPrevio();
 							}
 
 							anularTx_cmd(Rx_cmd);           				// Anulo la transmisión del comando
@@ -996,6 +1001,7 @@
 
 					borrar_EEPROM();
 				}
+
 
 	void READandPRINT_regTABLA_REPORTES (byte* ptrTABLA, byte tipo){
 
@@ -2636,3 +2642,32 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
             N = i+1;
 	        Tx_cmdTRANSPARENTE(N, buff_aux, reint_0);
 	}
+
+
+	static void SimulaCorteAlimentacion(void){
+
+		//hago un backup en eeprom
+		ENABLE_SPI_byPOLLING();
+		EEPROM_Protect(EEPROM_ProtectNone);
+		write_backup_eeprom(1);
+		EEPROM_Protect(EEPROM_ProtectAll);
+		//ESPERO 20 SEGUNDOS
+		HAL_Delay(20000);
+		//reseteo el equipo
+		NVIC_SystemReset();
+	}
+
+	static void SimulaMicroCorte(void){
+
+		//hago un backup en eeprom
+		ENABLE_SPI_byPOLLING();
+		EEPROM_Protect(EEPROM_ProtectNone);
+		write_backup_eeprom(0);
+		EEPROM_Protect(EEPROM_ProtectAll);
+		//ESPERO 3 SEGUNDOS
+		HAL_Delay(3000);
+		//reseteo el equipo
+		NVIC_SystemReset();
+	}
+
+

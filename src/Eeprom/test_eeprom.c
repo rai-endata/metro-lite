@@ -5,10 +5,10 @@
 
 
 eeprom_u		*eeprom_64;
-
+/*
 #define member_size(type, member) sizeof(((type *)0)->member)
 
-error_t LC_EepromTest(void);
+//error_t LC_EepromTest(void);
 
 uint8_t received1[EEPROM_PAGE_SIZE_BYTES];
 uint8_t received2[EEPROM_PAGE_SIZE_BYTES];
@@ -59,6 +59,9 @@ uint8_t sent5[EEPROM_PAGE_SIZE_BYTES]=
 ,'B','B','B','B'
 };
 
+*/
+
+/*
 
 error_t LC_EepromTest(void){
 uint16_t i;
@@ -142,3 +145,4 @@ error_t rv=errNone;
 	WriteBuffer_EEPROM(sent5,0,64);
 
 }
+*/

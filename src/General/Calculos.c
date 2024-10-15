@@ -1896,99 +1896,102 @@
       byte i;
       uint32_t seconds;
       
-      D1 = BCDtoHEX(date1.fecha[0]);
-      M1 = BCDtoHEX(date1.fecha[1]);
-      Y1 = BCDtoHEX(date1.fecha[2]);
-      
-      if (Y1 > 50){
-        // Si es mayor a 50, es del 1900
-        longY1 = 1900 + Y1;
-      }else{
-        longY1 = 2000 + Y1;
-      }
-      
-      D2 = BCDtoHEX(date2.fecha[0]);
-      M2 = BCDtoHEX(date2.fecha[1]);
-      Y2 = BCDtoHEX(date2.fecha[2]);
-      
-      if (Y2 > 50){
-        // Si es mayor a 50, es del 1900
-        longY2 = 1900 + Y2;
-      }else{
-        longY2 = 2000 + Y2;
-      }
-      
-      // 1- Diferencia de AÑOS
-      dY = longY2 - longY1;
-      
-      //  2- Calculo diferencia en MESES y corrijo diferencia en AÑOS de ser necesario
-      if (M2 >= M1){
-        dM = M2 - M1;
-      }else{
-        dM = (12 - M1) + M2;          // Los mese que falta para que termine el año anterior, mas los meses actuales
-        dY--;                         // Como hubo cambio de año y no se superaron los meses, decremento diferencia de AÑOS
-      }
-      
-      //  3- Calculo diferencia en DIAS y corrijo diferencia en MES de ser necesario
-      if (D2 >= D1){
-        dD = D2 - D1;
-      }else{
-        finM1 = Tabla_FinMeses[M1];
-        if ((M1 == 2) && (Y1%4 == 0)){
-          finM1++;                    // Febrero y Año bisiesto => termina un dia despues
-        }
-        dD = (finM1 - D1) + D2;       // Los dias que falta para que termine el mes anterior, mas los dias actuales
-        dM--;                         // Como hubo cambio de mes y no se superaron los dias, decremento diferencia de MESES
-      }
+      if (dateValid(date1) && dateValid(date2)){
+          D1 = BCDtoHEX(date1.fecha[0]);
+          M1 = BCDtoHEX(date1.fecha[1]);
+          Y1 = BCDtoHEX(date1.fecha[2]);
 
-      // 4- Calculo diferencia total en DIAS
-      // Segun diferencia de AÑOS
-      difDias = 0;
-      i = Y1;
-      while (i < Y1 + dY){
-        difDias += 365;
-        if ((i % 4 == 0) && (M1<=2)){
-          difDias++;
-        }
-        i++;
-      }
-      
-      // Segun diferencia de MESES
-      i = M1;
-      while (i < M1 + dM){
-        if (i<=12){
-          difDias += Tabla_FinMeses[i];
-        }else{
-          difDias += Tabla_FinMeses[i-12];
-        }
-        if ((i == 2) &&  (Y1 % 4 == 0)){
-          difDias++;                  // Febrero y año bisiesto
-        }
-        i++;
-      }
-      
-      // Segun diferencia de DIAS
-      difDias += dD;
+          if (Y1 > 50){
+            // Si es mayor a 50, es del 1900
+            longY1 = 1900 + Y1;
+          }else{
+            longY1 = 2000 + Y1;
+          }
 
-      seconds = restaHoraria(date2.hora, date1.hora);
-      
-      if ((seconds <= 86400) && 
-          (date2.hora[0] <= date1.hora[0]) &&
-          (date2.hora[1] <= date1.hora[1]) &&
-          (date2.hora[2] <= date1.hora[2])){
-        // 86400seg = 24hs => Si pasaron menos de 24hs => a la diferencia de dias 
-        // le debo restar 1, siempre y cuando sea mayor a 0
-        //
-        // EDIT 26/09/12
-        //  Ademas se debe cumplir que la nueva hora (hora2) sea menor o igual a la hora1
-        if (difDias > 0){
-          difDias--;
-        }
+          D2 = BCDtoHEX(date2.fecha[0]);
+          M2 = BCDtoHEX(date2.fecha[1]);
+          Y2 = BCDtoHEX(date2.fecha[2]);
+
+          if (Y2 > 50){
+            // Si es mayor a 50, es del 1900
+            longY2 = 1900 + Y2;
+          }else{
+            longY2 = 2000 + Y2;
+          }
+
+          // 1- Diferencia de AÑOS
+          dY = longY2 - longY1;
+
+          //  2- Calculo diferencia en MESES y corrijo diferencia en AÑOS de ser necesario
+          if (M2 >= M1){
+            dM = M2 - M1;
+          }else{
+            dM = (12 - M1) + M2;          // Los mese que falta para que termine el año anterior, mas los meses actuales
+            dY--;                         // Como hubo cambio de año y no se superaron los meses, decremento diferencia de AÑOS
+          }
+
+          //  3- Calculo diferencia en DIAS y corrijo diferencia en MES de ser necesario
+          if (D2 >= D1){
+            dD = D2 - D1;
+          }else{
+            finM1 = Tabla_FinMeses[M1];
+            if ((M1 == 2) && (Y1%4 == 0)){
+              finM1++;                    // Febrero y Año bisiesto => termina un dia despues
+            }
+            dD = (finM1 - D1) + D2;       // Los dias que falta para que termine el mes anterior, mas los dias actuales
+            dM--;                         // Como hubo cambio de mes y no se superaron los dias, decremento diferencia de MESES
+          }
+
+          // 4- Calculo diferencia total en DIAS
+          // Segun diferencia de AÑOS
+          difDias = 0;
+          i = Y1;
+          while (i < Y1 + dY){
+            difDias += 365;
+            if ((i % 4 == 0) && (M1<=2)){
+              difDias++;
+            }
+            i++;
+          }
+
+          // Segun diferencia de MESES
+          i = M1;
+          while (i < M1 + dM){
+            if (i<=12){
+              difDias += Tabla_FinMeses[i];
+            }else{
+              difDias += Tabla_FinMeses[i-12];
+            }
+            if ((i == 2) &&  (Y1 % 4 == 0)){
+              difDias++;                  // Febrero y año bisiesto
+            }
+            i++;
+          }
+
+          // Segun diferencia de DIAS
+          difDias += dD;
+
+          seconds = restaHoraria(date2.hora, date1.hora);
+
+          if ((seconds <= 86400) &&
+              (date2.hora[0] <= date1.hora[0]) &&
+              (date2.hora[1] <= date1.hora[1]) &&
+              (date2.hora[2] <= date1.hora[2])){
+            // 86400seg = 24hs => Si pasaron menos de 24hs => a la diferencia de dias
+            // le debo restar 1, siempre y cuando sea mayor a 0
+            //
+            // EDIT 26/09/12
+            //  Ademas se debe cumplir que la nueva hora (hora2) sea menor o igual a la hora1
+            if (difDias > 0){
+              difDias--;
+            }
+          }
+
+      }else{
+    	  difDias = 0xffffffff;
       }
-      
       return(difDias);  
     }
-
 
   /* DIFERENCIA DE DIAS EN SEGUNDOS */
   /**********************************/

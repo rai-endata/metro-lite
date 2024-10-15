@@ -23,7 +23,7 @@
 	#include "tipo de equipo.h"
 	#include "Comandos sin conexion a central.h"
 	#include "Tarifa Automatica.h"
-
+	#include "inicio.h"
 	//#include "Param Reloj.h"
 
 	#include "DA Rx.h"
@@ -306,6 +306,7 @@ void Pase_a_LIBRE (byte estado){
 	  			dataSC.nro_viaje = nroCorrelativo_INTERNO;
 	  			dataSC.estado_reloj = ESTADO_RELOJ;
 	  			push_dataSC(dataSC);
+	  			push_dataSC_inEeprom(dataSC);
 			}
 
 			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
@@ -365,6 +366,15 @@ void Pase_a_OCUPADO (byte estado){
 
 		ocupadoDATE  = getDate();
 		RELOJ_dateCambio = ocupadoDATE;
+		//inicializo cobrandoDATE por si hay un corte largo en ocupado
+		cobrandoDATE.hora[0] = 0xff;   // HORA
+		cobrandoDATE.hora[1] = 0xff;   // MINUTOS
+		cobrandoDATE.hora[2] = 0xff;   // SEGUNDOS
+		cobrandoDATE.fecha[0] = 0xff;  // DIA
+		cobrandoDATE.fecha[1] = 0xff;  // MES
+		cobrandoDATE.fecha[2] = 0xff;  // AÑO
+		viajeInconcluso = 0;
+
 
 		ocupadoDATE_writeFLASH = 1;
 
@@ -437,7 +447,7 @@ void Pase_a_OCUPADO (byte estado){
 		dataSC.nro_viaje = nroCorrelativo_INTERNO;
 		dataSC.estado_reloj = ESTADO_RELOJ;
 		push_dataSC(dataSC);	//guardo estado nro de viaje, para reconstruir el cmd cuando vuelva la conexion
-
+		push_dataSC_inEeprom(dataSC);
 	}
 
 	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
@@ -2036,37 +2046,37 @@ void cambio_de_reloj_x_sensor_asiento(void){
 */
 
 
-	void ocupadoDATE_enFLASH (byte forced){
+  //	void ocupadoDATE_enFLASH (byte forced){
 
-		tFLASH_ERROR error;
+  //		tFLASH_ERROR error;
 
-		error = FLASH_ERR_NONE;
-		if (ocupadoDATE_writeFLASH && (/*FLASH_chkCanUpdate() ||*/ forced)){
-			ocupadoDATE_writeFLASH = 0;
-			error = FLASH_updateSector((word*) &FLASH_ocupadoDATE, (byte*) &ocupadoDATE, (word) 8);
-			if(error != FLASH_ERR_NONE){
-				//si hubo error vuelvo a intentar
-				cobrandoDATE_writeFLASH = 1;
-			}
+  //	error = FLASH_ERR_NONE;
+  //		if (ocupadoDATE_writeFLASH && (/*FLASH_chkCanUpdate() ||*/ forced)){
+  //			ocupadoDATE_writeFLASH = 0;
+  //			error = FLASH_updateSector((word*) &FLASH_ocupadoDATE, (byte*) &ocupadoDATE, (word) 8);
+  //			if(error != FLASH_ERR_NONE){
+  //				//si hubo error vuelvo a intentar
+  //				cobrandoDATE_writeFLASH = 1;
+  //			}
 
-		}
-	}
+  //		}
+  //	}
 
 
-	void cobrandoDATE_enFLASH (byte forced){
+	//	void cobrandoDATE_enFLASH (byte forced){
 
-		tFLASH_ERROR error;
+	//		tFLASH_ERROR error;
 
-		error = FLASH_ERR_NONE;
-		if (cobrandoDATE_writeFLASH && (/*FLASH_chkCanUpdate() ||*/ forced)){
-			cobrandoDATE_writeFLASH = 0;
-			error = FLASH_updateSector((word*) &FLASH_cobrandoDATE, (byte*) &cobrandoDATE, (word) 8);
-			if(error != FLASH_ERR_NONE){
-				//si hubo error vuelvo a intentar
-				cobrandoDATE_writeFLASH = 1;
-			}
-		}
-	}
+	//error = FLASH_ERR_NONE;
+	//if (cobrandoDATE_writeFLASH && (/*FLASH_chkCanUpdate() ||*/ forced)){
+	//	cobrandoDATE_writeFLASH = 0;
+	//	error = FLASH_updateSector((word*) &FLASH_cobrandoDATE, (byte*) &cobrandoDATE, (word) 8);
+	//	if(error != FLASH_ERR_NONE){
+	//		//si hubo error vuelvo a intentar
+	//		cobrandoDATE_writeFLASH = 1;
+	//	}
+	//}
+	//}
 
 
 	void  ini_pulsador_cambio_reloj(void){
@@ -3186,7 +3196,7 @@ byte chkCmd_Reloj(byte Rx_cmd){
 	return(status);
 }
 
-void guardar_dateLIBRE(void){
+void corregir_dateLIBRE(void){
 	//tomo hora y fecha
 	getDate();
 	//fuente de hora
@@ -3201,7 +3211,7 @@ void guardar_dateLIBRE(void){
 	Pase_a_LIBRE_Buffer[6] = RTC_Date.fecha[2];  					// AÑO
 }
 
-void guardar_dateOCUPADO(void){
+void corregir_dateOCUPADO(void){
 	//tomo hora y fecha
 	getDate();
 

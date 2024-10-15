@@ -126,6 +126,22 @@
 #define	ADDR_INDEX_LAST_SESION 			ADDR_EEPROM_REPORTE_NRO_TURNO + SIZE_EEPROM_REPORTE_NRO_TURNO
 #define	SIZE_INDEX_LAST_SESION			sizeof(uint16_t)
 
+//definicion de direccion de variables en eeprom de datos sin conexion
+#define	ADDR_DATOS_SC_GET_PTR			ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION
+#define	SIZE_DATOS_SC_GET_PTR			sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC_PUT_PTR 		    ADDR_DATOS_SC_GET_PTR + SIZE_DATOS_SC_GET_PTR
+#define	SIZE_DATOS_SC_PUT_PTR			sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC_CNT    		    ADDR_DATOS_SC_PUT_PTR + SIZE_DATOS_SC_PUT_PTR
+#define	SIZE_DATOS_SC_CNT			    sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC 			    	ADDR_DATOS_SC_CNT + SIZE_DATOS_SC_CNT
+#define	SIZE_DATOS_SC			    	dim_bufferSC
+
+#define	ADDR_EEPROM_YA_HUBO_CORTE_LARGO		ADDR_DATOS_SC + SIZE_DATOS_SC
+#define	SIZE_YA_HUBO_CORTE_LARGO		    sizeof(uint16_t)
+
 //************  Definicion de datos de programacion - ocupa 3 paginas  **************
 //***********************************************************************************
 
@@ -238,20 +254,20 @@
 
  /* RUTINAS */
  /***********/
-   extern void EEPROM_ini (byte initee);
+  // extern void EEPROM_ini (byte initee);
    extern void EEPROM_iniGrabacion (void);
    extern void EEPROM_chkRequest (byte force);
      #define EEPROM_chkRequest_normal      (EEPROM_chkRequest(0))
      #define EEPROM_chkRequest_forced      (EEPROM_chkRequest(1))
 
-   extern tEEPROM_ERROR grabar_byte_EEPROM (byte dato, uint16_t* EEPROM_ptr, byte mask);
-   extern tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask);
+   //extern tEEPROM_ERROR grabar_byte_EEPROM (byte dato, uint16_t* EEPROM_ptr, byte mask);
+  // extern tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask);
    extern tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
    extern tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
 
 	 void read_backup_eeprom(void);
-	 void write_backup_eeprom(void);
-	 extern void test_size(void);
+	 void write_backup_eeprom(byte motivoBackup);
+	// extern void test_size(void);
 
 	 extern void levantar_variablesEEPROM (void);
 

@@ -7,7 +7,7 @@
 
 
 #include "main.h"
-
+#include "eeprom.h"
 
   void  NMI_Handler(void) {
   	while(1){
@@ -38,10 +38,8 @@
   	        volatile unsigned long _BFAR ;
   	        volatile unsigned long _MMAR ;
 
-		  ptr1--;
-		  ptr2--;
-  	      NVIC_SystemReset();
-
+ 		    ptr1--;
+		    ptr2--;
   	        stacked_r0 = ((unsigned long)hardfault_args[0]) ;
   	        stacked_r1 = ((unsigned long)hardfault_args[1]) ;
   	        stacked_r2 = ((unsigned long)hardfault_args[2]) ;
@@ -73,6 +71,13 @@
 
   	        //__asm("BKPT #0\n") ; // Break into the debugger
 
+  	        //hago un backup en eeprom
+		    ENABLE_SPI_byPOLLING();
+		    EEPROM_Protect(EEPROM_ProtectNone);
+		    write_backup_eeprom(0);
+			EEPROM_Protect(EEPROM_ProtectAll);
+  	        //reseteo el equipo
+  	        NVIC_SystemReset();
   }
 
 

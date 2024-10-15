@@ -393,7 +393,8 @@ error_t EEPROM_WriteBuffer(uint8_t* array, uint32_t addr, uint16_t num)
 #if defined 	USING_MEMORY_PROTECT
 	if(EEPROM_IsProtected( addr,(uint16_t)(addr+num)))
  	{
- 		 return errProtected;
+ 		 //return errProtected;
+ 		EEPROM_Protect(EEPROM_ProtectNone);
  	}
 #endif
 

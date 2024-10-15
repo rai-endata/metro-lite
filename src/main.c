@@ -144,8 +144,8 @@ int main(void)
 	}else{
 		SystemClock_Config_sinRTC();
 	}
-	//IWDG_Config();		// Configurar el módulo IWDG
-	MX_SPIx_Init();			//ini spi
+	// IWDG_Config();					// Configurar el módulo IWDG
+	MX_SPIx_Init();						// ini spi
 	if((tipo_de_equipo != MINI_BLUE)){
 		EPROM_CS_Init();
 		USART1_Ini();
@@ -190,11 +190,12 @@ int main(void)
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
 	#endif
 
+	ini_acumular_cmdSC();					//se debe ejecutar antes de	check_corte_alimentacion()
 	check_corte_alimentacion();
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();
 	InterruptPVD_When_VDD_OFF_Config();
-	ini_acumular_cmdSC();
+
 
 #ifdef RELOJ_DEBUG
 	iniPRINT_DEBUG();
@@ -793,7 +794,7 @@ IDD(PVD) PVD current consumption - - 0.15 0.26(1) microA
 			//BSP_LED_On(LED3);	//PA5
 		    ENABLE_SPI_byPOLLING();
 		    EEPROM_Protect(EEPROM_ProtectNone);
-		    write_backup_eeprom();
+		    write_backup_eeprom(1);
 			EEPROM_Protect(EEPROM_ProtectAll);
 		//}
 	}

@@ -95,7 +95,7 @@
 		uint8_t    fichasTime[3];  		// Cantidad de Fichas de Tiempo
 		uint16_t   segundosEspera; 		// Espera (SEGUNDOS)
 		uint16_t   segundosTarifacion; 	// Espera (SEGUNDOS)
-		uint8_t    sgnLatLon;	  		//signo de latitud y longitud de gps
+		uint8_t    sgnLatLon;	  		// signo de latitud y longitud de gps
 		uint8_t    latitud[3];  		// latitud cobrando de GPS DEL CELULAR
 		uint8_t    longitud[3];  		// longitud cobrando de GPS DEL CELULAR
 		uint8_t	   velgps;			    // velocidad de GPS DEL CELULAR

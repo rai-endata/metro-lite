@@ -7,6 +7,8 @@
 #include "Ticket Viaje.h"
 #include "teclas.h"
 #include "eeprom.h"
+#include "inicio.h"
+
 
 
 uint32_t nroTICKET;
@@ -248,13 +250,31 @@ void print_ticket_viaje(void){
 			string_copy_incDest(ptrDouble,&buffer_Date_ocupado);
 			add_LF(ptrDouble);
 			string_copy_incDest(ptrDouble,"Fin:");
-			if(TARIFA_PESOS){
-				string_copy_incDest(ptrDouble,"       ");
+
+			if(viajeInconcluso){
+				string_copy_incDest(ptrDouble,"  VIAJE INCONCLUSO !!!   ");
+				add_LF(ptrDouble);
+				string_copy_incDest(ptrDouble,"Hubo una desconexion de energia,");
+				add_LF(ptrDouble);
+				string_copy_incDest(ptrDouble,"cuando el equipo estaba OCUPADO");
+				add_LF(ptrDouble);
+				string_copy_incDest(ptrDouble,"reiniciandose el equipo antes de");
+				add_LF(ptrDouble);
+				string_copy_incDest(ptrDouble,"concluya el viaje");
+				add_LF(ptrDouble);
+				printLINE(ptrDouble);
+
 			}else{
-				string_copy_incDest(ptrDouble,"        ");
+				if(TARIFA_PESOS){
+					string_copy_incDest(ptrDouble,"       ");
+				}else{
+					string_copy_incDest(ptrDouble,"        ");
+				}
+				string_copy_incDest(ptrDouble,&buffer_Date_cobrando);
+				add_LF(ptrDouble);
 			}
-			string_copy_incDest(ptrDouble,&buffer_Date_cobrando);
-			add_LF(ptrDouble);
+
+
 
 			string_copy_incDest(ptrDouble,"Distancia:");
 			if(DISTANCIAm_OCUPADO<1001){
@@ -331,9 +351,12 @@ void print_ticket_viaje(void){
 			//clearBOLD(ptrDouble);
 			//deshabilitar_negrita(ptrDouble);
 			//disableFONT_ITALIC(ptrDouble);
+
+			printLINE(ptrDouble);
+			string_copy_incDest(ptrDouble,"           Gracias ");
+			add_LF(ptrDouble);
 			printLINE(ptrDouble);
 
-			string_copy_incDest(ptrDouble,"           Gracias ");
 			//string_copy_incDest(ptrDouble,"     ");
 			//string_copy_incDest(ptrDouble,&buffer_nro_correlativo_viaje);
 

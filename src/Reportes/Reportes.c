@@ -203,6 +203,7 @@
       // Solo tiene sentido para RELOJ INTERNO
       //byte data[2];
       byte* data_ptr;
+      byte* ptrSC;
       //uint32_t putBKP;
       uint16_t valor;
       
@@ -213,7 +214,8 @@
       #ifdef VISOR_REPORTES
       if (REPORTES_HABILITADOS){
         //if (chkVISOR_firstBoot || reset){
-        if (VISOR_firstBoot || reset){
+        //if (VISOR_firstBoot || reset){
+     	if (VISOR_firstBoot){
           //inicializa nro correlativo
           nroCorrelativo_INTERNO = 0;
           EEPROM_WriteByte(EEPROM_NRO_CORRELATIVO, nroCorrelativo_INTERNO);
@@ -223,6 +225,7 @@
           //REPORTE_PUTptr = (tREG_GENERIC*)ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
           REPORTE_PUTptr = ADDR_EEPROM_REPORTE;      // Inicializo puntero de insercion
           data_ptr = (byte*) &REPORTE_PUTptr;           			// Guardo puntero PUT en EEPROM
+
           //FLASH_setDontTouchIRQ();                        		// No modificar IRQ al grabar FLASH
           REPORTE_flashError = FLASH_updateSector((uint16_t*) ADDR_EEPROM_REPORTE_PUT, data_ptr, (uint16_t) 4); // Grabar PUT ptr
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
@@ -232,6 +235,8 @@
           EEPROM_write(ADDR_EEPROM_REPORTE_NRO_VIAJE, 1);
           //FLASH_setDontTouchIRQ();                      			// No modificar IRQ al grabar FLASH
           EEPROM_write(ADDR_EEPROM_REPORTE_NRO_TURNO, valor);
+          //inicializa puntero get sin conexion
+
         }
 		//tomo datos de eeprom
 		EEPROM_ReadBuffer((uint8_t*)&REPORTE_PUTptr,ADDR_EEPROM_REPORTE_PUT,SIZE_EEPROM_REPORTE_PUT);
@@ -805,8 +810,8 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
     	(void)EEPROM_WriteBuffer( (uint8_t*)newReg_GETptr, (uint32_t)REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
 
     	//prueba
-    	newReg_GETptr_prueba = newRegistro_prueba;
-    	(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
+    	//newReg_GETptr_prueba = newRegistro_prueba;
+    	//(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
 
     	/*
     	//prueba

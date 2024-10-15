@@ -33,6 +33,7 @@
 
       // TIME OUT LAZO
       static void TO_lazo (void);
+      static void toLazo (void);
 
 
     /*********************************************************************************************/
@@ -60,6 +61,7 @@
       static word TO_lazo_cnt;                      // Contador de TIME OUT DE LAZO
         #define x100mseg_TO_lazo        1000           // 1 mseg a esperar en un lazo (FOR - WHILE)
 
+      word toLazoCnt;
 
     /*********************************************************************************************/
     /* ATENCION TIMER GENERAL DESDE LOOP */
@@ -512,7 +514,8 @@
         /***********************/
           static void tmr_100mseg_precisas (void){
 
-        	  TO_lazo();                      // Time Out LAZO
+        	  TO_lazo();                     // Time Out LAZO
+        	  toLazo ();					 // Time Out LAZO
             //cal_freq_pulsos();
             //timer_calculo_periodo();        // Inhibe el calculo de velocidad en el arranque del equipo
 
@@ -594,6 +597,16 @@
         }
 
 
+        /********************/
+          static void toLazo (void){
+             // Ejecutada cada 100mseg
+             // Time-Out para los lazos:
+             //  - For
+             //  - While
+               if (toLazoCnt){
+            	   toLazoCnt--;
+               }
+           }
 
 
 
