@@ -627,6 +627,14 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		Valor_VIAJE_Buffer[15] = *(ptrDISTAMNCIA_100+2);             //
 		Valor_VIAJE_Buffer[16] = *(ptrDISTAMNCIA_100+1);             //
 		Valor_VIAJE_Buffer[17] = *(ptrDISTAMNCIA_100+0);             //
+
+		//prueba
+		//Valor_VIAJE_Buffer[14] = 0;             //
+		//Valor_VIAJE_Buffer[15] = 0;             //
+		//Valor_VIAJE_Buffer[16] = *(ptrVELOCIDAD+1) ;;             //
+		//Valor_VIAJE_Buffer[17] = *(ptrVELOCIDAD+0);             //
+
+
 		Valor_VIAJE_Buffer[18] = minutosEspera;  				  //minutos de espera
 
 		Valor_VIAJE_Buffer[19] = *(ptrVELOCIDAD+1) ;            	//

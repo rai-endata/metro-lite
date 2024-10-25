@@ -10,14 +10,16 @@
 #include "eeprom_aux.h"
 #include "eeprom address.h"
 
+#include "Comandos sin conexion a central.h"
+
 //******************* ASIGNACION DE DIRECCIONES DE EEPROM **********************
 //******************************************************************************
 
-#define	ADDRESS_VARIOS     				ADDR_EEPROM_PAGE_0  // (pag0)
-#define	ADDRESS_PROG1     				ADDR_EEPROM_PAGE_1  // (pag1, pag2, Y pag3)     //Datos de programacion
-#define	ADDRESS_PROG2     				ADDR_EEPROM_PAGE_4  // (pag4, pag5, Y pag6)     //copia 1 datos de programacion
-#define	ADDRESS_PROG3     				ADDR_EEPROM_PAGE_7  // (pag7, pag8, Y pag9)	    //copia 2 datos de programacion
-#define	ADDRESS_PROG4     				ADDR_EEPROM_PAGE_10 // (pag10, pag11, Y pag12)  //copia 3 datos de programacion
+#define	ADDRESS_VARIOS     					ADDR_EEPROM_PAGE_0  // (pag0)
+#define	ADDRESS_PROG1     					ADDR_EEPROM_PAGE_1  // (pag1, pag2, Y pag3)     //Datos de programacion
+#define	ADDRESS_PROG2     					ADDR_EEPROM_PAGE_4  // (pag4, pag5, Y pag6)     //copia 1 datos de programacion
+#define	ADDRESS_PROG3     					ADDR_EEPROM_PAGE_7  // (pag7, pag8, Y pag9)	    //copia 2 datos de programacion
+#define	ADDRESS_PROG4     					ADDR_EEPROM_PAGE_10 // (pag10, pag11, Y pag12)  //copia 3 datos de programacion
 
 #define	ADDRESS_PROG_TICKET_PAGE1			ADDR_EEPROM_PAGE_13
 #define	ADDRESS_PROG_TICKET_PAGE2			ADDR_EEPROM_PAGE_13 + 128
@@ -35,14 +37,18 @@
 #define	ADDRESS_PROG_TICKET_PAGE2_bck3		ADDRESS_PROG_TICKET_PAGE1_bck3 + 128
 #define	ADDRESS_PROG_TICKET_RECAUD_bck3		ADDRESS_PROG_TICKET_PAGE1_bck3 + sizeof(tPRG_TICKET)
 
-#define	ADDRESS_REPORTES   					ADDR_EEPROM_PAGE_21
-#define	ADDR_BASE_TABLA_REPORTE				ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION
+#define	ADDRESS_VARIOS2    					ADDR_EEPROM_PAGE_21
 
-#define	ADDR_NEXT_REPORTE 					ADDR_BASE_TABLA_REPORTE + SIZE_EEPROM_REPORTE
+#define	ADDRESS_REPORTES   					ADDR_EEPROM_PAGE_22
 
 
-//  ************       Definicion de datos varios*******************************
-// ******************************************************************************
+
+
+//VARIOS
+//*********************************************************************************
+//****				 		pagina 0										  *****
+//*********************************************************************************
+//datos varios
 
 #define	ADDRESS_BACKUP_EEPROM  				ADDRESS_VARIOS
 
@@ -110,37 +116,23 @@
 #define	ADDR_EEPROM_CHOFER			    EEPROM_NRO_TICKET + SIZE_EEPROM_NRO_TICKET
 #define	SIZE_EEPROM_CHOFER			    sizeof(uint16_t)
 
-// Direccion reportes
-#define	ADDR_EEPROM_REPORTE_PUT			ADDRESS_REPORTES
-#define	SIZE_EEPROM_REPORTE_PUT			sizeof(uint32_t)
 
-#define	ADDR_EEPROM_REPORTE_INDEX 		ADDR_EEPROM_REPORTE_PUT + SIZE_EEPROM_REPORTE_PUT
-#define	SIZE_EEPROM_REPORTE_INDEX		sizeof(uint16_t)
+// PROGRAMACION DEL RELOJ Y DEL MOVIL
+//*********************************************************************************
+//****				 		pagina 1 										  *****
+//****				 		pagina 2 										  *****
+//****				 		pagina 3 										  *****
+//****				 		pagina 4 										  *****
+//****				 		pagina 5 										  *****
+//****				 		pagina 6 										  *****
+//****				 		pagina 7 										  *****
+//****				 		pagina 8 										  *****
+//****				 		pagina 9 										  *****
+//****				 		pagina 10 										  *****
+//****				 		pagina 11 										  *****
+//****				 		pagina 12 										  *****
+//*********************************************************************************
 
-#define	ADDR_EEPROM_REPORTE_NRO_VIAJE	ADDR_EEPROM_REPORTE_INDEX + SIZE_EEPROM_REPORTE_INDEX
-#define	SIZE_EEPROM_REPORTE_NRO_VIAJE	sizeof(uint16_t)
-
-#define	ADDR_EEPROM_REPORTE_NRO_TURNO	ADDR_EEPROM_REPORTE_NRO_VIAJE + SIZE_EEPROM_REPORTE_NRO_VIAJE
-#define	SIZE_EEPROM_REPORTE_NRO_TURNO	sizeof(uint16_t)
-
-#define	ADDR_INDEX_LAST_SESION 			ADDR_EEPROM_REPORTE_NRO_TURNO + SIZE_EEPROM_REPORTE_NRO_TURNO
-#define	SIZE_INDEX_LAST_SESION			sizeof(uint16_t)
-
-//definicion de direccion de variables en eeprom de datos sin conexion
-#define	ADDR_DATOS_SC_GET_PTR			ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION
-#define	SIZE_DATOS_SC_GET_PTR			sizeof(uint16_t)
-
-#define	ADDR_DATOS_SC_PUT_PTR 		    ADDR_DATOS_SC_GET_PTR + SIZE_DATOS_SC_GET_PTR
-#define	SIZE_DATOS_SC_PUT_PTR			sizeof(uint16_t)
-
-#define	ADDR_DATOS_SC_CNT    		    ADDR_DATOS_SC_PUT_PTR + SIZE_DATOS_SC_PUT_PTR
-#define	SIZE_DATOS_SC_CNT			    sizeof(uint16_t)
-
-#define	ADDR_DATOS_SC 			    	ADDR_DATOS_SC_CNT + SIZE_DATOS_SC_CNT
-#define	SIZE_DATOS_SC			    	dim_bufferSC
-
-#define	ADDR_EEPROM_YA_HUBO_CORTE_LARGO		ADDR_DATOS_SC + SIZE_DATOS_SC
-#define	SIZE_YA_HUBO_CORTE_LARGO		    sizeof(uint16_t)
 
 //************  Definicion de datos de programacion - ocupa 3 paginas  **************
 //***********************************************************************************
@@ -207,10 +199,77 @@
 
 //quedan 74 bytes libres en pagina ..
 
-//  ************       Definicion de datos de ticket en paginas 3 paginas ***********************
-// ***********************************************************************************************
+
+
+// DATOS DE TICKET
+//*********************************************************************************
+//****				 		pagina 13 										  *****
+//****				 		pagina 14 										  *****
+//****				 		pagina 15 										  *****
+//****				 		pagina 16 										  *****
+//****				 		pagina 17 										  *****
+//****				 		pagina 18 										  *****
+//****				 		pagina 19 										  *****
+//****				 		pagina 20 										  *****
+//*********************************************************************************
+
 #define	SIZE_PROG_TICKET        	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET)
 #define	SIZE_PROG_TICKET_RECAUD    	    sizeof(((tEEPROM *)0)->progEEPROM.PROG_TICKET_RECAUD)
+
+
+// VARIOS 2
+//*********************************************************************************
+//****				 		pagina 20 										  *****
+//*********************************************************************************
+
+//definicion de direccion de variables en eeprom de datos sin conexion
+#define	ADDR_DATOS_SC_GET_PTR			ADDRESS_VARIOS2
+#define	SIZE_DATOS_SC_GET_PTR			sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC_PUT_PTR 		    ADDR_DATOS_SC_GET_PTR + SIZE_DATOS_SC_GET_PTR
+#define	SIZE_DATOS_SC_PUT_PTR			sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC_CNT    		    ADDR_DATOS_SC_PUT_PTR + SIZE_DATOS_SC_PUT_PTR
+#define	SIZE_DATOS_SC_CNT			    sizeof(uint16_t)
+
+#define	ADDR_DATOS_SC 			    	ADDR_DATOS_SC_CNT + SIZE_DATOS_SC_CNT
+#define	SIZE_DATOS_SC			    	dim_bufferSC
+
+#define	ADDR_EEPROM_YA_HUBO_CORTE_LARGO		ADDR_DATOS_SC + SIZE_DATOS_SC
+#define	SIZE_YA_HUBO_CORTE_LARGO		    sizeof(uint16_t)
+
+#define	ADDR_EEPROM_LIBRE_DATE				ADDR_EEPROM_YA_HUBO_CORTE_LARGO + SIZE_YA_HUBO_CORTE_LARGO
+#define	SIZE_LIBRE_DATE		    			sizeof(tDATE)
+
+#define	ADDR_EEPROM_VELOCIDAD_MAX_VIAJE	    ADDR_EEPROM_LIBRE_DATE + SIZE_LIBRE_DATE
+#define	SIZE_VELOCIDAD_MAX_VIAJE		    sizeof(uint16_t)
+
+
+// TABLA DE REPORTES
+//*********************************************************************************
+//****				 		pagina 22 										  *****
+//*********************************************************************************
+// Direccion reportes
+
+#define	ADDR_EEPROM_REPORTE_PUT			ADDRESS_REPORTES
+#define	SIZE_EEPROM_REPORTE_PUT			sizeof(uint32_t)
+
+#define	ADDR_EEPROM_REPORTE_INDEX 		ADDR_EEPROM_REPORTE_PUT + SIZE_EEPROM_REPORTE_PUT
+#define	SIZE_EEPROM_REPORTE_INDEX		sizeof(uint16_t)
+
+#define	ADDR_EEPROM_REPORTE_NRO_VIAJE	ADDR_EEPROM_REPORTE_INDEX + SIZE_EEPROM_REPORTE_INDEX
+#define	SIZE_EEPROM_REPORTE_NRO_VIAJE	sizeof(uint16_t)
+
+#define	ADDR_EEPROM_REPORTE_NRO_TURNO	ADDR_EEPROM_REPORTE_NRO_VIAJE + SIZE_EEPROM_REPORTE_NRO_VIAJE
+#define	SIZE_EEPROM_REPORTE_NRO_TURNO	sizeof(uint16_t)
+
+#define	ADDR_INDEX_LAST_SESION 			ADDR_EEPROM_REPORTE_NRO_TURNO + SIZE_EEPROM_REPORTE_NRO_TURNO
+#define	SIZE_INDEX_LAST_SESION			sizeof(uint16_t)
+
+#define	ADDR_BASE_TABLA_REPORTE			ADDR_INDEX_LAST_SESION + SIZE_INDEX_LAST_SESION
+
+#define	ADDR_NEXT_REPORTE 				ADDR_BASE_TABLA_REPORTE + SIZE_EEPROM_REPORTE
+
 
 
  /* ESTRUCTURAS */
@@ -279,5 +338,7 @@
 
 	 extern void borrar_EEPROM (void);
 	 extern void testAddress(void);
+	 extern void writeEepromDATE(tDATE date);
+	 extern void readEepromDATE(tDATE* date);
 
 #endif /* EEPROM_EEPROM_H_ */

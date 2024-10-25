@@ -805,13 +805,21 @@ indice |           date           chofer  nroVje |  fichasD    fichasT      impo
         #endif
         }
         
+     	//prueba (leo ultimo registro grabado)
+        tREG_GENERIC* pruebaREPORTE_PUTptr;
+        pruebaREPORTE_PUTptr = REPORTE_PUTptr;
+        decFlashRep_ptr(&pruebaREPORTE_PUTptr);
+		newReg_GETptr_prueba = newRegistro_prueba;
+		(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) pruebaREPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
+
+
         indice = REPORTE_INDEX;       									// Extraigo indice de FLASH
         newReg_GETptr->idx = indice;        							// Agrego INDICE a registro a grabar
     	(void)EEPROM_WriteBuffer( (uint8_t*)newReg_GETptr, (uint32_t)REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
 
     	//prueba
-    	//newReg_GETptr_prueba = newRegistro_prueba;
-    	//(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
+    	newReg_GETptr_prueba = newRegistro_prueba;
+    	(void)EEPROM_ReadBuffer((uint8_t*)newReg_GETptr_prueba, (uint32_t) REPORTE_PUTptr, (uint16_t)sizeof(tREG_GENERIC));
 
     	/*
     	//prueba

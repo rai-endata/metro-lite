@@ -135,7 +135,7 @@ typedef enum
 
  extern  byte* ptr1;
  extern  byte* ptr2;
-
+ extern tDATE horaEncendido;
 
 
 /* Exported constants --------------------------------------------------------*/

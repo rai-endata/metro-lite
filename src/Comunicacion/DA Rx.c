@@ -593,8 +593,17 @@
 								//espero la respuesta para transmitir el sgte.
 								esperarRespuesta_cmdReloj = 0;
 								//sirve para indicar que fue recibido comando reloj despues de un arranque
-								set_rxCorteLargoPrevio();
+								//y el proximo inicio sera normal (es decir se considerara que no hubo corte previo)
+								set_rxCorteNormal();
 							}
+
+							if(Rx_cmd == cmdEncendido_EQUIPO){
+								//sirve para indicar que fue recibido comando encendido despues del arranque
+								//y el proximo inicio sera normal (es decir se considerara que no hubo corte previo)
+								set_rxCorteNormal();
+							}
+
+
 
 							anularTx_cmd(Rx_cmd);           				// Anulo la transmisión del comando
 							Tabla_RxRTA_DA[Rx_cmd](RxDA_buffer);  			// Proceso Respuesta

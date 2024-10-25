@@ -85,7 +85,7 @@ void print_ticket_viaje(void){
 				}
 			}
 			preparar_print (minutosEspera, 0, &buffer_MinEspera, 0 );
-			preparar_print (VELOCIDAD_MAX, 0, &buffer_VelMax, 0 );
+			preparar_print (VELOCIDAD_MAX_VIAJE, 0, &buffer_VelMax, 0 );
 
 			fichas_x_Pulsos = TARIFACION_getFichasD();
 			fichas_x_Tiempo = TARIFACION_getFichasT();

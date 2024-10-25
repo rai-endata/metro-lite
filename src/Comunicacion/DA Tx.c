@@ -16,6 +16,8 @@
 #include "DA Communication.h"
 #include "Bluetooth.h"
 #include "Air Update.h"
+#include "Comandos sin conexion a central.h"
+
 
 
 /*********************************************************************************************/
@@ -137,28 +139,35 @@ uint16_t pauseTx_to_cnt;
 		cmd = CMD_RTA.cmd;                // Extraigo comando de Rta
 	  }
 
-	  // Después priorizo Encendido de Equipo
-	  if (CMD_Encendido_EQUIPO.Tx_F && !exit){
-		exit = 1;                            // Salgo xq el Encendido de Visor esta pendiente
-		cmd = CMD_Encendido_EQUIPO.cmd;      // Extraigo comando de Encendido de Visor
-	  }
+	  if (appConectada_ACentral){
+		  // Después priorizo Encendido de Equipo
+		  if (CMD_Encendido_EQUIPO.Tx_F && appConectada_ACentral && !exit){
+			exit = 1;                            // Salgo xq el Encendido de Visor esta pendiente
+			cmd = CMD_Encendido_EQUIPO.cmd;      // Extraigo comando de Encendido de Visor
+		  }
 
-	  // Después de la Respuesta y el Encendido de EQUIPO, priorizo los Comandos de Reloj
-	  i = 0;                              // Reseteo valor de cuenta
-	  while ((i<(sizeof(Tabla_CMD_Reloj)/4) - 1) && !exit){    // Divido el tamaño /2 xq es una tabla de WORDs
-		  cmd_reloj = Tabla_CMD_Reloj[i]; // Cargo comando de RELOJ
-		  if (cmd_reloj->Tx_F){
-		  exit = 1;                       // Salgo xq hay comando de reloj pendiente
-		  cmd = cmd_reloj->cmd;           // Extraigo comando de reloj
-		}
-		i++;                              // Incremento valor
+		  // Después de la Respuesta y el Encendido de EQUIPO, priorizo los Comandos de Reloj
+		  i = 0;                              // Reseteo valor de cuenta
+		  while ((i<(sizeof(Tabla_CMD_Reloj)/4) - 1) && !exit){    // Divido el tamaño /2 xq es una tabla de WORDs
+			  cmd_reloj = Tabla_CMD_Reloj[i]; // Cargo comando de RELOJ
+			  if (cmd_reloj->Tx_F){
+			  exit = 1;                       // Salgo xq hay comando de reloj pendiente
+			  cmd = cmd_reloj->cmd;           // Extraigo comando de reloj
+			}
+			i++;                              // Incremento valor
+		  }
 	  }
-
 	  i = 0;                              // Reseteo valor de cuenta
 	  while ((i<(sizeof(Tabla_ComandosTx)/4) - 1) && !exit){    // Divido el tamaño /4 xq es una tabla de punteros (y la direccion es de 32 bits) y le resto 1 xq la Rta la mire antes
 		if (Tabla_ComandosTx[i]->Tx_F){
 		  exit = 1;                       // Salgo xq encontré comando con Tx Pendiente
 		  cmd = Tabla_ComandosTx[i]->cmd; // Extraigo ese comando
+		  if(((cmd == CMD_Encendido_EQUIPO.cmd) || cmdRELOJ) && !appConectada_ACentral){
+			  //para que no transmita encendido de equipo y comandos de reloj
+			  //hasta que se conecte a la central
+			  cmd = CMD_NULL.cmd;
+			  exit = 0;
+		  }
 		}
 		i++;                              // Incremento valor
 	  }

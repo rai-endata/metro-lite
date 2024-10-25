@@ -32,11 +32,16 @@ extern inicioFLAGS1             	_inicio_F1;
 
 #define rxCorteLargoPrevio           0x0000
 #define noRxCorteLargoPrevio         0x0100
-#define EEPROM_YA_HUBO_CORTE_LARGO ADDR_EEPROM_YA_HUBO_CORTE_LARGO
+#define noRxCorteCortoPrevio         0x0200
+#define EEPROM_YA_HUBO_CORTE_LARGO 	ADDR_EEPROM_YA_HUBO_CORTE_LARGO
+
+#define EEPROM_libreDATE 	ADDR_EEPROM_LIBRE_DATE
 
 
 extern tDATE HoraApagado;
 extern byte motivo_reset;
+extern byte	corteALIMENTACION;
+
 extern void firstDATE (void);
 extern void SOURCE_DATE_Ini(void);
 extern byte dateValid (tDATE date);
@@ -45,7 +50,8 @@ extern void borrarPrimerEncendido (void);
 extern void determinePrimerEncendido (void);
 
 extern void check_corte_alimentacion(void);
-extern void set_rxCorteLargoPrevio(void);
+extern void set_rxCorteNormal(void);
 extern void set_noRxCorteLargoPrevio(byte estado_reloj);
+extern void set_noRxCorteCortoPrevio(byte estado_reloj);
 
 #endif

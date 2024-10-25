@@ -48,6 +48,7 @@
 	extern uint32_t DISTANCIAm_LIBRE;
 
 	extern TIM_HandleTypeDef pulsoACCUM;
+	extern TIM_HandleTypeDef inputCaptureCNT;
 
 	extern uint32_t PULSE_ACCUM_CNT;
 		  
@@ -75,7 +76,8 @@
 	extern uint16_t  VELOCIDAD;										  	      // Velocidad del equipo en km/h, con 2 decimales
 	extern uint16_t  VELOCIDAD_MAX;									        // Velocidad MAXIMA del equipo en km/h, con 2 decimales
 		#define resetVELOCIDAD_MAX              (VELOCIDAD_MAX = 0)
-
+	extern uint16_t  VELOCIDAD_MAX_VIAJE;
+	extern  uint8_t velAlta_cnt;
 	extern uint16_t HISTERESIS_VT;                   // Histeresis de la Velocidad de Transicion
 	extern uint16_t VELOCIDAD_TRANSICION;            // Velocidad de Transision en km/h, con 2 deciamles
 

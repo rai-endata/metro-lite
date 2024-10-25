@@ -103,6 +103,7 @@ byte buffPULSE_ACCUM_CNT[20];
 uint32_t auxCNT;
 uint32_t cntIC;
 uint32_t cntIC_anterior;
+tDATE horaEncendido;
 
 mainFLAGS1	_VISOR_F1;			// Variables Generales
 byte 		MOTIVO_RESET;		// Motivo por el cual se reseteo el equipo
@@ -189,9 +190,12 @@ int main(void)
 	#ifdef VISOR_REPORTES
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
 	#endif
-
 	ini_acumular_cmdSC();					//se debe ejecutar antes de	check_corte_alimentacion()
-	check_corte_alimentacion();
+	horaEncendido = getDate();
+
+	if(datosSC_cntWORD == 0){
+		check_corte_alimentacion();
+	}
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();
 	InterruptPVD_When_VDD_OFF_Config();
@@ -204,11 +208,14 @@ int main(void)
 	DISTANCIA_iniCalculo_PULSE_ACCUM();
 	check_pressBLUETOOTH();
 
+
+	//prueba
+	testAddress();
+
 // *****  Lazo Principal *************
 
 	for(;;){
 		check_datosSC();
-		// REPORTES
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
 		#endif
@@ -217,11 +224,13 @@ int main(void)
 		check_pressTECLA();
 		TMR_GRAL_LOOP();
 		relojINTERNO_updateCHOFER();
-		PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
-		if(ESTADO_RELOJ != COBRANDO){
-			(void)calcularDISTANCIA_acumulada;			//actualiza calculo de distancia
-			DISTANCIAkm = DISTANCIAm/100; 				//con un decimal
-		}
+
+		//PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
+		//if(ESTADO_RELOJ != COBRANDO){
+		//	(void)calcularDISTANCIA_acumulada;			//actualiza calculo de distancia
+		//	DISTANCIAkm = DISTANCIAm/100; 				//con un decimal
+		//}
+
 		tarifarRELOJ();
 		//RECEPCION DE DA ************
 		guardarRxDA_BaxFORMAT();			//toma datos recibidos del DA, y los guarda con protocolo BAX en rxVA_baxFORMAT.RxBuffer
@@ -325,9 +334,19 @@ void ModoPROGRAMACION (void){
 
 	void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 		uint32_t diff_pulsos,diff_tiempo;
+		uint32_t aux1, aux2, aux3;
 
 		if (htim->Instance==TIM2){ 											//check if the interrupt comes from TIM2
-			cntIC = __HAL_TIM_GetCounter(&pulsoACCUM);	// read capture value
+
+			PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
+			if(ESTADO_RELOJ != COBRANDO){
+				(void)calcularDISTANCIA_acumulada;			//actualiza calculo de distancia
+				DISTANCIAkm = DISTANCIAm/100; 				//con un decimal
+			}
+
+			//cntIC = __HAL_TIM_GetCounter(&pulsoACCUM);	// read capture value
+			// Obtener el valor del Input Capture del canal 1 para calculo de velocidad
+			cntIC = __HAL_TIM_GET_COMPARE(&pulsoACCUM, TIM_CHANNEL_1);
 
 			if((t_pulsos - t_pulsos_anterior) > 0){
 				diff_tiempo = t_pulsos - t_pulsos_anterior;
@@ -344,18 +363,42 @@ void ModoPROGRAMACION (void){
 					diff_pulsos = cntIC -cntIC_anterior;
 				}else{
 					diff_pulsos = cntIC +(0xffffffff-cntIC_anterior);
+					diff_pulsos = diff_pulsos + 1; //sumo 1 porque se necesita un pulso para pasar de 0xffffffff a 0x00000000
 				}
 
 				frecuencia = (100*1000*diff_pulsos)/diff_tiempo;	//con dos decimales
-
+				//frecuencia = frecuencia/2;					//porque interrumpe en ambos flancos
 				t_pulsos_anterior = t_pulsos;
 				cntIC_anterior   = cntIC;
 			}
-			VELOCIDAD = (3600*frecuencia)/PULSOS_x_KM;        //con dos decimales
+			//velocidad = 3600*frecuencia/PULSOS_x_KM
+			aux1 = 3600*frecuencia;
+			aux2 = aux1/PULSOS_x_KM;
+			//si la velocidad es mayor a 200km/ lo ignoro
+			if(aux2 < 20000){
+				if(aux2 > 120){
+					velAlta_cnt++;
+				}
+				//si la velocidad es mayor a 120 km
+				//verifico 5 veces antes de validar la velocidad
+				//(es para filtrar ruido)
+				if(aux2 < 120){
+					VELOCIDAD = aux2;        //con dos decimales
+					velAlta_cnt = 0;
+					if(ESTADO_RELOJ != COBRANDO){
+						if (VELOCIDAD_MAX < (VELOCIDAD/100)){
+							VELOCIDAD_MAX = (VELOCIDAD/100);    //Divido x100 para dejarla sin los 2 decimales
+						}
+					}
 
-			if(ESTADO_RELOJ != COBRANDO){
-				if (VELOCIDAD_MAX < (VELOCIDAD/100)){
-					VELOCIDAD_MAX = (VELOCIDAD/100);  // Divido x100 para dejarla sin los 2 decimales
+				}else if(velAlta_cnt > 4){
+					VELOCIDAD = aux2;        //con dos decimales
+					velAlta_cnt = 0;
+					if(ESTADO_RELOJ != COBRANDO){
+						if (VELOCIDAD_MAX < (VELOCIDAD/100)){
+							VELOCIDAD_MAX = (VELOCIDAD/100);    //Divido x100 para dejarla sin los 2 decimales
+						}
+					}
 				}
 			}
 			timeOut_FRECUENCIA_cnt = 3;

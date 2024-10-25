@@ -22,6 +22,8 @@
 #define COBR		2
 
 
+
+
 	// ESTADOS DE RELOJ
 	typedef enum{
 		LIBRE=0x18,

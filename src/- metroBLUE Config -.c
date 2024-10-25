@@ -17,8 +17,14 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.3";
-char fechaFIRMWARE[] =  " (29/09/2024)";
+
+char versionFIRMWARE[] =  "v2.1.4";
+char fechaFIRMWARE[] =  " (25/10/2024)";
+
+// guarda cambios de reloj sin conexion en eeprom
+// correcion errores varios en corte largo y microcorte
+// correccion de velocidad
+
 
 //Version v2.1.3 - 09/09/24
 //error en ticket recaudacion

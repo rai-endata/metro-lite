@@ -38,6 +38,7 @@
 	#include "Ticket Viaje.h"
 	#include "Odometro.h"
 	#include "Variables en flash.h"
+	#include "eeprom.h"
 
 
 /* PROTOTIPOS */
@@ -313,6 +314,11 @@ void Pase_a_LIBRE (byte estado){
 			VELOCIDAD_MAX = 0;
 			libreDATE = getDate();
 			RELOJ_dateCambio = libreDATE;
+			writeEepromDATE(libreDATE);
+			//PRUEBA
+			tDATE testDATE;
+			readEepromDATE(&testDATE);
+
 			ESTADO_RELOJ=LIBRE;
 			ESTADO_RELOJ_X_PULSADOR = LIBRE;
 			off_display();
@@ -383,12 +389,7 @@ void Pase_a_OCUPADO (byte estado){
 		update_valor_tarifa(tarifa_1_4);
 
 		on_display_all();
-
-		if(VELOCIDAD_MAX < 255){
-			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-		}else{
-			velMax_INTERNO = (uint8_t)255;
-		}
+		velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
 		velMax_LIBRE = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
 		DISTANCIAm_LIBRE = DISTANCIAm;
 		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;			// Distancia Recorrida en LIBRE (KM xxx.x)
@@ -479,11 +480,10 @@ void Pase_a_COBRANDO (byte estado){
       #endif
 
         //Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
-		if(VELOCIDAD_MAX < 255){
-			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-		}else{
-			velMax_INTERNO = (uint8_t)255;
-		}
+		velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
+		VELOCIDAD_MAX_VIAJE = VELOCIDAD_MAX;
+		EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+
 		velMax_OCUPADO = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
 		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;		// Distancia Recorrida en OCUPADO (KM xxx.xx)
 		kmRecorridos_OCUPADO = kmRecorridos_INTERNO;
@@ -590,11 +590,7 @@ void Pase_a_FUERA_SERVICIO (void){
 static void fuera_de_servicio(void){
 	fueraServicioDATE = getDate();
 	RELOJ_dateCambio = fueraServicioDATE;
-	if(VELOCIDAD_MAX < 255){
-		velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-	}else{
-		velMax_INTERNO = (uint8_t)255;
-	}
+	velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
 	 kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
 //	 nroCorrelativo_INTERNO = EEPROM_NRO_CORRELATIVO;        // Nro Correlativo de Viaje
 	 DISTANCIA_iniCalculo_PULSE_ACCUM();

@@ -90,6 +90,7 @@
 
 	uint16_t PULSOS_OVF_cnt;                  // Contador de Overflow de Pulsos
 	TIM_HandleTypeDef pulsoACCUM;
+	TIM_HandleTypeDef inputCaptureCNT;
 	uint32_t PULSE_ACCUM_CNT;
 	uint32_t DISTANCIAm;
 	uint32_t DISTANCIA_100;
@@ -105,6 +106,8 @@
     uint32_t t_pulsos_anterior;
     uint16_t  VELOCIDAD;										  	      // Velocidad del equipo en km/h, con 2 decimales
     uint16_t  VELOCIDAD_MAX;									        // Velocidad MAXIMA del equipo en km/h, con 2 decimales
+    uint16_t  VELOCIDAD_MAX_VIAJE;
+    uint8_t velAlta_cnt;
     uint16_t HISTERESIS_VT;                   // Histeresis de la Velocidad de Transicion
     uint16_t VELOCIDAD_TRANSICION;            // Velocidad de Transision en km/h, con 2 deciamles
 
@@ -330,6 +333,7 @@
         delta_pulsos = PULSE_ACCUM_CNT - pulsos_cnt_old;                   // Calculo Diferencia de Pulsos
       }else{
         delta_pulsos = (0xFFFFFFFF - pulsos_cnt_old) + PULSE_ACCUM_CNT;      // Calculo Diferencia de Pulsos
+        delta_pulsos = delta_pulsos + 1; //porque para que pase de 0xFFFFFFFF A 0 se require un pulso.
       }
 
 
@@ -365,7 +369,8 @@
         // en el estado anterior
         km_estado = (uint16_t)(DISTANCIAm / 100);                          // Distancia Recorrida en km con 1 decimal
 
-        pulsos_cnt_old = getPULSE_ACCUM_CNT(&pulsoACCUM);             // Guardo Pulsos para siguiente estado
+        //pulsos_cnt_old = getPULSE_ACCUM_CNT(&pulsoACCUM);             // Guardo Pulsos para siguiente estado
+        pulsos_cnt_old = PULSE_ACCUM_CNT;             // Guardo Pulsos para siguiente estado
 
       }else if (dist_type == 0){
         // NO modificar pulsos_cnt_old
@@ -916,7 +921,10 @@ void MX_TIM2_Init3(void)
 		sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
 		sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
 		sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+		//sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_BOTHEDGE;
+
 		sSlaveConfig.TriggerFilter = 15;
+		//sSlaveConfig.TriggerFilter = 0;
 		HAL_TIM_SlaveConfigSynchronization(&pulsoACCUM, &sSlaveConfig);
         //inicializo input capture
 		if (HAL_TIM_IC_Init(&pulsoACCUM) != HAL_OK)
@@ -934,8 +942,11 @@ void MX_TIM2_Init3(void)
 		//inicializo flancos y filtro de input capture
 		sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
 		sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-		sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-		sConfigIC.ICFilter = 15;
+		//prescaler de entrada de pulsos (divodo por 2 la entrada de pulsos)
+		sConfigIC.ICPrescaler = TIM_ICPSC_DIV2;
+
+		//sConfigIC.ICFilter = 15;
+		sConfigIC.ICFilter = 0;
 		if (HAL_TIM_IC_ConfigChannel(&pulsoACCUM, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
 		{
 			_Error_Handler(__FILE__, __LINE__);

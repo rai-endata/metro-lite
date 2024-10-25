@@ -73,6 +73,18 @@
 						)
 
 
+	#define cmdRELOJ    ((cmd == CMD_RELOJ_Pase_a_LIBRE)		 || \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO)		 || \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO_SA)	 || \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO_BANDERA)|| \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO_APP)	 || \
+						(cmd == CMD_RELOJ_Pase_a_COBRANDO)		 || \
+						(cmd == CMD_RELOJ_Pase_a_LIBRE_SC)		 || \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO_SA_SC)	 || \
+						(cmd == CMD_RELOJ_Pase_a_OCUPADO_APP_SC) || \
+						(cmd == CMD_RELOJ_Pase_a_COBRANDO_SC)	 || \
+						(cmd == CMD_RELOJ_Pase_a_FUERA_SERVICIO)   \
+						)
 
 
 /* *************************************************************

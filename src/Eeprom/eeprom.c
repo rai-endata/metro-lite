@@ -38,6 +38,7 @@ void write_backup_eeprom(byte motivoBackup){
     if(viajeInconcluso){
       aux = aux | 0x2;
     }
+    //guardo corteALIMENTACION
 	buffer_backup[i] = aux; i++;
 	buffer_backup[i] = tarifa_1_8; i++;
 	buffer_backup[i] = ESTADO_RELOJ; i++;
@@ -777,6 +778,9 @@ void test_size(void){
 
            	buffAddress[68] = ADDR_BASE_TABLA_REPORTE;
            	buffAddress[69] = ADDR_NEXT_REPORTE;
+
+           	buffAddress[70] = ADDR_DATOS_SC_GET_PTR;
+           	buffAddress[71] = ADDR_EEPROM_VELOCIDAD_MAX_VIAJE;
 
            }
 

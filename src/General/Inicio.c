@@ -26,7 +26,8 @@ inicioFLAGS1   _inicio_F1;
 byte 		corteALIMENTACION;
 byte viajeInconcluso;
 
-static void corteLargo(uint16_t centralRx_cmdRLJ_corteLargoPrevio);
+static void corteLargo(uint16_t centralRx_cmdRLJ_cortePrevio);
+static byte corteCorto(uint16_t centralRx_cmdRLJ_cortePrevio);
 
 static byte tarifaPerdida;
 static dword fichasDPerdida;
@@ -93,6 +94,7 @@ void SOURCE_DATE_Ini (void){
        if (data != valorPrimerEncendido){
          // Se trata del primer encendido
     	 error = EEPROM_write(EEPROM_PRIMER_ENCENDIDO, valorPrimerEncendido); // Grabar Word en EEPROM
+
        }
      }
 
@@ -136,48 +138,25 @@ void SOURCE_DATE_Ini (void){
            //  RELOJ_tomarDateCambioReloj_Arranque();      // Hora de cambio de Reloj (solo si NO ES uCorte)
            //}
 
-         #ifdef VISOR_REPORTES
-           if (VISOR_firstBoot || REPORTES_chkForcedReset()){
-             // EDIT 22/02/13
-             //  En caso de un reset forzado de Reportes, tambien debo iniciar la primer sesion del chofer
-             CHOFER_firstBoot();                         // En el primer arranque debo grabar un inicio de Sesion con CHF #1
-           }
-         #else
            if (VISOR_firstBoot){
              // EDIT 22/02/13
-             //  En caso de un reset forzado de Reportes, tambien debo iniciar la primer sesion del chofer
+             //En caso de un reset forzado de Reportes,
+        	 //tambien debo iniciar la primer sesion del chofer
              CHOFER_firstBoot();                         // En el primer arranque debo grabar un inicio de Sesion con CHF #1
            }
-         #endif
 
-       #ifdef VISOR_REPORTES
-         #ifndef VISOR_TUNEADO_NO_BORRA_REPORTES
            if (REPORTES_HABILITADOS){
-        	   //if (!VISOR_firstBoot){
-        	   if (!VISOR_firstBoot && !INICIO_microCorte){
-              /*
-               if (INICIO_programacion){
-                 // PROGRAMACION
-                 (void)REPORTE_queueVarios(getDate(), RELOJ_INTERNO_getChofer(), 0, progTaller); // Encolo Programacion en TALLER
-                  //inicializa desconexiones
-               }else{
-                 // DESCONEXION
-                 (void)REPORTE_queueDesconexionAlim(HoraApagado, RELOJ_INTERNO_getChofer(), tarifaPerdida, fichasDPerdida, fichasTPerdida, dineroPerdido);
-
-              }
-              */
-       	  	  if(corteALIMENTACION==1){
-                  // DESCONEXION
-                  (void)REPORTE_queueDesconexionAlim(HoraApagado, RELOJ_INTERNO_getChofer(), tarifaPerdida, fichasDPerdida, fichasTPerdida, dineroPerdido);
-                  //borro corteALIMENTACION
-    		      buffer_backup[0]=0;
-    		      EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
-
-       	  	  }
-             }
+        	   if (!VISOR_firstBoot){
+        	   //if (!VISOR_firstBoot && !INICIO_microCorte){
+        		   if(corteALIMENTACION==1){
+        			   // DESCONEXION
+        			   (void)REPORTE_queueDesconexionAlim(HoraApagado, RELOJ_INTERNO_getChofer(), tarifaPerdida, fichasDPerdida, fichasTPerdida, dineroPerdido);
+						//borro corteALIMENTACION
+						buffer_backup[0]=0;
+						EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
+        		   }
+        	   }
            }
-         #endif
-       #endif
 
            if (VISOR_firstBoot){
              // Lo correcto es RECIEN AHORA actualizar el valor del 1º encendido
@@ -204,7 +183,11 @@ void SOURCE_DATE_Ini (void){
        	}else{
        	  // Se trata del primer encendido
        	  VISOR_firstBoot = 1;
-       	  EEPROM_write(EEPROM_PRIMER_ENCENDIDO, valorPrimerEncendido); // Grabar Word en EEPROM
+       	  //lo programo recien cuando voy a guardar sesion inicial
+       	  //porque si lo borro aca, y se desconecta el equipo antes de que se guarde
+       	  //el inicio de sesion, cuando vuelve a encender ya no guarda el inicio de sesion
+       	  //y ya no se puede cerrar turno
+       	  //EEPROM_write(EEPROM_PRIMER_ENCENDIDO, valorPrimerEncendido); // Grabar Word en EEPROM
 
        	  //inicializa corte largo
        	  EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, rxCorteLargoPrevio); // Grabar Word en EEPROM
@@ -237,284 +220,86 @@ void SOURCE_DATE_Ini (void){
     	   EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, aux); // Grabar Word en EEPROM
        }
 
-      void set_rxCorteLargoPrevio(void){
+      void set_noRxCorteCortoPrevio(byte estado_reloj){
+    	   uint16_t  aux, aux1, aux2;
+    	   aux1 = estado_reloj;
+    	   aux2 = noRxCorteCortoPrevio & 0xff00;
+    	   aux = noRxCorteCortoPrevio | aux1;
+    	   //guardo que ya hubo corte largo previo y estado de reloj
+    	   EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, aux); // Grabar Word en EEPROM
+       }
+
+      void set_rxCorteNormal(void){
     	   //guardo que ya hubo corte largo y estado de reloj
     	   EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, rxCorteLargoPrevio); // Grabar Word en EEPROM
        }
 
 
-void check_corte_alimentacion(void){
 
-    byte* addressFLASH_cobrandoDATE;
-    byte* addressFLASH_ocupadoDATE;
-    byte* address_ocupadoDATE;
-    byte* address_cobrandoDATE;
-    byte buffer_backup[1];
-    tREG_LIBRE*	ptrREG_LIBRE;
-    byte statusSC; 				// 0: Encontro registro a pagar en tabla, 1: No encontro registro a pagar en tabla
-    byte error_noEsperado;
-    uint16_t centralRx_cmdRLJ_corteLargoPrevio;                 //00xx: la central recibio comandos de reloj despues del corte largo anterior
-    															//01xx: la central no recibio comandos de reloj despues del corte largo anterior
-    															//   porque el metrolite se volvio a apagar antes transmitir el comando
+	void check_corte_alimentacion(void){
 
-		  INICIO_microCorte = 0;
+			byte* addressFLASH_cobrandoDATE;
+			byte* addressFLASH_ocupadoDATE;
+			byte* address_ocupadoDATE;
+			byte* address_cobrandoDATE;
+			byte buffer_backup[1];
+			tREG_LIBRE*	ptrREG_LIBRE;
+			byte statusSC; 				// 0: Encontro registro a pagar en tabla, 1: No encontro registro a pagar en tabla
+			byte error_noEsperado;
+			uint16_t centralRx_cmdRLJ_cortePrevio;                 //00xx: la central recibio comandos de reloj despues del corte largo anterior
+																	//01xx: la central no recibio comandos de reloj despues del corte largo anterior
+			INICIO_microCorte = 0;
 
-		  //check corte largo previo
-		  //huboCorteLargo sucede cuando, si, previo a este encendido hubo un corte lago y antes que se transmitiera el comando de reloj
-		  //volvio a haber otro corte largo sin que se pudiera informar a la central el estado previo al corte.
-		  //el corte previo se hace usando esta funcion: set_noRxCorteLargoPrevio
-		  EEPROM_ReadBuffer(&centralRx_cmdRLJ_corteLargoPrevio, EEPROM_YA_HUBO_CORTE_LARGO, SIZE_YA_HUBO_CORTE_LARGO);
-		  //leer hora de apagado
-		  read_horaAPAGADO_eeprom();
-          //toma fecha y hora de encendido
-	      getDate();
+			//check corte largo previo
+			//huboCorteLargo sucede cuando, si, previo a este encendido hubo un corte lago y antes que se transmitiera el comando de reloj
+			//volvio a haber otro corte largo sin que se pudiera informar a la central el estado previo al corte.
+			//el corte previo se hace usando esta funcion: set_noRxCorteLargoPrevio
+			EEPROM_ReadBuffer(&centralRx_cmdRLJ_cortePrevio, EEPROM_YA_HUBO_CORTE_LARGO, SIZE_YA_HUBO_CORTE_LARGO);
+			//leer hora de apagado
+			read_horaAPAGADO_eeprom();
+			//toma fecha y hora de encendido
+			//getDate();
+			//tomas datos guardos en corte de alimentacion
+			RELOJ_setTarifa(tarifa_1_8);
+			RELOJ_iniTarifacion();
+			read_backup_eeprom();
+			readEepromDATE(&libreDATE);
+			EEPROM_ReadBuffer(&VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+			//calculo tiempo transcurrido desde que se apago hasta que se encendio
+			INICIO_microCorte = diferenciaHoraria(horaEncendido.hora, HoraApagado.hora, 16);
 
-	      //tomas datos guardos en corte de alimentacion
-		  RELOJ_setTarifa(tarifa_1_8);
-		  RELOJ_iniTarifacion();
-	      read_backup_eeprom();
-
-	      //calculo tiempo transcurrido desde que se apago hasta que se encendio
-		  INICIO_microCorte = diferenciaHoraria(RTC_Date.hora, HoraApagado.hora, 16);
-	      //ACCIONES SEGUN TIPO DE CORTE
-	      if(INICIO_microCorte){
-	          // CORTE CORTO => Recuperar
-	    	  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
-	    	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
-	    		  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
-	    		  //RELOJ_setTarifa(tarifa);        // Seteo automatico de tarifa
-	    		  RELOJ_setTarifa(tarifa_1_8);
-				  RELOJ_iniTarifacion();
-				  //vuelvo a recuperar porque  RELOJ_iniTarifa me modifico algunas variables
-				  read_backup_eeprom();
-
-				  recuperar_valor_viaje_backup();
-		    	  update_valor_tarifa(tarifa);
-		    	  on_display_all();
-				  //para el calculo de frecuencia
-		    	  t_pulsos_anterior = 0;
-				  t_pulsos = 0;
-		  		  cntIC_anterior   = 0;
-		  		  uint16_t MINUTOS = segundosTarifacion/60;
-		  		  if(MINUTOS > 255){MINUTOS=255;}
-		  		  minutosEspera = MINUTOS;
-
-		    	  if(TARIFA_PESOS){
-					  //muetra importe
-					  update_valor_display(VALOR_VIAJE);
-				  }else{
-					  //muestra fichas
-					  update_valor_display(fichas_xTiempo + fichas_xPulsos);
-				  }
-		    	  if(ESTADO_RELOJ==COBRANDO){
-		    		 toggle_display();
-		    	  }
-		    	  ini_pulsador_impresion();
-
-		    	  //si hubo corte previo debo transmitir estado de reloj
-		    	  if((centralRx_cmdRLJ_corteLargoPrevio&0xff00)){
-		    		//doble corte
-					fichasDPerdida = 0;
-					fichasTPerdida = 0;
-					dineroPerdido = 0;
-		    		//recupero estado de reloj, ya que como hubo corte previo en al apagar guardo libre
-		    		estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_corteLargoPrevio&0x00ff;
-				   //seteo como que no recibio, para borrarla cuando recibe respuesta
-					set_noRxCorteLargoPrevio(estadoReloj_en_corteAlimentacion);
-
-		    		if(estadoReloj_en_corteAlimentacion != OCUPADO){
-		  				//solo si hubo corte largo en ocupado
-		  				//hubo importe perdido
-		  				fichasDPerdida = 0;
-		  				fichasTPerdida = 0;
-		  				dineroPerdido = 0;
-		  			}
-
-		  			if(datosSC_cntWORD == 0){
-		  				//no hay comandos sin conexion guardados en el apagado
-		  				error_noEsperado = 0;
-		  				if(estadoReloj_en_corteAlimentacion == COBRANDO){
-		  					//SE APAGO EN COBRANDO y no hay comandos acumulados sin conexion, por lo tanto se debe enviar
-		  					//el ultimo libre para que el sistema pueda cerrar el viaje
-		  					statusSC = load_regViaje(nroCorrelativo_INTERNO);	//levantar datos de la tabla
-		  					if(!statusSC){
-		  						rearmar_y_TX_cmdLibre(nroCorrelativo_INTERNO);
-		  						corregir_dateLIBRE();
-		  						libreDATE = RTC_Date;
-		  						VALOR_VIAJE = regVIAJE.importe;
-
-		  					}else{
-		  						error_noEsperado = 1;
-		  					}
-		  					tarifaPerdida = tarifa_1_8;
-		  					fichasDPerdida = 0;
-		  					fichasTPerdida = 0;
-		  					dineroPerdido = 0;
-		  				}else{
-		  					//SI SE APAGO EN OCUPADO,  no hay comandos acumulados sin conexion, por lo tanto no se tiene informacion
-		  					//de como concluyo el viaje. Se transmite un libre sin datos, y es particularmente importante que el importe
-		  					//enviado en este caso sea cero, para no asignar un importe erroneo a un viaje no concluido
-		  					//EN OTRA CIRCUNSTANCIA tambien envia libre sin datos
-		  					VALOR_VIAJE = 0;
-		  					ResetDatGps(LIB);
-		  					Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-		  					if(estadoReloj_en_corteAlimentacion != OCUPADO){
-		  	    			    //para impresion de ticket en libre recupero valor de viaje
-		  		   				//ocupado dejo VALOR_VIAJE = 0;
-		  						recuperar_valor_viaje_backup();
-		  					}else{
-		  						//para que imprima todo ceros en el ticket de viaje
-		  						//fichas_xPulsos = 0;
-		  						//fichas_xTiempo = 0;
-		  						//DISTANCIAm_OCUPADO = 0;
-		  						//VALOR_VIAJE = 0;
-
-		  						//para impresion de ticket
-		  						//recupera el valor de viaje para imprimir ticket, porque a pesar de estar el
-		  						//viaje inconcluso y no sabemos cuanto fue realmente el valor de viaje, lo que puede pasar
-		  						//con mas frecuencia es que el viaje termine en ocupado pero porque se colgo la aplicacion
-		  						//esta no lo pudo transmitir y apagaron el equipo, de este modo se imprime el ultimo tikect
-		  						//de un viaje que no paso nunca a cobrando, pero probablemente haya terminado el viaje
-		  						recuperar_valor_viaje_backup();
-		  						viajeInconcluso = 1;
-		  					}
-
-		  				}
-		  				if(error_noEsperado){
-		  					VALOR_VIAJE = 0;
-		  					ResetDatGps(LIB);
-		  					Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-		  				}
-		  	        }
-		    	  }
-	    	  }else{
-	    		  if(ESTADO_RELOJ == LIBRE){
-	    			  BanderaOut_On();
-	    			  //para impresion de ticket en libre recupero valor de viaje
-	    			  read_backup_eeprom();
-   					  recuperar_valor_viaje_backup();
-
-	    		  }
-
-	    	    /* modificado 15/02/2023 previo a esta fecha no estaba comentada las linea de abajo
-	    		//viaje perdido
-				tarifaPerdida = 0;
-				fichasDPerdida = 0;
-				fichasTPerdida = 0;
-				dineroPerdido = 0;
-	    		 //arranco como si fuera CORTE LARGO
-	  	  		//ESTADO_RELOJ=FUERA_SERVICIO;
-	  	  		ESTADO_RELOJ=LIBRE;
-	  	  		ResetDatGps(LIB);
-	  	  		Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-	  	  		setTEST_DISPLAY();
-				*/
-	    	  }
-	      }else{
-	    	//CORTE LARGO
-	    	RELOJ_setTarifa(tarifa_1_8);
-	    	recuperar_valor_viaje_backup();
-			tarifaPerdida = tarifa_1_8;
-
-			fichasDPerdida = fichas_xPulsos;
-			fichasTPerdida = fichas_xTiempo;;
-			dineroPerdido = VALOR_VIAJE;
-
-	    	if(!(centralRx_cmdRLJ_corteLargoPrevio&0xff00)){
-              //corte normal
-	    		estadoReloj_en_corteAlimentacion = ESTADO_RELOJ;
-	    		set_noRxCorteLargoPrevio(ESTADO_RELOJ);
-	    	}else{
-	    		//doble corte
-	    		//recupero estado de reloj, ya que como hubo corte previo en al apagarde guardo libre
-	    		estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_corteLargoPrevio&0x00ff;
-				fichasDPerdida = 0;
-				fichasTPerdida = 0;
-				dineroPerdido = 0;
-				set_noRxCorteLargoPrevio(estadoReloj_en_corteAlimentacion);
-
-	    	}
-			if(estadoReloj_en_corteAlimentacion != OCUPADO){
-				//solo si hubo corte largo en ocupado
-				//hubo importe perdido
-				fichasDPerdida = 0;
-				fichasTPerdida = 0;
-				dineroPerdido = 0;
+			//ACCIONES SEGUN TIPO DE CORTE
+			if(INICIO_microCorte){
+			  // CORTE CORTO
+			  //ME FIJO SI EL CORTE CORTO VINO LUEGO DE UN CORTE LARGO NORMAL
+			  //corte  anormal seria:si despues de un corte, que se transmite comandos encendido, cambios de reloj .., y antes de que estos se transmitan
+			  //o sean recibidos vuelve a haber un corte.
+			  if(!(centralRx_cmdRLJ_cortePrevio&0xff00)){
+				  //viene de corte  normal (largo)
+				  estadoReloj_en_corteAlimentacion = ESTADO_RELOJ;
+				  set_noRxCorteCortoPrevio(ESTADO_RELOJ);
+				  corteCorto(centralRx_cmdRLJ_cortePrevio);
+			  }else if((centralRx_cmdRLJ_cortePrevio>>8) == 0x0002){
+				  //viene de un corte corto
+				  estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_cortePrevio&0x00ff;
+				  set_noRxCorteCortoPrevio(estadoReloj_en_corteAlimentacion);
+				  corteCorto(centralRx_cmdRLJ_cortePrevio);
+			  }else{
+				  //viene de corte largo previo
+				  corteLargo(centralRx_cmdRLJ_cortePrevio);
+			  }
+			  //borro corteALIMENTACION, para que no guarde desconexion de alim. en reportes
+			  buffer_backup[0]=0;
+			  EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
+			}else{
+			  //CORTE LARGO
+			  corteLargo(centralRx_cmdRLJ_cortePrevio);
 			}
-
-			if(datosSC_cntWORD == 0){
-				//no hay comandos sin conexion guardados en el apagado
-				error_noEsperado = 0;
-				if(estadoReloj_en_corteAlimentacion == COBRANDO){
-					//SE APAGO EN COBRANDO y no hay comandos acumulados sin conexion, por lo tanto se debe enviar
-					//el ultimo libre para que el sistema pueda cerrar el viaje
-					statusSC = load_regViaje(nroCorrelativo_INTERNO);	//levantar datos de la tabla
-					if(!statusSC){
-						rearmar_y_TX_cmdLibre(nroCorrelativo_INTERNO);
-						corregir_dateLIBRE();
-						libreDATE = RTC_Date;
-						VALOR_VIAJE = regVIAJE.importe;
-
-					}else{
-						error_noEsperado = 1;
-					}
-					tarifaPerdida = tarifa_1_8;
-					fichasDPerdida = 0;
-					fichasTPerdida = 0;
-					dineroPerdido = 0;
-				}else{
-					//SI SE APAGO EN OCUPADO,  no hay comandos acumulados sin conexion, por lo tanto no se tiene informacion
-					//de como concluyo el viaje. Se transmite un libre sin datos, y es particularmente importante que el importe
-					//enviado en este caso sea cero, para no asignar un importe erroneo a un viaje no concluido
-					//EN OTRA CIRCUNSTANCIA tambien envia libre sin datos
-					VALOR_VIAJE = 0;
-					ResetDatGps(LIB);
-					Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-					if(estadoReloj_en_corteAlimentacion != OCUPADO){
-	    			    //para impresion de ticket en libre recupero valor de viaje
-		   				//ocupado dejo VALOR_VIAJE = 0;
-						recuperar_valor_viaje_backup();
-					}else{
-						//para que imprima todo ceros en el ticket de viaje
-						//fichas_xPulsos = 0;
-						//fichas_xTiempo = 0;
-						//DISTANCIAm_OCUPADO = 0;
-						//VALOR_VIAJE = 0;
-
-						//para impresion de ticket
-						//recupera el valor de viaje para imprimir ticket, porque a pesar de estar el
-						//viaje inconcluso y no sabemos cuanto fue realmente el valor de viaje, lo que puede pasar
-						//con mas frecuencia es que el viaje termine en ocupado pero porque se colgo la aplicacion
-						//esta no lo pudo transmitir y apagaron el equipo, de este modo se imprime el ultimo tikect
-						//de un viaje que no paso nunca a cobrando, pero probablemente haya terminado el viaje
-						recuperar_valor_viaje_backup();
-						viajeInconcluso = 1;
-					}
-
-				}
-				if(error_noEsperado){
-					VALOR_VIAJE = 0;
-					ResetDatGps(LIB);
-					Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
-				}
-				quitar_asignado;
-				ESTADO_RELOJ=LIBRE;
-	        }
-			//leo valor de corteALIMETACION
-			//EEPROM_ReadBuffer((uint8_t*) &corteALIMENTACION,ADDRESS_BACKUP_EEPROM,1);
-			//if(corteALIMENTACION!=0){
-		      //borro valor de corte de alimentacion (este byte lo uso para saber si hubo o no corte)
-		      //corteALIMENTACION = 0 //reset sin corte de alimentacion
-		      //corteALIMENTACION = 1 //reset luego de un corte de alimentacion
-		      //buffer_backup[0]=0;
-		      //EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
-			//}
-	      }
 	}
 
 
 
-static void corteLargo(uint16_t centralRx_cmdRLJ_corteLargoPrevio){
+static void corteLargo(uint16_t centralRx_cmdRLJ_cortePrevio){
 
 		 byte error_noEsperado;
 		 byte statusSC;
@@ -528,20 +313,21 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_corteLargoPrevio){
 		fichasTPerdida = fichas_xTiempo;;
 		dineroPerdido = VALOR_VIAJE;
 
-		if(!(centralRx_cmdRLJ_corteLargoPrevio&0xff00)){
+		if(!(centralRx_cmdRLJ_cortePrevio&0xff00)){
 		  //corte normal
 			estadoReloj_en_corteAlimentacion = ESTADO_RELOJ;
 			set_noRxCorteLargoPrevio(ESTADO_RELOJ);
 		}else{
 			//doble corte
 			//recupero estado de reloj, ya que como hubo corte previo en al apagarde guardo libre
-			estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_corteLargoPrevio&0x00ff;
+			estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_cortePrevio&0x00ff;
 			fichasDPerdida = 0;
 			fichasTPerdida = 0;
 			dineroPerdido = 0;
 			set_noRxCorteLargoPrevio(estadoReloj_en_corteAlimentacion);
 
 		}
+
 		if(estadoReloj_en_corteAlimentacion != OCUPADO){
 			//solo si hubo corte largo en ocupado
 			//hubo importe perdido
@@ -570,6 +356,7 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_corteLargoPrevio){
 				fichasDPerdida = 0;
 				fichasTPerdida = 0;
 				dineroPerdido = 0;
+
 			}else{
 				//SI SE APAGO EN OCUPADO,  no hay comandos acumulados sin conexion, por lo tanto no se tiene informacion
 				//de como concluyo el viaje. Se transmite un libre sin datos, y es particularmente importante que el importe
@@ -602,3 +389,159 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_corteLargoPrevio){
 			ESTADO_RELOJ=LIBRE;
 		}
 	}
+
+static byte corteCorto(uint16_t centralRx_cmdRLJ_cortePrevio){
+	 byte error_noEsperado;
+	 byte statusSC;
+
+    // CORTE CORTO => Recuperar
+	  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
+	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
+			  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
+			  //RELOJ_setTarifa(tarifa);        // Seteo automatico de tarifa
+			  RELOJ_setTarifa(tarifa_1_8);
+			  RELOJ_iniTarifacion();
+			  //vuelvo a recuperar porque  RELOJ_iniTarifa me modifico algunas variables
+			  read_backup_eeprom();
+
+			  recuperar_valor_viaje_backup();
+		  update_valor_tarifa(tarifa);
+		  on_display_all();
+			  //para el calculo de frecuencia
+		  t_pulsos_anterior = 0;
+			  t_pulsos = 0;
+			  cntIC_anterior   = 0;
+			  uint16_t MINUTOS = segundosTarifacion/60;
+			  if(MINUTOS > 255){MINUTOS=255;}
+			  minutosEspera = MINUTOS;
+
+		  if(TARIFA_PESOS){
+				  //muetra importe
+				  update_valor_display(VALOR_VIAJE);
+			  }else{
+				  //muestra fichas
+				  update_valor_display(fichas_xTiempo + fichas_xPulsos);
+			  }
+		  if(ESTADO_RELOJ==COBRANDO){
+			 toggle_display();
+		  }
+		  ini_pulsador_impresion();
+
+		  //si hubo corte largo previo debo transmitir estado de reloj
+		  if((centralRx_cmdRLJ_cortePrevio>>8) == 0x0001){
+				//doble corte
+				fichasDPerdida = 0;
+				fichasTPerdida = 0;
+				dineroPerdido = 0;
+				//recupero estado de reloj, ya que como hubo corte previo en al apagar guardo libre
+				estadoReloj_en_corteAlimentacion = (byte)centralRx_cmdRLJ_cortePrevio&0x00ff;
+				//seteo como que no recibio, para borrarla cuando recibe respuesta
+				set_noRxCorteLargoPrevio(estadoReloj_en_corteAlimentacion);
+
+				if(estadoReloj_en_corteAlimentacion != OCUPADO){
+					//solo si hubo corte largo en ocupado
+					//hubo importe perdido
+					fichasDPerdida = 0;
+					fichasTPerdida = 0;
+					dineroPerdido = 0;
+				}
+
+				if(datosSC_cntWORD == 0){
+					//no hay comandos sin conexion guardados en el apagado
+					error_noEsperado = 0;
+					if(estadoReloj_en_corteAlimentacion == COBRANDO){
+						//SE APAGO EN COBRANDO y no hay comandos acumulados sin conexion, por lo tanto se debe enviar
+						//el ultimo libre para que el sistema pueda cerrar el viaje
+						statusSC = load_regViaje(nroCorrelativo_INTERNO);	//levantar datos de la tabla
+						if(!statusSC){
+							rearmar_y_TX_cmdLibre(nroCorrelativo_INTERNO);
+							corregir_dateLIBRE();
+							libreDATE = RTC_Date;
+							VALOR_VIAJE = regVIAJE.importe;
+
+						}else{
+							error_noEsperado = 1;
+						}
+						tarifaPerdida = tarifa_1_8;
+						fichasDPerdida = 0;
+						fichasTPerdida = 0;
+						dineroPerdido = 0;
+					}else{
+						//SI SE APAGO EN OCUPADO,  no hay comandos acumulados sin conexion, por lo tanto no se tiene informacion
+						//de como concluyo el viaje. Se transmite un libre sin datos, y es particularmente importante que el importe
+						//enviado en este caso sea cero, para no asignar un importe erroneo a un viaje no concluido
+						//EN OTRA CIRCUNSTANCIA tambien envia libre sin datos
+						VALOR_VIAJE = 0;
+						ResetDatGps(LIB);
+						Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
+						if(estadoReloj_en_corteAlimentacion != OCUPADO){
+							//para impresion de ticket en libre recupero valor de viaje
+							//ocupado dejo VALOR_VIAJE = 0;
+							recuperar_valor_viaje_backup();
+
+						}else{
+							//para que imprima todo ceros en el ticket de viaje
+							//fichas_xPulsos = 0;
+							//fichas_xTiempo = 0;
+							//DISTANCIAm_OCUPADO = 0;
+							//VALOR_VIAJE = 0;
+
+							//para impresion de ticket
+							//recupera el valor de viaje para imprimir ticket, porque a pesar de estar el
+							//viaje inconcluso y no sabemos cuanto fue realmente el valor de viaje, lo que puede pasar
+							//con mas frecuencia es que el viaje termine en ocupado pero porque se colgo la aplicacion
+							//esta no lo pudo transmitir y apagaron el equipo, de este modo se imprime el ultimo tikect
+							//de un viaje que no paso nunca a cobrando, pero probablemente haya terminado el viaje
+							recuperar_valor_viaje_backup();
+							viajeInconcluso = 1;
+						}
+
+					}
+					if(error_noEsperado){
+						VALOR_VIAJE = 0;
+						ResetDatGps(LIB);
+						Pase_a_LIBRE(CI_ENCENDIDO_EQUIPO);
+					}
+				}
+		  }
+	  }else{
+		  if(ESTADO_RELOJ == LIBRE){
+			  BanderaOut_On();
+			  //para impresion de ticket en libre recupero valor de viaje
+			  read_backup_eeprom();
+				  recuperar_valor_viaje_backup();
+
+		  }
+	  }
+}
+
+
+void writeEepromDATE(tDATE date){
+	 byte auxDate[7];
+
+	 auxDate[0] = date.fecha[0];
+	 auxDate[1] = date.fecha[1];
+	 auxDate[2] = date.fecha[2];
+	 auxDate[3] = date.fecha[3];
+	 auxDate[4] = date.hora[0];
+	 auxDate[5] = date.hora[1];
+	 auxDate[6] = date.hora[2];
+
+	 EEPROM_WriteBuffer((uint8_t*) &auxDate, EEPROM_libreDATE, sizeof(tDATE));
+}
+
+
+void readEepromDATE(tDATE* date){
+
+	byte auxDate[7];
+
+	 EEPROM_ReadBuffer(&auxDate, EEPROM_libreDATE, sizeof(tDATE));
+
+	 date->fecha[0] = auxDate[0];
+	 date->fecha[1] = auxDate[1];
+	 date->fecha[2] = auxDate[2];
+	 date->fecha[3] = auxDate[3];
+	 date->hora[0]  = auxDate[4];
+	 date->hora[1]  = auxDate[5];
+	 date->hora[2]  = auxDate[6];
+}

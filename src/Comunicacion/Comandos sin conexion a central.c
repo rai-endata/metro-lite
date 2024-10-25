@@ -17,6 +17,7 @@
 #include "Eeprom.h"
 #include "Timer.h"
 #include "main.h"
+#include "Inicio.h"
 
 static void inc_scGet(void);
 static void inc_scPut(void);
@@ -112,11 +113,11 @@ void check_datosSC(void){
 		dataSC = pull_dataSC();
 	    //actualiza puntero get sc en cola de eeprom
 		inc_scGet();
-
+		error_inesperado = 0;
 		//check si es el ultimo comando a transmitir
 		//si es el ultimo comando, check si se esta tr
 		//rearmar y transmitir comandos de reloj
-		if(dataSC.estado_reloj == LIBRE){
+ 		if(dataSC.estado_reloj == LIBRE){
 			//levantar datos de la tabla
 			status = load_regViaje(dataSC.nro_viaje);
 
@@ -129,7 +130,6 @@ void check_datosSC(void){
 			}
 		}else if(dataSC.estado_reloj == OCUPADO){
 			//levantar datos de la tabla
-			error_inesperado = 0;
 			status = load_regViaje(dataSC.nro_viaje);
 			if(!status){
 				if(datosSC_cntWORD == 0 && ESTADO_RELOJ == OCUPADO){
@@ -164,6 +164,9 @@ void check_datosSC(void){
 				EEPROM_write(ADDR_DATOS_SC_PUT_PTR, ADDR_DATOS_SC);
 				scPut_ptr = ADDR_DATOS_SC;
 				scGet_ptr = ADDR_DATOS_SC;
+		}
+		if(datosSC_cntWORD == 0 && ((corteALIMENTACION | 0x1 == 0x1) | (corteALIMENTACION | 0x2 == 0x02)) ){
+			check_corte_alimentacion();
 		}
 	}
 }
