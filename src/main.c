@@ -78,6 +78,7 @@ void SystemClock_Config(void);
 void SystemClock_Config_sinRTC(void);
 
 static void MX_GPIO_Init(void);
+void chkVelMax(void);
 
 static void PVD_Config(void);
 static void InterruptPVD_When_VDD_ON_Config(void);
@@ -100,7 +101,7 @@ uint8_t tx_buff[200];
 uint32_t ESTADO_BUTTON;
 
 byte buffPULSE_ACCUM_CNT[20];
-uint32_t auxCNT;
+//uint32_t auxCNT;
 uint32_t cntIC;
 uint32_t cntIC_anterior;
 tDATE horaEncendido;
@@ -159,9 +160,7 @@ int main(void)
 	Ini_portBANDERITA();
 	MX_GPIO_Init();
 	USART7_Ini();
-	MX_TIM2_Init4();
-	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
-
+//// /////////////
 	VA_UART_ini();
 	DA_iniRx();
 	DA_iniTx();
@@ -181,11 +180,8 @@ int main(void)
 	ASIENTO_ini();
 	determinePrimerEncendido();         	//Determinar si se trata del 1er Encendido
 
-	//Configuración de contador de pulsos
-	DISTANCIA_setPulsosCntOld(0);
-	__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
-	PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
-	auxCNT = PULSE_ACCUM_CNT;
+
+
 
 	#ifdef VISOR_REPORTES
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
@@ -193,9 +189,14 @@ int main(void)
 	ini_acumular_cmdSC();					//se debe ejecutar antes de	check_corte_alimentacion()
 	horaEncendido = getDate();
 
+	//inicio contador de pulsos
+	MX_TIM2_Init4();
+	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
+
 	if(datosSC_cntWORD == 0){
 		check_corte_alimentacion();
 	}
+
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();
 	InterruptPVD_When_VDD_OFF_Config();
@@ -205,16 +206,17 @@ int main(void)
 	iniPRINT_DEBUG();
 #endif
 
-	DISTANCIA_iniCalculo_PULSE_ACCUM();
+	//DISTANCIA_iniCalculo_PULSE_ACCUM();
 	check_pressBLUETOOTH();
 
 
 	//prueba
-	testAddress();
+	//testAddress();
 
 // *****  Lazo Principal *************
 
 	for(;;){
+		chkVelMax();
 		check_datosSC();
 		#ifdef VISOR_REPORTES
 		  REPORTES_grabarFlash();      	// Grabacion de reportes en FLASH
@@ -292,7 +294,14 @@ void ModoPROGRAMACION (void){
 	}
 }
 
-
+		void chkVelMax(void){
+			if(ESTADO_RELOJ == OCUPADO){
+				if(VELOCIDAD_MAX_VIAJE < VELOCIDAD_MAX){
+					VELOCIDAD_MAX_VIAJE = VELOCIDAD_MAX;
+					EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+				}
+			}
+		}
 
 	void set_TIMEandDATE (void){
 

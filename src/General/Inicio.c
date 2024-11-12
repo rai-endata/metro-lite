@@ -313,6 +313,12 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_cortePrevio){
 		fichasTPerdida = fichas_xTiempo;;
 		dineroPerdido = VALOR_VIAJE;
 
+		//Configuración de contador de pulsos
+		//DISTANCIA_setPulsosCntOld(0);
+		//__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
+		//PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
+		DISTANCIA_iniCalculo_PULSE_ACCUM();
+
 		if(!(centralRx_cmdRLJ_cortePrevio&0xff00)){
 		  //corte normal
 			estadoReloj_en_corteAlimentacion = ESTADO_RELOJ;
@@ -395,7 +401,7 @@ static byte corteCorto(uint16_t centralRx_cmdRLJ_cortePrevio){
 	 byte statusSC;
 
     // CORTE CORTO => Recuperar
-	  __HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
+	  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
 	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
 			  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
 			  //RELOJ_setTarifa(tarifa);        // Seteo automatico de tarifa
@@ -405,10 +411,10 @@ static byte corteCorto(uint16_t centralRx_cmdRLJ_cortePrevio){
 			  read_backup_eeprom();
 
 			  recuperar_valor_viaje_backup();
-		  update_valor_tarifa(tarifa);
-		  on_display_all();
+		      update_valor_tarifa(tarifa);
+		      on_display_all();
 			  //para el calculo de frecuencia
-		  t_pulsos_anterior = 0;
+		      t_pulsos_anterior = 0;
 			  t_pulsos = 0;
 			  cntIC_anterior   = 0;
 			  uint16_t MINUTOS = segundosTarifacion/60;

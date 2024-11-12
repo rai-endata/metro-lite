@@ -51,6 +51,7 @@
 	extern TIM_HandleTypeDef inputCaptureCNT;
 
 	extern uint32_t PULSE_ACCUM_CNT;
+	extern uint32_t auxCNT;
 		  
 
  //ODOMETRO

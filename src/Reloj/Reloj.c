@@ -380,7 +380,9 @@ void Pase_a_OCUPADO (byte estado){
 		cobrandoDATE.fecha[1] = 0xff;  // MES
 		cobrandoDATE.fecha[2] = 0xff;  // AÑO
 		viajeInconcluso = 0;
-
+		DISTANCIAm_OCUPADO = 0;
+		VELOCIDAD_MAX_VIAJE = 0;
+		//EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
 
 		ocupadoDATE_writeFLASH = 1;
 
@@ -481,8 +483,8 @@ void Pase_a_COBRANDO (byte estado){
 
         //Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
 		velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-		VELOCIDAD_MAX_VIAJE = VELOCIDAD_MAX;
-		EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+		//VELOCIDAD_MAX_VIAJE = VELOCIDAD_MAX;
+		//EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
 
 		velMax_OCUPADO = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
 		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;		// Distancia Recorrida en OCUPADO (KM xxx.xx)

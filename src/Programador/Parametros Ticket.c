@@ -63,6 +63,7 @@
 
 
      // eeprom_ptr = &EEPROM_PROG_TICKET;   // Puntero a Inicio de Parametros TICKET
+      /*
       EEPROM_ReadBuffer(&dataEEPROM, ADDRESS_PROG_TICKET_PAGE1, 1);
       if (dataEEPROM == 0xFF){
 			// No hay programacion => programo por defecto
@@ -82,7 +83,37 @@
       }else{
     	  checkTicketProg();
       }
-
+	 */
+       checkDataProgTicket();
+       //blckPROG_TICKET = 0xf no hace falta restaurar
+       if (blckPROG_TICKET != 0xf){
+       	   if (blckPROG_TICKET == 0x0){
+			   // 0x0 no se puede restaurar guardo por defecto
+				prgTICKET_armarDEFAULT();
+				PROG_TICKET_to_EEPROM(0);                   // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+				error = PROG_TICKET_grabarEEPROM();         // Grabar parametro en EEPROM
+		   }else{
+			  //hay al menos un sector que no esta defectuoso
+				//restauro y levanto datos en ram
+				restoreTicket();
+				checkDataProgTicket();
+		   }
+       }
+		checkDataProgTicketRecaud();
+		//blckPROG_TICKET_RECAUD = 0xf no hace falta restaurar
+		if (blckPROG_TICKET_RECAUD != 0xf){
+			if (blckPROG_TICKET_RECAUD == 0x0){
+				// 0x0 no se puede restaurar guardo por defecto
+				prgTICKET_RECAUD_armarDEFAULT();
+				PROG_TICKET_RECAUD_to_EEPROM(0);            // Solciitar grabacion parametros en EEPROM, sin iniciar EEPROM IRQ
+				error = PROG_TICKET_RECAUD_grabarEEPROM();  // Grabar parametro en EEPROM
+			}else{
+					//hay al menos un sector que no esta defectuoso
+					//restauro y levanto datos en ram
+					restoreTicketRecaud();
+					checkDataProgTicketRecaud();
+		   }
+		}
 	  //levantar_progTICKET();
 	  EEPROM_ReadBuffer((uint8_t*)(&EEPROM_PROG_TICKET), (uint32_t)ADDRESS_PROG_TICKET_PAGE1, sizeof(tPRG_TICKET));
 	  EEPROM_ReadBuffer((uint8_t*)(&EEPROM_PROG_TICKET_RECAUD), (uint32_t)ADDRESS_PROG_TICKET_RECAUD, sizeof(tPRG_TICKET_RECAUD));

@@ -104,6 +104,9 @@ void print_ticket_viaje(void){
 
 			date_to_string(buffer_Date_ocupado, ocupadoDATE);
 
+			if(viajeInconcluso){
+						DISTANCIAm_OCUPADO = TARIFA.distInicial + fichas_xPulsos*TARIFA.distFicha;
+			}
 			if(DISTANCIAm_OCUPADO<1001){
 				//distancia en metros
 				preparar_print (DISTANCIAm_OCUPADO, 0, &buffer_Distancia, 0 );
@@ -263,7 +266,6 @@ void print_ticket_viaje(void){
 				string_copy_incDest(ptrDouble,"concluya el viaje");
 				add_LF(ptrDouble);
 				printLINE(ptrDouble);
-
 			}else{
 				if(TARIFA_PESOS){
 					string_copy_incDest(ptrDouble,"       ");

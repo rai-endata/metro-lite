@@ -245,10 +245,11 @@ tDirProg			dirProg;
         	uint32_t dir_ProgOk;
 
         	//chequea estado de sectores de programacion del ticket y restaura si por lo menos un sector esta ok
-        	checkDataProgTicket();
-        	if ((blckPROG_TICKET != 0xf) && //= 0xf no hace falta restaurar
-        		(blckPROG_TICKET != 0x0)){  //= 0x0 no se puede restaurar
-				if(blckPROG1_TICKET ||
+        	//checkDataProgTicket();
+        	//if ((blckPROG_TICKET != 0xf) && //= 0xf no hace falta restaurar
+        	//	(blckPROG_TICKET != 0x0)){  //= 0x0 no se puede restaurar
+			if (blckPROG_TICKET != 0xf){ //= 0xf no hace falta restaurar
+        		if(blckPROG1_TICKET ||
 				   blckPROG2_TICKET ||
 				   blckPROG3_TICKET ||
 				   blckPROG4_TICKET){
@@ -492,7 +493,8 @@ tDirProg			dirProg;
       	uint32_t blgPrg;
       	uint32_t dirProgOk = 0;
 
-      	dirProgOk = ADDRESS_PROG_TICKET_PAGE1; //devuelve esta direccion por defecto
+      	//dirProgOk = ADDRESS_PROG_TICKET_PAGE1; //devuelve esta direccion por defecto
+      	dirProgOk = NULL; //
       	if(blckPROG1_TICKET){
       		dirProgOk = ADDRESS_PROG_TICKET_PAGE1;
       	}else if(blckPROG2_TICKET){
@@ -502,7 +504,7 @@ tDirProg			dirProg;
       	}else if(blckPROG4_TICKET){
       		dirProgOk = ADDRESS_PROG_TICKET_PAGE1_bck3;;
       	}
-      	addressTicket = dirProgOk;
+      	//addressTicket = dirProgOk;
       	return(dirProgOk);
       }
 
@@ -570,23 +572,40 @@ tDirProg			dirProg;
 		//para restaurar sector de programacion defectuoso
     	if ((!(blckPROG_TICKET == 0x0f)) && (blckPROG_TICKET != 0x00)){
 			dir_ProgOk = getDirTicket();
-			if((!blckPROG1_TICKET)){
-				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1;
-			}
-			if((!blckPROG2_TICKET)){
-				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck1;
-			}
-			if((!blckPROG3_TICKET)){
-				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck2;
-			}
-			if((!blckPROG4_TICKET)){
-				dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck3;
-			}
-			//restaura DATOS
-			EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
-			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dir_ProgWrong, 128);
-			grabar_buffer_EEPROM((uint16_t*)(&dataToRestore + 128), dir_ProgWrong, SIZE_PROG_TICKET-128);
+			if(dir_ProgOk != NULL){
+				if((!blckPROG1_TICKET)){
+					dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1;
+					//restaura DATOS
+					EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, 128);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[128]), dir_ProgWrong + 64, SIZE_PROG_TICKET-128);
 
+				}
+				if((!blckPROG2_TICKET && dir_ProgOk != NULL)){
+					dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck1;
+					//restaura DATOS
+					EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, 128);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[128]), dir_ProgWrong + 64, SIZE_PROG_TICKET-128);
+
+				}
+				if((!blckPROG3_TICKET)){
+					dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck2;
+					//restaura DATOS
+					EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, 128);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[128]), dir_ProgWrong + 64, SIZE_PROG_TICKET-128);
+
+				}
+				if((!blckPROG4_TICKET)){
+					dir_ProgWrong = (uint16_t*)ADDRESS_PROG_TICKET_PAGE1_bck3;
+					//restaura DATOS
+					EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, 128);
+					grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[128]), dir_ProgWrong + 64, SIZE_PROG_TICKET-128);
+
+				}
+			}
 			//test
 			//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dir_ProgWrong, SIZE_PROG_TICKET);
 
@@ -616,7 +635,7 @@ tDirProg			dirProg;
 		}
     	//restaura DATOS
     	EEPROM_ReadBuffer(dataToRestore, dir_ProgOk, SIZE_PROG_TICKET_RECAUD);
-    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore[0]), dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
+    	grabar_buffer_EEPROM((uint16_t*)(&dataToRestore), dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
  	    //test
  		//EEPROM_ReadBuffer(&EEPROM_buffer_test, (uint32_t)dir_ProgWrong, SIZE_PROG_TICKET_RECAUD);
      }

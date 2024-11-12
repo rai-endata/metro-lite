@@ -92,6 +92,7 @@
 	TIM_HandleTypeDef pulsoACCUM;
 	TIM_HandleTypeDef inputCaptureCNT;
 	uint32_t PULSE_ACCUM_CNT;
+	uint32_t auxCNT;
 	uint32_t DISTANCIAm;
 	uint32_t DISTANCIA_100;
 	uint32_t DISTANCIA_100_anterior;
@@ -737,10 +738,11 @@
 
   /* RESETEAR PULSOS */
   /*******************/
+/*
     void PULSOS_reset (void){
       PULSE_ACCUM_CNT = setPULSE_ACCUM_CNT(&pulsoACCUM,0);              // Reseteo valor del contador de HARDWARE
     }
-
+*/
 
 
 

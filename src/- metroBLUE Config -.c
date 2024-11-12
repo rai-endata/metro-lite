@@ -18,8 +18,16 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.4";
-char fechaFIRMWARE[] =  " (25/10/2024)";
+char versionFIRMWARE[] =  "v2.1.5";
+char fechaFIRMWARE[] =  " (12/11/2024)";
+
+//Version v2.1.5 -12/11/2024
+
+//error al leer programacion de ticket
+//y algunos errores en datos de impresion de ticket
+//luego de un microcorte en ocupado y cobrando
+
+
 
 // guarda cambios de reloj sin conexion en eeprom
 // correcion errores varios en corte largo y microcorte

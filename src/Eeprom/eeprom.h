@@ -20,25 +20,25 @@
 #define	ADDRESS_PROG2     					ADDR_EEPROM_PAGE_4  // (pag4, pag5, Y pag6)     //copia 1 datos de programacion
 #define	ADDRESS_PROG3     					ADDR_EEPROM_PAGE_7  // (pag7, pag8, Y pag9)	    //copia 2 datos de programacion
 #define	ADDRESS_PROG4     					ADDR_EEPROM_PAGE_10 // (pag10, pag11, Y pag12)  //copia 3 datos de programacion
-
+// (pag13, pag14)
 #define	ADDRESS_PROG_TICKET_PAGE1			ADDR_EEPROM_PAGE_13
-#define	ADDRESS_PROG_TICKET_PAGE2			ADDR_EEPROM_PAGE_13 + 128
+#define	ADDRESS_PROG_TICKET_PAGE2			ADDRESS_PROG_TICKET_PAGE1 + 128
 #define	ADDRESS_PROG_TICKET_RECAUD			ADDRESS_PROG_TICKET_PAGE1 + sizeof(tPRG_TICKET)
-
+// (pag15, pag16)
 #define	ADDRESS_PROG_TICKET_PAGE1_bck1		ADDR_EEPROM_PAGE_15
 #define	ADDRESS_PROG_TICKET_PAGE2_bck1		ADDRESS_PROG_TICKET_PAGE1_bck1 + 128
 #define	ADDRESS_PROG_TICKET_RECAUD_bck1		ADDRESS_PROG_TICKET_PAGE1_bck1 + sizeof(tPRG_TICKET)
-
+// (pag17, pag18)
 #define	ADDRESS_PROG_TICKET_PAGE1_bck2		ADDR_EEPROM_PAGE_17
 #define	ADDRESS_PROG_TICKET_PAGE2_bck2		ADDRESS_PROG_TICKET_PAGE1_bck2 + 128
 #define	ADDRESS_PROG_TICKET_RECAUD_bck2		ADDRESS_PROG_TICKET_PAGE1_bck2 + sizeof(tPRG_TICKET)
-
+// (pag19, pag20)
 #define	ADDRESS_PROG_TICKET_PAGE1_bck3		ADDR_EEPROM_PAGE_19
 #define	ADDRESS_PROG_TICKET_PAGE2_bck3		ADDRESS_PROG_TICKET_PAGE1_bck3 + 128
 #define	ADDRESS_PROG_TICKET_RECAUD_bck3		ADDRESS_PROG_TICKET_PAGE1_bck3 + sizeof(tPRG_TICKET)
-
+// (pag21)
 #define	ADDRESS_VARIOS2    					ADDR_EEPROM_PAGE_21
-
+// (pag22)
 #define	ADDRESS_REPORTES   					ADDR_EEPROM_PAGE_22
 
 
@@ -321,8 +321,8 @@
 
    //extern tEEPROM_ERROR grabar_byte_EEPROM (byte dato, uint16_t* EEPROM_ptr, byte mask);
   // extern tEEPROM_ERROR grabar_word_EEPROM (uint16_t dato, uint16_t* EEPROM_ptr, byte mask);
-   extern tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
-   extern tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t max_size);
+   extern tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t sizeData);
+   extern tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* data_buffer, uint16_t* EEPROM_ptr, uint16_t sizeData);
 
 	 void read_backup_eeprom(void);
 	 void write_backup_eeprom(byte motivoBackup);

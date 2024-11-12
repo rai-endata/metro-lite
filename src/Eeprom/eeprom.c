@@ -7,6 +7,7 @@
 //#include "eeprom_aux.h"
 #include "eeprom.h"
 
+#include  "HAL.h"
 #include "rtc.h"
 #include "Tarifacion Reloj.h"
 #include "Reloj.h"
@@ -15,6 +16,7 @@
 #include "DTE - Tx.h"
 #include "Ticket VIaje.h"
 #include "inicio.h"
+#include "odometro.h"
 
 //tEEPROM dataEE;
 
@@ -190,11 +192,17 @@ void read_backup_eeprom(void){
     	*(ptrDIR+1) = buffer_backup[i]; i++;
     	*(ptrDIR+0) = buffer_backup[i]; i++;
 
+       	setPULSE_ACCUM_CNT(&pulsoACCUM, PULSE_ACCUM_CNT);
+       	//prueba
+       	auxCNT = __HAL_TIM_GetCounter(&pulsoACCUM);
+
+
     	ptrDIR = (uint8_t*)&pulsos_cnt_old;
     	*(ptrDIR+3) = buffer_backup[i]; i++;
     	*(ptrDIR+2) = buffer_backup[i]; i++;
     	*(ptrDIR+1) = buffer_backup[i]; i++;
     	*(ptrDIR+0) = buffer_backup[i]; i++;
+
 
     	ptrDIR = (uint8_t*)&DISTANCIAm_OCUPADO;
     	*(ptrDIR+3) = buffer_backup[i]; i++;
@@ -226,6 +234,15 @@ void read_backup_eeprom(void){
     	HoraApagado.hora[0]  = buffer_backup[i];  i++;
     	HoraApagado.hora[1]  = buffer_backup[i];  i++;
     	HoraApagado.hora[2]  = buffer_backup[i];  i++;
+
+    	//recuperacion auxiliar
+    	//DISTANCIAm = TARIFA.distInicial + fichas_xPulsos*TARIFA.distFicha;
+    	//DISTANCIA_100 = (DISTANCIAm/100)*100;
+    	calculoDISTANCIA_PULSE_ACCUM(0);
+    	if(ESTADO_RELOJ == COBRANDO){
+        	DISTANCIAm = TARIFA.distInicial + fichas_xPulsos*TARIFA.distFicha;
+        	DISTANCIA_100 = (DISTANCIAm/100)*100;
+    	}
 }
 
 
@@ -473,7 +490,7 @@ void test_size(void){
 
   /* GRABACION DE UN BUFFER EN EEPROM */
   /************************************/
-    tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t max_size){
+    tEEPROM_ERROR grabar_buffer_EEPROM (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t sizeData){
       // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
       // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
       // Esta cantidad debe ser multiplo de 4
@@ -493,10 +510,10 @@ void test_size(void){
 
         fin_datos = 0;                              // Reseteo Variable
         fin_ptr = (byte*) ptrRam;
-        while ((EEPROMsize_max != 0) && !(fin_datos)){
+        while ((EEPROMsize_max != 0) && (sizeData > 0) && !(fin_datos)){
 
           EEPROMsize_max--;                         // Voy decrementando cantidad de 4bytes a grabar
-
+          sizeData--;
           // chequeo condicion |DF|0A|XX|XX|
           if ((*fin_ptr == finEEPROM_H) && (*(fin_ptr+1) == finEEPROM_L)){
             fin_datos = 1;                          // Llegue al fin => Lo grabo y salgo
@@ -563,7 +580,7 @@ void test_size(void){
 
     /* GRABACION DE UN BUFFER EN EEPROM */
       /************************************/
-        tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t max_size){
+        tEEPROM_ERROR grabar_buffer_EEPROM_TICKET (uint16_t* ptrRam, uint16_t* ptrEeprom, uint16_t sizeData){
           // Graba un buffer en EEPROM. Para hacerlo, se le debe decir que buffer va a grabar
           // y en que direccion. Ademas, se le debe pasar la cantidad de bytes a grabar.
           // Esta cantidad debe ser multiplo de 4
@@ -579,7 +596,7 @@ void test_size(void){
 
 
 
-			error = EEPROM_WriteBuffer((uint8_t*) ptrRam, ptrEeprom, max_size);
+			error = EEPROM_WriteBuffer((uint8_t*) ptrRam, ptrEeprom, sizeData);
 			if(error == errNone){
 				error1 = EEPROM_OK;
 			}else{
