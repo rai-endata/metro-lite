@@ -582,6 +582,9 @@
             tarifandoPulsos = 1;          // Comienzo a tarifar por Pulsos
             
             RELOJ_iniPulsos();            // Inicializacion de tarifacion por pulsos
+          }else{
+        	  //programacion defensiva
+        	  //tarifandoPulsos = 1;          // Comienzo a tarifar por Pulsos
           }
         
         }else{
@@ -600,6 +603,9 @@
             tarifandoTiempo = 1;          // Comienzo a tarifar por Tiempo
             
             RELOJ_iniTiempo();            // Inicializacion de tarifacion por tiempo
+          }else{
+        	  //programacion defensiva
+        	  //tarifandoTiempo = 1;          // Comienzo a tarifar por Tiempo
           }
         }
       }

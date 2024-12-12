@@ -129,21 +129,22 @@ void check_datosSC(void){
 				corregir_dateLIBRE();
 			}
 		}else if(dataSC.estado_reloj == OCUPADO){
-			//levantar datos de la tabla
-			status = load_regViaje(dataSC.nro_viaje);
-			if(!status){
-				if(datosSC_cntWORD == 0 && ESTADO_RELOJ == OCUPADO){
-						Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
-				}else{
+			//transmitir el ultimo comando ?
+			if(datosSC_cntWORD == 0 && ESTADO_RELOJ == OCUPADO){
+				Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+			}else{
+				//levantar datos de la tabla
+				status = load_regViaje(dataSC.nro_viaje);
+				if(!status){
 					//rearmar y transmitir ocupado
 					esperarRespuesta_cmdReloj = 1;
 					rearmar_y_TX_cmdOcupado(dataSC.nro_viaje, status);
 					if(datosSC_cntWORD == 0 && ESTADO_RELOJ == COBRANDO){
-							Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+						Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 					}
+				}else{
+					error_inesperado = 1;
 				}
-			}else{
-				error_inesperado = 1;
 			}
 		}else{
 			error_inesperado = 1;
@@ -165,11 +166,22 @@ void check_datosSC(void){
 				scPut_ptr = ADDR_DATOS_SC;
 				scGet_ptr = ADDR_DATOS_SC;
 		}
-		if(datosSC_cntWORD == 0 && ((corteALIMENTACION | 0x1 == 0x1) | (corteALIMENTACION | 0x2 == 0x02)) ){
-			check_corte_alimentacion();
+		// en el inicio, si datosSC_cntWORD != 0, no llama a check_corte_alimentacion(), por eso lo hago aca
+		// entonces lo debe llamar cuando termina de transmitir los comandos que tenia guardado antes que se
+		// apagara el equipo, luego de llamarlo una vez no lo debe volver a llamar hasta un nuevo encendido
+
+		//if(datosSC_cntWORD == 0 && ((corteALIMENTACION | 0x1 == 0x1) | (corteALIMENTACION | 0x2 == 0x02)) ){
+		if(datosSC_cntWORD == 0 && (((corteALIMENTACION & 0x1) == 0x1)|((corteALIMENTACION & 0x2) == 0x02))){
+			INICIO_microCorte = diferenciaHoraria(horaEncendido.hora, HoraApagado.hora, 16);
+			if(!INICIO_microCorte){
+				// si hubo micro corte ya llamo a check_corte_alimentacion();
+				// antes de transmitir comandos guardados
+				check_corte_alimentacion();
+			}
 		}
 	}
 }
+
 
 byte load_regViaje(byte nro_viaje){
 
@@ -194,6 +206,10 @@ byte load_regViaje(byte nro_viaje){
 	return(status);
 
 }
+
+
+
+
 
 /*  GUARDO DATOS SIN CONEXION *
  ***************************** */

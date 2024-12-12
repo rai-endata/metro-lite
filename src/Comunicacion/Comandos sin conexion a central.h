@@ -72,4 +72,5 @@ extern void push_dataSC_inEeprom(sc_data dataSC);
 extern byte load_regViaje(byte nro_viaje);
 
 
+
 #endif /* RELOJ_COMANDOS_SIN_CONEXION_A_CENTRAL_H_ */

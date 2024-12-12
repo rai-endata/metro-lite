@@ -186,16 +186,30 @@ int main(void)
 	#ifdef VISOR_REPORTES
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
 	#endif
-	ini_acumular_cmdSC();					//se debe ejecutar antes de	check_corte_alimentacion()
-	horaEncendido = getDate();
 
 	//inicio contador de pulsos
 	MX_TIM2_Init4();
 	HAL_TIM_IC_Start_IT(&pulsoACCUM,TIM_CHANNEL_1);
 
+	ini_acumular_cmdSC();					//se debe ejecutar antes de	check_corte_alimentacion()
+	horaEncendido = getDate();
+
+	check_corte_alimentacion();
+
+
 	if(datosSC_cntWORD == 0){
 		check_corte_alimentacion();
+	}else{
+		read_backup_eeprom();
+		INICIO_microCorte = diferenciaHoraria(horaEncendido.hora, HoraApagado.hora, 16);
+		if(INICIO_microCorte){
+			check_corte_alimentacion();
+		}else{
+			RELOJ_setTarifa(tarifa_1_8);
+			RELOJ_iniTarifacion();
+		}
 	}
+
 
 	Tx_Encendido_EQUIPO();		    			//encendido de EQUIPO
 	PVD_Config();

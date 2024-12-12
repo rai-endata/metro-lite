@@ -18,8 +18,15 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.5";
-char fechaFIRMWARE[] =  " (12/11/2024)";
+char versionFIRMWARE[] =  "v2.1.6";
+char fechaFIRMWARE[] =  " (12/12/2024)";
+
+// Version v2.1.6 -12/12/2024
+// * resuelve un problema de tx de ocupado sin conexion
+// * guardado que no enviaba
+// * resuelve problema que en ocupado, despues de un corte corto
+//   se perdia los km recorridos
+
 
 //Version v2.1.5 -12/11/2024
 

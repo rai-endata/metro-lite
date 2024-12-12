@@ -30,9 +30,11 @@ extern inicioFLAGS1             	_inicio_F1;
 #define valorPrimerEncendido    0x55AA
 #define EEPROM_PRIMER_ENCENDIDO ADDR_EEPROM_PRIMER_ENCENDIDO
 
-#define rxCorteLargoPrevio           0x0000
-#define noRxCorteLargoPrevio         0x0100
+#define rxCorteLargoPrevio           0x0000 	// Indica que el metrolite se inicio despues de un corte largo normal
+#define noRxCorteLargoPrevio         0x0100		// Indica que el merrolite se inicio despues de un corte corto que
+												// se produjo despues dee un corte largo que no recibio respuesta de los comanndos de encendido de reloj
 #define noRxCorteCortoPrevio         0x0200
+
 #define EEPROM_YA_HUBO_CORTE_LARGO 	ADDR_EEPROM_YA_HUBO_CORTE_LARGO
 
 #define EEPROM_libreDATE 	ADDR_EEPROM_LIBRE_DATE
@@ -53,5 +55,7 @@ extern void check_corte_alimentacion(void);
 extern void set_rxCorteNormal(void);
 extern void set_noRxCorteLargoPrevio(byte estado_reloj);
 extern void set_noRxCorteCortoPrevio(byte estado_reloj);
+extern void borroCorteALIMENTACION(void);
+
 
 #endif

@@ -26,6 +26,7 @@ void write_backup_eeprom(byte motivoBackup){
 	//motivoBackup
 	//0: se colgo el equipo (HardFault_Handler)
 	//1: se desconecto la alimentacion del equipo ( HAL_PWR_PVDCallback)
+
     //1 guarda desconexion de alimentacion para reportar en ticket de turno
     //motivo backup lo guardo en primer LSB
 	//ultimo viaje inconcluos lo guardo en segundo LSB
@@ -143,7 +144,7 @@ void read_backup_eeprom(void){
     	if(aux){
     	   viajeInconcluso = 1;
     	}
-    	tarifa_1_8		  = buffer_backup[i]; i++;
+    	tarifa_1_8 = buffer_backup[i]; i++;
 
     	if(tarifa_1_8 < 5){
 		 tarifa_1_4 = tarifa_1_8;

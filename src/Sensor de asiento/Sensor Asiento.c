@@ -277,6 +277,7 @@ void ini_puerto_sensor_asiento(void){
 
     	GPIO_PinState pin_ASIENTO_IN;
 
+    	if(RELOJ_INTERNO && !RELOJ_OCUPADO){
      		if (!SIN_SENSOR_ASIENTO && SENSOR_ASIENTO_RELOJ_OK){
      		  if (sensor_asiento_press){
      		    if (RELOJ_INTERNO && SENSOR_ASIENTO_RELOJ_OK){
@@ -302,7 +303,8 @@ void ini_puerto_sensor_asiento(void){
              }
      		  }
      		}
-       }
+    	}
+    }
 
   /* OBTENER STATUS DE PRESION DEL SENSOR DE ASIENTO */
   /***************************************************/

@@ -2671,7 +2671,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		//hago un backup en eeprom
 		ENABLE_SPI_byPOLLING();
 		EEPROM_Protect(EEPROM_ProtectNone);
-		write_backup_eeprom(0);
+		write_backup_eeprom(1);
 		EEPROM_Protect(EEPROM_ProtectAll);
 		//ESPERO 3 SEGUNDOS
 		HAL_Delay(3000);

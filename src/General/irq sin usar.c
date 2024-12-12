@@ -72,10 +72,10 @@
   	        //__asm("BKPT #0\n") ; // Break into the debugger
 
   	        //hago un backup en eeprom
-		    ENABLE_SPI_byPOLLING();
-		    EEPROM_Protect(EEPROM_ProtectNone);
-		    write_backup_eeprom(0);
-			EEPROM_Protect(EEPROM_ProtectAll);
+		    //ENABLE_SPI_byPOLLING();
+		    //EEPROM_Protect(EEPROM_ProtectNone);
+		    //write_backup_eeprom(0);
+			//EEPROM_Protect(EEPROM_ProtectAll);
   	        //reseteo el equipo
   	        NVIC_SystemReset();
   }

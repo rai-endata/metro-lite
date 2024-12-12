@@ -152,8 +152,7 @@ void SOURCE_DATE_Ini (void){
         			   // DESCONEXION
         			   (void)REPORTE_queueDesconexionAlim(HoraApagado, RELOJ_INTERNO_getChofer(), tarifaPerdida, fichasDPerdida, fichasTPerdida, dineroPerdido);
 						//borro corteALIMENTACION
-						buffer_backup[0]=0;
-						EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
+						borroCorteALIMENTACION();
         		   }
         	   }
            }
@@ -215,7 +214,8 @@ void SOURCE_DATE_Ini (void){
     	   uint16_t  aux, aux1, aux2;
     	   aux1 = estado_reloj;
     	   aux2 = noRxCorteLargoPrevio & 0xff00;
-    	   aux = noRxCorteLargoPrevio | aux1;
+    	   //aux = noRxCorteLargoPrevio | aux1;
+    	   aux = aux2 | aux1;
     	   //guardo que ya hubo corte largo previo y estado de reloj
     	   EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, aux); // Grabar Word en EEPROM
        }
@@ -224,7 +224,8 @@ void SOURCE_DATE_Ini (void){
     	   uint16_t  aux, aux1, aux2;
     	   aux1 = estado_reloj;
     	   aux2 = noRxCorteCortoPrevio & 0xff00;
-    	   aux = noRxCorteCortoPrevio | aux1;
+    	   //aux = noRxCorteCortoPrevio | aux1;
+    	   aux = aux2 | aux1;
     	   //guardo que ya hubo corte largo previo y estado de reloj
     	   EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, aux); // Grabar Word en EEPROM
        }
@@ -251,7 +252,7 @@ void SOURCE_DATE_Ini (void){
 			INICIO_microCorte = 0;
 
 			//check corte largo previo
-			//huboCorteLargo sucede cuando, si, previo a este encendido hubo un corte lago y antes que se transmitiera el comando de reloj
+			//huboCorteLargo sucede cuando, si, previo a este encendido hubo un corte lago y antes que se transmitiera el comando de reloj,
 			//volvio a haber otro corte largo sin que se pudiera informar a la central el estado previo al corte.
 			//el corte previo se hace usando esta funcion: set_noRxCorteLargoPrevio
 			EEPROM_ReadBuffer(&centralRx_cmdRLJ_cortePrevio, EEPROM_YA_HUBO_CORTE_LARGO, SIZE_YA_HUBO_CORTE_LARGO);
@@ -289,8 +290,7 @@ void SOURCE_DATE_Ini (void){
 				  corteLargo(centralRx_cmdRLJ_cortePrevio);
 			  }
 			  //borro corteALIMENTACION, para que no guarde desconexion de alim. en reportes
-			  buffer_backup[0]=0;
-			  EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
+			  borroCorteALIMENTACION();
 			}else{
 			  //CORTE LARGO
 			  corteLargo(centralRx_cmdRLJ_cortePrevio);
@@ -318,6 +318,12 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_cortePrevio){
 		//__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
 		//PULSE_ACCUM_CNT = __HAL_TIM_GetCounter(&pulsoACCUM);
 		DISTANCIA_iniCalculo_PULSE_ACCUM();
+
+		// si no hubo corte previo, gurda estado de reloj ACTUAL
+		// si hubo corte previo, recupera estado de reloj en corte previo
+		//huboCorteLargo sucede cuando, si, previo a este encendido hubo un corte lago y antes que se transmitiera el comando de reloj,
+		//volvio a haber otro corte largo sin que se pudiera informar a la central el estado previo al corte.
+		//el corte previo se hace usando esta funcion: set_noRxCorteLargoPrevio
 
 		if(!(centralRx_cmdRLJ_cortePrevio&0xff00)){
 		  //corte normal
@@ -550,4 +556,13 @@ void readEepromDATE(tDATE* date){
 	 date->hora[0]  = auxDate[4];
 	 date->hora[1]  = auxDate[5];
 	 date->hora[2]  = auxDate[6];
+}
+
+void borroCorteALIMENTACION(void){
+
+	byte buffer_backup[1];
+
+	//borro corteALIMENTACION
+	buffer_backup[0]=0;
+	EEPROM_WriteBuffer((uint8_t*) &buffer_backup,ADDRESS_BACKUP_EEPROM,1);
 }
