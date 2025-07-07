@@ -546,7 +546,10 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 		uint16_t BajadaBandera;
 		uint8_t tarifa_mostrar;
 
-
+		if(paseOCUPADO_PACTADO){
+			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			PUNTO_DECIMAL = puntoDecimal_PACTADO;
+		}
 
 	    CMD_Valor_VIAJE.Tx_F = 1;                      // Levanto Bandera de Tx
 		CMD_Valor_VIAJE.Reintentos = reint_0;   // Cargo Cantidad de Reintentos (INFINITOS)

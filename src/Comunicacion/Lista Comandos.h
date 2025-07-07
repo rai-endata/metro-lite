@@ -108,11 +108,16 @@
     #define cmdApp_CON_CONEXION_Rx				0x10
 	#define cmdApp_SIN_CONEXION_Rx				0x11
 
+	#define cmdPedido_Pase_OCUPADO_PACTADO		0x14
+
+
 	#define cmdPedido_Pase_LIBRE_SC				0x23
 	#define cmdPedido_Pase_OCUPADO_SC			0x24
 	#define cmdPedido_Pase_COBRANDO_SC			0x25
 
 	#define cmdAsignado							0x30
+
+	#define cmdPedido_Pase_OCUPADO_PACTADO_SC	0x34
 
 
 #endif

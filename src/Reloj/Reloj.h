@@ -78,7 +78,7 @@
 			  byte por_sensor_asientoLIB  	:1;
 			  byte por_banderita			:1;
 			  byte por_app					:1;
-			  byte :1;
+			  byte por_pactado				:1;
 			  byte :1;
 			  byte :1;
 	      }Bits;
@@ -93,6 +93,7 @@
 		#define paseLIBRE_SENSOR_ASIENTO	_status_paseOCUPADO.Bits.por_sensor_asientoLIB
 		#define paseOCUPADO_BANDERITA		_status_paseOCUPADO.Bits.por_banderita
 		#define paseOCUPADO_APP				_status_paseOCUPADO.Bits.por_app
+		#define paseOCUPADO_PACTADO				_status_paseOCUPADO.Bits.por_pactado
 
 	//#define BANDERA_OUT_PIN                GPIO_PIN_5
 	#define BANDERA_OUT_PIN                GPIO_PIN_5

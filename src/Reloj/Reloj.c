@@ -196,7 +196,7 @@ uint8_t nroTARIFA_HAB_AUTOMATICA;		//CANTIDAD DE TARIFAS HABILITADAS
         //static byte Pase_a_OCUPADO_APP_Buffer[N_DATOS_Pase_a_OCUPADO_APP + 2];   // Sumo DF + 0A
         typeTxCMD   CMD_Pase_a_OCUPADO_APP={0,CMD_RELOJ_Pase_a_OCUPADO_APP,0,timeReint_rapido,N_Pase_a_OCUPADO_APP,Pase_a_OCUPADO_Buffer};
 
-    	// Comando OCUPADO
+    	// Comando OCUPADOf
         #define N_DATOS_Pase_a_OCUPADO_BANDERA         44				//12
         #define N_Pase_a_OCUPADO_BANDERA               (N_CMD + N_DATOS_Pase_a_OCUPADO)
         //static byte Pase_a_OCUPADO_BANDERA_Buffer[N_DATOS_Pase_a_OCUPADO_BANDERA + 2];   // Sumo DF + 0A
@@ -644,263 +644,6 @@ static void fuera_de_servicio(void){
     #endif
   }
 
-/*
-  void Pase_a_LIBRE_SC (void){
-  	tFLASH_ERROR error;
-      byte nro_correlativo;
-  	uint32_t Address;
-
-
-  	#ifdef RELOJ_DEBUG
-  	timerA_PAGAR_to_LIBRE_cnt = 0;
-  	#endif
-
-	if(tipo_de_equipo == METRO_LITE){
-		timerA_PAGAR_to_LIBRE_cnt = 0;
-	}
-
-  	if(timerA_PAGAR_to_LIBRE_cnt == 0){
-  		anularReTx_RELOJ();
-  		CMD_a_RESP = 0x23;
-  		TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
-
-  		//if(RELOJ_INTERNO){
-
-  		//	if((ESTADO_RELOJ==FUERA_SERVICIO) || (ESTADO_RELOJ==COBRANDO)&& NO_PRINTING && NO_TXING_PRINTER){
-
-  			if(ESTADO_RELOJ==FUERA_SERVICIO){
-  				PaseLibreFromFServ_INTERNO();
-  			}else{
-  		          (void)calcularDISTANCIA_entreEstados;   // Resetear contador de Distancia
-  		          paseLIBRE_interno_sinKM;          	  // Paso a LIBRE desde A PAGAR => no cuento KM
-  			}
-			ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
-
-  			//envio pase a libre al celular
-  			acumularCMD_sinCONEXION_CENTRAL=1;
-  			//Tx_Pase_a_LIBRE(SIN_CONEXION_CENTRAL);
-
-  			RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
-  			VELOCIDAD_MAX = 0;
-  			libreDATE = getDate();
-  			RELOJ_dateCambio = libreDATE;
-  			ESTADO_RELOJ=LIBRE;
-  			ESTADO_RELOJ_X_PULSADOR = LIBRE;
-  			off_display();
-  			on_display_tarifa();
-  			//mostrar_ini_dsplyIMPORTE=0;
-
-  			//enciendo bandera
-  			BanderaOut_On();
-  			cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
-  		//}
-  	}else{
-  		TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_ESPERA);
-  		Tx_Comando_MENSAJE(ESPERA_DE_PASE_A_COBRANDO);
-  	}
-  	chkPerdidaDatosTurno();           // Chequear si estoy por perder datos de turno
-  }
-
-  void Pase_a_OCUPADO_SC (void){
-  	uint16_t km;
-
-  	//if(ESTADO_RELOJ==LIBRE ){
-
-  		//Reloj_iniTarifa(tarifa);
-
-  	    //RELOJ_setTarifa(TARIFA_AUTO_getNroTarifa());        // Seteo automatico de tarifa
-  	    //tarifa = TARIFA.numero;
-
-  		anularReTx_RELOJ();
-
-  		t_pulsos_anterior = 0;
-  		t_pulsos = 0;
-  		cntIC_anterior   = 0;
-  		__HAL_TIM_SET_COUNTER(&pulsoACCUM,0);
-
-  		RELOJ_setTarifa(tarifa_1_8);
-  		RELOJ_iniTarifacion();
-  	    RLJ_INI();
-  		guardar_tarifa_backup();
-
-  		BanderaOut_Off(); 					//apago bandera
-  		ocupadoDATE  = getDate();
-  		RELOJ_dateCambio = ocupadoDATE;
-
-  		ocupadoDATE_writeFLASH = 1;
-
-  		ESTADO_RELOJ = OCUPADO;
-  		ESTADO_RELOJ_X_PULSADOR = OCUPADO;
-  		update_valor_tarifa(tarifa_1_4);
-
-  		on_display_all();
-
-  		if(VELOCIDAD_MAX < 255){
-  			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-  		}else{
-  			velMax_INTERNO = (uint8_t)255;
-  		}
-  		velMax_LIBRE = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
-  		DISTANCIAm_LIBRE = DISTANCIAm;
-  		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;	// Distancia Recorrida en LIBRE (KM xxx.x)
-  		kmRecorridos_LIBRE = kmRecorridos_INTERNO;
-
-
-  		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM();        // Nro Correlativo de Viaje
-  #ifdef VISOR_REPORTES
-  		if (REPORTES_HABILITADOS){
-  			uint8_t nroviaje = nroCorrelativo_INTERNO;
-  			if(nroviaje==0xFF){nroviaje=1;}else{nroviaje++;}
-  			(void)REPORTE_queueLibre (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, sensorAsiento,ESTADO_RELOJ_CONEXION , nroviaje, getLATITUD(LIB), getLONGITUD(LIB), getSgnLatLon(LIB), getVELOCIDAD(LIB));
-  		}
-  #endif
-
-
-  	#ifdef VISOR_REPORTE_ACUMULATIVO
-  		//REPORTES_delayFLASH_update();                       // Demoro grabacion de REPORTES en FLASH
-  		km = REPORTES_getDistanciaSinceLastViaje();         	//Calculo distancia desde el ultimo viaje
-  		kmRecorridos_INTERNO += km;                         	//Agrego KM anteriores
-  		if (kmRecorridos_INTERNO != NULL){
-  			// Al pasar a OCUPADO, solo cuento los km de cuando paso LIBRE -> OCUPADO
-  			// Si esta con reloj interno => solo puede pasar a OCUPADO desde LIBRE. En cambio
-  			// si esta con reloj con banderita, si esta LOGUEADO pasa desde LIBRE y si esta
-  			// deslogueado, pasa desde FUERA DE SERVICIO
-  			if (RELOJ_INTERNO){
-  			  //RELOJ_REPACUM_addKmLibre(kmRecorridos_INTERNO);             // Agrego km Libre a Reporte Acumulativo
-  			}else if (RELOJ_BANDERITA){
-  			  if (chkVISOR_logueado){
-  				RELOJ_REPACUM_addKmLibre(kmRecorridos_INTERNO);           // Agrego km Libre a Reporte Acumulativo
-  			  }else{
-  				RELOJ_REPACUM_addKmFueraServ(kmRecorridos_INTERNO);       // Agrego km Fuera Servicio a Reporte Acumulativo
-  			  }
-  		}
-  	}
-  	#endif
-
-
-
-
-  	//write_backup_rtc();
-  	//}
-  	//envio pase a ocupado al celular
-
-  	//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
-	acumularCMD_sinCONEXION_CENTRAL=1;
-
-  	cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
-  	resetVELOCIDAD_MAX;
-  	RELOJ_INTERNO_resetMarchaParado();  //Reset de tiempo de PARADO y MARCHA
-
-  	ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
-
-  }
-
-  void Pase_a_COBRANDO_SC (void){
-
-  	byte nro;
-  	//if(ESTADO_RELOJ==OCUPADO){
-
-  		anularReTx_RELOJ();
-  		cobrandoDATE = getDate();
-  		RELOJ_dateCambio = cobrandoDATE;
-  		cobrandoDATE_writeFLASH = 1;
-  		ESTADO_RELOJ=COBRANDO;
-  		ESTADO_RELOJ_X_PULSADOR = COBRANDO;
-  		//display_set_toggle();
-  		off_display();
-  		toggle_display();
-  	 #ifdef RELOJ_HOMOLOGADO
-  		if(!RELOJ_BANDERITA){
-  			timerA_PAGAR_to_LIBRE_cnt = seg_A_PAGAR_to_LIBRE;
-  		}
-
-          #else
-          timerA_PAGAR_to_LIBRE_cnt = 0;  // Al no estar Homologado, no espero nada
-        #endif
-  		//Esta misma rutina esta REPLICADA para cuando el importe se ingresa de manera MANUAL
-  		if(VELOCIDAD_MAX < 255){
-  			velMax_INTERNO = (uint8_t)VELOCIDAD_MAX;
-  		}else{
-  			velMax_INTERNO = (uint8_t)255;
-  		}
-  		velMax_OCUPADO = (uint8_t)velMax_INTERNO;                         // Velocidad Maxima en LIBRE
-  		kmRecorridos_INTERNO = calcularDISTANCIA_entreEstados;		// Distancia Recorrida en OCUPADO (KM xxx.xx)
-  		kmRecorridos_OCUPADO = kmRecorridos_INTERNO;
-  		DISTANCIAm_OCUPADO = DISTANCIAm;
-  		write_backup_rtcCONTADOR_PULSOS();  //guardo los pulsos porque cuando calcule la destancia entre estados
-  		DISTANCIA_iniCalculo_PULSE_ACCUM();
-  		//minutosEspera_INTERNO = (byte) (segundosTarifacion/60);   // Calculo Minutos de Espera
-  		importe_INTERNO = VALOR_VIAJE;                          	// Valor del Viaje
-  		//nroCorrelativo_INTERNO = Read_nroCorrelativo_from_EEPROM;        		// Nro Correlativo de Viaje
-
-  		// Incremento y Grabo Nro Correlativo en EEPROM
-
-  		inc_nroCorrelativo();
-  		inc_nroTICKET();
-
-  		// Guardo reporte -> datos de OCUPADO
-  		#ifdef VISOR_REPORTES
-  		if (REPORTES_HABILITADOS){
-  		 (void)REPORTE_queueOcupado (RELOJ_getDateCambio(), RELOJ_INTERNO_getChofer(),kmRecorridos_INTERNO, velMax_INTERNO, timerParado_cnt, timerMarcha_cnt, minutosEspera, SIN_CONEXION_CENTRAL, nroCorrelativo_INTERNO, getLATITUD(OCUP), getLONGITUD(OCUP), getSgnLatLon(OCUP), getVELOCIDAD(OCUP));
-
-  		 ESTADO_RELOJ_CONEXION = SIN_CONEXION_CENTRAL;
-
-  		 #ifdef _ABONAR_SEGUN_TARIFA_HORA_A_PAGAR_
-  		   // En MONTEVIDEO, esta reglamentado que la tarifa que debe abonarse no corresponde a la hora
-  		   // de abordaje, sino la hora de fin del viaje. Por lo tanto, debo verificar si es necesario
-  		   // actualizar la tarifa.
-
-  		   //nro = updateTarifa(getDate(), TARIFA.numero)->numero;
-  		   //RELOJ_setTarifa(nro);            // Seteo automatico de tarifa
-
-  		 //RELOJ_setTarifa(TARIFA.numero);            // Seteo automatico de tarifa
-  		 #endif
-
-  		 // Guardo reporte -> datos de A PAGAR
-  		 RELOJ_INTERNO_addAPagarReportes(SIN_CONEXION_CENTRAL);
-
-  		 // EDIT 04/04/2013
-  		 //  Para permitir la correcta recepcion de la respuesta, demoro la grabacion de FLASH, para
-  		 // no inhibir las IRQs
-  		 //REPORTES_delayFLASH_update();                       // Demoro grabacion de REPORTES en FLASH
-  		}
-  		#endif
-
-  	#ifdef VISOR_REPORTE_ACUMULATIVO
-           RELOJ_REPACUM_addViaje();                     // Agrego VIAJE a reporte Acumulativo
-           if (KM_ptr != NULL){
-             // Al pasar a A PAGAR, solo cuento los km de cuando paso OCUPADO -> A PAGAR
-             km = *KM_ptr++;                             // KM en OCUPADO (MSB)
-             km <<= 8;                                   // KM en OCUPADO (LSB)
-             km |= *KM_ptr++;
-             RELOJ_REPACUM_addKmOcupado(km);             // Agrego km Ocupado a Reporte Acumulativo
-           }
-
-           if (importe_ptr != NULL){
-             // Son 3bytes de importe
-             importe = *importe_ptr++;
-             importe <<= 8;
-             importe |= *importe_ptr++;
-             importe <<= 8;
-             importe |= *importe_ptr++;
-             RELOJ_REPACUM_addImporte(importe);          // Agrego Importe a Reporte Acumulativo
-           }
-       #endif
-
-  		//envio pase a corando al celular
-  		//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
-        acumularCMD_sinCONEXION_CENTRAL=0;
-        acumular_cmdSC(nroCorrelativo_INTERNO);
-
-
-         cambioRELOJ_TO_cnt = seg_cambioRELOJ_TO_cnt;
-  		//resetVELOCIDAD_MAX;                             // Reseteo Velocidad Maxima
-  		RELOJ_INTERNO_resetMarchaParado();  // Reset de tiempo de PARADO y MARCHA
-  		RELOJ_clearMOTIVO_paseOCUPADO();
-  		 sensorAsiento = 0;                  // Borro Indicacion
-  	//}
-  }
-*/
 
 	void Send_Tx_Valor_VIAJE (void){
 		byte diffEspera;
@@ -1582,7 +1325,13 @@ void preparar_print_nroTICKET (uint32_t nroTICKET,  byte* bufferTICKET){
            //  Para el caso en que trabaje con FICHAS con EQ.PESOS, como importe NO DEBE pasar el valor del viaje,
            // sino la equivalencia en PESOS
            // En TARIFACION NORMAL, el importe lo calculo, para que en caso de que sea FICHAS, sea la equivalencia
-           importe = RELOJ_calcularImporte(TARIFACION_getFichasT(), TARIFACION_getFichasD(), 1, TARIFA.numero, NULL);
+
+
+			if(paseOCUPADO_PACTADO){
+				importe = VALOR_VIAJE;
+			}else{
+				importe = RELOJ_calcularImporte(TARIFACION_getFichasT(), TARIFACION_getFichasD(), 1, TARIFA.numero, NULL);
+			}
 
            (void)REPORTE_queueAPagar (cobrandoDATE, RELOJ_INTERNO_getChofer(), nroCorrelativo_INTERNO, TARIFA.numero,
         		   TARIFACION_getFichasD(), TARIFACION_getFichasT(), importe, segundosEspera, segundosTarifacion, estado_de_conexion,
@@ -2688,6 +2437,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
 	 paseOCUPADO_SENSOR_ASIENTO=0;
 	 paseOCUPADO_BANDERITA=0;
 	 paseOCUPADO_APP=0;
+	 paseOCUPADO_PACTADO=0;
  }
 
  /* PASE A LIBRE INTERNO - desde FUERA DE SERVICIO */

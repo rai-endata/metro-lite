@@ -286,6 +286,12 @@ void Tx_RTA_toDA (void){
 		//DA_TxBuffer_addData(NRO_MOVIL_H);            // Nro Móvil HIGH
 		//DA_TxBuffer_addData(NRO_MOVIL_L);            // Nro Móvil LOW
 		cmd_resp = getCMD_A_RESP + 0x80;
+
+		//prueba
+		//if(cmd_resp == 0xb4){
+		//	cmd_resp = 0xa4;
+		//}
+
 		DA_TxBuffer_addData(cmd_resp);   // Comando-Respuesta
 
 		if (getBUFFER_A_RESP != NULL){

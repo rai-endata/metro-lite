@@ -244,6 +244,10 @@
 #define	ADDR_EEPROM_VELOCIDAD_MAX_VIAJE	    ADDR_EEPROM_LIBRE_DATE + SIZE_LIBRE_DATE
 #define	SIZE_VELOCIDAD_MAX_VIAJE		    sizeof(uint16_t)
 
+#define	ADDR_EEPROM_PACTADO	    			ADDR_EEPROM_VELOCIDAD_MAX_VIAJE + SIZE_VELOCIDAD_MAX_VIAJE
+#define	SIZE_PACTADO		    			sizeof(uint8_t) + sizeof(uint32_t)
+
+
 
 // TABLA DE REPORTES
 //*********************************************************************************

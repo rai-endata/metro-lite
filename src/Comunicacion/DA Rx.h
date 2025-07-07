@@ -15,17 +15,19 @@ extern	byte CMD_a_RESP;                            // Comando a Responder
 		#define BUFFER_CMD_A_RESP               (Tabla_ComandosTx[OFFSET_RTA]->buffer)
 
 
-#define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO)   			||	\
-							 (Rx_cmd == cmdPedido_Pase_LIBRE)		||  \
-							 (Rx_cmd == cmdPedido_Pase_OCUPADO)		||  \
-							 (Rx_cmd == cmdPedido_Pase_COBRANDO)	||  \
-							 (Rx_cmd == cmdPedido_Pase_LIBRE_SC)	||	\
-							 (Rx_cmd == cmdPedido_Pase_OCUPADO_SC)	||	\
-							 (Rx_cmd == cmdPedido_Pase_COBRANDO_SC)	||	\
-							 (Rx_cmd == cmdInicio_EPERA)			||  \
-							 (Rx_cmd == cmdFin_ESPERA)				||  \
-							 (Rx_cmd == cmdImpresion)				||  \
-							 (Rx_cmd == Entra_DESCANSO_Rx)			||	\
+#define 	CMD_ACTIONS		((Rx_cmd == cmdInicio_TURNO)   					||	\
+							 (Rx_cmd == cmdPedido_Pase_LIBRE)				||  \
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO)				||  \
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO_PACTADO)		||  \
+							 (Rx_cmd == cmdPedido_Pase_COBRANDO)			||  \
+							 (Rx_cmd == cmdPedido_Pase_LIBRE_SC)			||	\
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO_SC)			||	\
+							 (Rx_cmd == cmdPedido_Pase_OCUPADO_PACTADO_SC)	||  \
+							 (Rx_cmd == cmdPedido_Pase_COBRANDO_SC)			||	\
+							 (Rx_cmd == cmdInicio_EPERA)					||  \
+							 (Rx_cmd == cmdFin_ESPERA)						||  \
+							 (Rx_cmd == cmdImpresion)						||  \
+							 (Rx_cmd == Entra_DESCANSO_Rx)					||	\
 							 (Rx_cmd == Sale_DESCANSO_Rx))
 
 
@@ -66,9 +68,12 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void Sale_DESCANSO_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_LIBRE_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_OCUPADO_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_OCUPADO_PACTADO_Rx (byte* Rx_data_ptr);
+
 	extern void Pedido_Pase_COBRANDO_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_LIBRE_SC_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_OCUPADO_SC_Rx (byte* Rx_data_ptr);
+	extern void Pedido_Pase_OCUPADO_PACTADO_SC_Rx (byte* Rx_data_ptr);
 	extern void Pedido_Pase_COBRANDO_SC_Rx (byte* Rx_data_ptr);
 	extern void Leer_regTABLA_REPORTES (byte* ptrTABLA, byte tipo);
 
@@ -88,6 +93,13 @@ extern void Rx_DA_clrTxRta_F (void);
 	void Rx_appConectada_aCentral (byte* Rx_data_ptr);
 	void Rx_appDesconectada_deCentral (byte* Rx_data_ptr);
 	extern void Tx_respVersion_Equipo(void);
+	extern void writePactado(byte* pactadoPtr);
+	extern void readPactado(void);
+	void iniPactado(void);
+	void readIniPactado(void);
+	void readPactado(void);
+
+
 
 
 

@@ -190,6 +190,7 @@ void SOURCE_DATE_Ini (void){
 
        	  //inicializa corte largo
        	  EEPROM_write(EEPROM_YA_HUBO_CORTE_LARGO, rxCorteLargoPrevio); // Grabar Word en EEPROM
+       	  iniPactado();	//inicializa ocupado pactado
 
        	  //EEPROM_ReadBuffer(&PRUEBA,EEPROM_PRIMER_ENCENDIDO,SIZE_EEPROM_PRIMER_ENCENDIDO);
        	  //RELOJ_INTERNO_reOpenTurno();
@@ -325,6 +326,8 @@ static void corteLargo(uint16_t centralRx_cmdRLJ_cortePrevio){
 		//volvio a haber otro corte largo sin que se pudiera informar a la central el estado previo al corte.
 		//el corte previo se hace usando esta funcion: set_noRxCorteLargoPrevio
 
+		iniPactado();
+
 		if(!(centralRx_cmdRLJ_cortePrevio&0xff00)){
 		  //corte normal
 			estadoReloj_en_corteAlimentacion = ESTADO_RELOJ;
@@ -408,6 +411,7 @@ static byte corteCorto(uint16_t centralRx_cmdRLJ_cortePrevio){
 
     // CORTE CORTO => Recuperar
 	  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
+	  readIniPactado();
 	  if((ESTADO_RELOJ == OCUPADO) || (ESTADO_RELOJ == COBRANDO)){
 			  //__HAL_TIM_SET_COUNTER(&pulsoACCUM,PULSE_ACCUM_CNT);
 			  //RELOJ_setTarifa(tarifa);        // Seteo automatico de tarifa

@@ -124,6 +124,9 @@
   uint32_t fichas_xTiempo;          // Cantidad de Fichas que cayeron por TIEMPO
   uint32_t fichas_Total;
   uint32_t VALOR_VIAJE;                    // Valor del Viaje
+  uint32_t VALOR_VIAJE_PACTADO;            // Valor del Viaje recibido desde la central
+  uint8_t puntoDecimal_PACTADO;            // punto decimal recibido desde la central
+
   uint32_t VALOR_VIAJE_mostrar;			   // Valor del Viaje a mostrar en la app del celular
   byte tarifa;
   static byte timerCHK_pulsosTarifacion_cnt;   // Contador del Timer para Chequear Tarifacion por Pulsos
@@ -236,6 +239,11 @@
       minutosEspera_anterior = 0;
       segundosEspera = 0;
       RELOJ_esperaIni();                                    // Inicializacion de la espera
+
+		if(paseOCUPADO_PACTADO){
+			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			PUNTO_DECIMAL = puntoDecimal_PACTADO;
+		}
     }
 
 
@@ -401,6 +409,10 @@
     void tarifarRELOJ (void){
 		if(ESTADO_RELOJ==OCUPADO){
 			RELOJ_tarifacion();
+		}
+		if(paseOCUPADO_PACTADO){
+			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			PUNTO_DECIMAL = puntoDecimal_PACTADO;
 		}
 	}
 
@@ -1407,84 +1419,6 @@ uint8_t tarifando_tiempo(void){
     }
   
   
-  /* RECUPERAR DATOS DE RTC */
-  /**************************/
-    void TARIFACION_getBackupData (void){
-      // Se llama desde la funcion getBackup del RTC
-      // Rutina que extrae datos del backup en RTC, pertenecientes a TARIFACION
-      //
-      // Cuando extraigo el BackUp, previamente debo haber extraido el estado de
-      // RELOJ => Si esta OCUPADO, inicializo la tarifacion y dsps recupero
-      // las variables
-      byte* data_ptr;
-      byte nroTarifa;
-      
-      nroTarifa = RTC_getBackupData();
-      #ifdef VISOR_TARIFACION_NORMAL
-        TARIFA = prgRELOJ_getTarifa(nroTarifa);
-      #endif
-      
-      #ifdef VISOR_TARIFACION_ESPECIAL
-      if (nroTarifa == nroTARIFA_ESPECIAL){
-        TARIFA = prgRELOJ_getTarifa(0);
-        TARIFA.numero = nroTarifa;
-      }else{
-        TARIFA = prgRELOJ_getTarifa(nroTarifa);
-      }
-      #endif
-      
-
-   //#ifdef _REMISES_KATE_
-   #ifdef VISOR_TARIFACION_KATE
-      TARIFA_KATE = prgRELOJ_getTarifa_Kate(nroTarifa);
-    #endif
-
-
-      if (RELOJ_OCUPADO){
-        RELOJ_iniTarifacion();
-      }
-      
-      // EDIT 07/10/2013
-      //  Si la tarifa es la especial => reemplazo el valor de de FICHA D por VALOR VIAJE
- 
-      #ifdef VISOR_TARIFACION_NORMAL
-        data_ptr = (byte*) &fichas_xPulsos;
-      #endif
-      
-      #ifdef VISOR_TARIFACION_ESPECIAL
-        if (TARIFA.numero == nroTARIFA_ESPECIAL){
-          data_ptr = (byte*) &VALOR_VIAJE;          // Puntero a segundos espera
-        }else{
-          data_ptr = (byte*) &fichas_xPulsos;          // Puntero a fichas por Tiempo
-        }
-      #endif
-      *data_ptr++ = RTC_getBackupData();      
-      *data_ptr++ = RTC_getBackupData();      
-      *data_ptr++ = RTC_getBackupData();
-      *data_ptr++ = RTC_getBackupData();
-      
-      
-      // EDIT 07/10/2013
-      //  Si la tarifa es la especial => reemplazo el valor de de FICHA T por SEGUNDOS ESPERA
-      #ifdef VISOR_TARIFACION_NORMAL
-        data_ptr = (byte*) &fichas_xTiempo;            // Puntero a fichas por Tiempo
-        *data_ptr++ = RTC_getBackupData();      
-        *data_ptr++ = RTC_getBackupData();      
-        *data_ptr++ = RTC_getBackupData();
-        *data_ptr++ = RTC_getBackupData();
-      #endif
-      
-      
-      tarifacion_F |= RTC_getBackupData();    // Solo me intersa lo que este en ALTO
-
-      // EDIT 07/03/2013
-      //  Si recupero el backup, el contador pulsos_tarifacion es NULO => Si hay pulsos 6000 pulsos 
-      // del odometro que se recuperaron, para no perder la distancia recorrida, la diferencia
-      // de pulsos es enorme y caen fichas como loooooco. Por eso, luego de recuperar el backup
-      // debo reinicializar los pulsos de tarifacion al valor actual del odometro      
-        //pulsosTarifacion = ODOMETRO_getPulsosReales(); // Valor de contador de pulsos al pasar a OCUPADO
-        pulsosTarifacion = __HAL_TIM_GET_COUNTER(&pulsoACCUM);
-    }
 
     void RedondeoValorViaje_3(void){
     	uint32_t aux1,aux2;

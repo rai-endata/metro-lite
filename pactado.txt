@@ -1,0 +1,47 @@
+*Pedido Pase OCUPADO PACTADO con conexion:* 14
+
+01 12 45 14 02 01 02 03 04 11 32 32 74 99 58 03 91 61 00 00 03
+
+*Pedido Pase OCUPADO PACTADO sin conexion:* 34
+
+01 12 65 34 02 01 02 03 04 11 32 32 74 99 58 03 91 61 00 00 03
+
+*Formato*
+
+0x01: inicio
+0x12: longitud
+45/65: chksum
+0x14/0x34: comando
+0x02: Punto decimal
+0x01: Importe (parte alta)					
+0x02: Importe (parte media alta)				
+0x03: Importe (parte media baja)				
+0x04: Importe (parte baja)			
+0x11: signo de latitud y longitud
+0x32 0x32 0x74 0x99 : latitud
+0x58 0x03 0x91 0x61: longitud
+0x00 0x00: velocidad
+
+0x03: fin
+
+*Respuesta*
+
+0x01 0x03 0xA4 0xA4 0x00 0x03
+
+0x01: inicio
+0x03: longitud
+0xA4: chksum
+0xA4: comando
+0x00: status,  indica si el reloj realizo o no el cambio de estado.
+0x03: fin
+
+VALORES POSIBLES DE  STATUS
+
+CAMBIO_RELOJ_PERMITIDO 				0x00	//permite cambio reloj
+CAMBIO_RELOJ_NO_PERMITIDO_NC	 	0x01	//no hay cambio porque el reloj esta en el estado pedido
+CAMBIO_RELOJ_NO_PERMITIDO_ESPERA 	0x02	//Esta en espera necesario para el cambio
+CAMBIO_RELOJ_NO_PERMITIDO_MOV	 	0x03	//Esta en MOVIMIENTO
+CAMBIO_RELOJ_NO_PERMITIDO_OTROS	 	0x04	//otros
+
+Es decir solo si status es 00 el reloj realizo el cambio de reloj, para cualquier otro valor el reloj permanecio en el mismo estado sin cambio.
+

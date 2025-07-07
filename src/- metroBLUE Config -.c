@@ -18,8 +18,13 @@
 
 
 
-char versionFIRMWARE[] =  "v2.1.6";
-char fechaFIRMWARE[] =  " (12/12/2024)";
+char versionFIRMWARE[] =  "v2.2.0";
+char fechaFIRMWARE[] =  " (07/07/2025)";
+
+
+// Version v2.2.0 -07/07/2025
+//* agrega comando PACTADO EN OCUPADO (normal 34 sin conexion)
+
 
 // Version v2.1.6 -12/12/2024
 // * resuelve un problema de tx de ocupado sin conexion

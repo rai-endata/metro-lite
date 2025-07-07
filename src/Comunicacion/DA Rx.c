@@ -29,6 +29,7 @@
 #include "Air Update.h"
 #include "Constantes.h"
 #include "Inicio.h"
+#include "Tarifacion Reloj.h"
 
 
 //#include "usart1.h"
@@ -105,7 +106,7 @@
 
 
 	byte longitud_RX;
-
+	byte puntoDecimalRxPactado;
 	 /* COMANDOS DE RECEPCION VACIOS */
 	  /********************************/
 	  #define Rx_comando_00     Rx_NONE
@@ -272,7 +273,7 @@
 		Rx_appDesconectada_deCentral,
 	    Rx_comando_12,
 		Rx_comando_13,
-		Rx_comando_14,
+		Pedido_Pase_OCUPADO_PACTADO_Rx,
 	    Rx_comando_15,
 	    Rx_comando_16,
 		Rx_comando_17,
@@ -305,7 +306,7 @@
 		quitarASIGNADO_Rx,
 	    Rx_comando_32,
 		Rx_comando_33,
-		Rx_comando_34,
+		Pedido_Pase_OCUPADO_PACTADO_SC_Rx,
 	    Rx_comando_35,
 	    Rx_comando_36,
 	    Rx_comando_37,
@@ -576,7 +577,7 @@
 
 							  N_CMD_A_RESP = N_CMD;         						// Longitud de Respuesta Simple
 							  BUFFER_CMD_A_RESP = NULL;     						// No lleva Buffer (Rta Simple)
-							  Tabla_RxDA[Rx_cmd](RxDA_buffer);      			// Proceso Comando
+							  Tabla_RxDA[Rx_cmd](RxDA_buffer);      				// Proceso Comando
 							  CMD_a_RESP = Rx_cmd;        							// Qué voy a Responder
 							  if(Rx_cmd != cmdConsultaTarifas ){
 								 //if(Rx_cmd != 0x0B){
@@ -1665,6 +1666,67 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		}
 	}
 
+
+	void Pedido_Pase_OCUPADO_PACTADO_Rx (byte* Rx_data_ptr){
+			//
+			// El formato de datos de recepcion es
+			//
+			//    | N | CMD | DATA_1 | DATA_2 | . | . |
+			//
+			//
+			// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+			// cantidad maxima de FICHAS/PESOS.
+			byte N;
+			byte cmd;
+
+			sinCONEXION_CENTRAL=0;
+			appConectada_ACentral = 1;
+			if(!prog_mode){
+				if(datosSC_cntWORD == 0){
+					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+						N 	= *Rx_data_ptr++;               // Extraigo N
+						cmd = *Rx_data_ptr++;               // Extraigo CMD
+						SaveDatGps(Rx_data_ptr + 4, OCUP);
+						writePactado(Rx_data_ptr);
+		                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
+		                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
+		                // o bien desde fuera de servicio por sensor de asiento
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							paseOCUPADO_APP=1;
+							paseOCUPADO_PACTADO=1;
+							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+							//envia valor de viaje para que muestre bajada de bandera
+							Tx_Valor_VIAJE();
+
+		                }else if(ESTADO_RELOJ==COBRANDO){
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
+							Tx_Valor_VIAJE();
+		                }else if(ESTADO_RELOJ==OCUPADO){
+		 					TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		 					Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
+		 					Tx_Valor_VIAJE();
+		                }else if (ESTADO_RELOJ==LIBRE){
+							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+							Tx_Pase_a_LIBRE(CON_CONEXION_CENTRAL);
+		                } else{
+		                	TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+		                }
+					}else{
+						TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+						Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+					}
+
+				}else{
+					Tx_Comando_MENSAJE(SINCRONIZANDO_CON_CENTRAL);
+				}
+		}else{
+			Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+		}
+	}
+
+
+
 		/* RECEPCION DE  */
 		/*****************/
 			void Pedido_Pase_COBRANDO_Rx (byte* Rx_data_ptr){
@@ -1727,7 +1789,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 
 			/* RECEPCION DE  */
-					/**************************************/
+			/**************************************/
 					void Pedido_Pase_LIBRE_SC_Rx (byte* Rx_data_ptr){
 						//
 						// El formato de datos de recepcion es
@@ -1770,7 +1832,6 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 					/* RECEPCION DE  */
 					/**************************************/
-
 					void Pedido_Pase_OCUPADO_SC_Rx (byte* Rx_data_ptr){
 						//
 						// El formato de datos de recepcion es
@@ -1852,6 +1913,55 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
 						}
 					}
+
+
+
+					void Pedido_Pase_OCUPADO_PACTADO_SC_Rx (byte* Rx_data_ptr){
+						//
+						// El formato de datos de recepcion es
+						//
+						//    | N | CMD | DATA_1 | DATA_2 | . | . |
+						//
+						//
+						// Si el bit mas significativo esta seteado (0x80) indica que va a indicar
+						// cantidad maxima de FICHAS/PESOS.
+						byte N;
+						byte cmd;
+
+						sinCONEXION_CENTRAL=1;
+						yaTrasmitioUltimo_cmdReloj = 0;
+						if(!prog_mode){
+						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+								N 	= *Rx_data_ptr++;               // Extraigo N
+								cmd = *Rx_data_ptr++;               // Extraigo CMD
+								SaveDatGps(Rx_data_ptr + 4, OCUP);
+								writePactado(Rx_data_ptr);
+								if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
+									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+									paseOCUPADO_APP=1;
+									paseOCUPADO_PACTADO=1;
+									Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+									//envia valor de viaje para que muestre bajada de bandera
+									Tx_Valor_VIAJE();
+								}else if (ESTADO_RELOJ==OCUPADO){
+									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+									//Tx_Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
+									Tx_Valor_VIAJE();
+								}else if (ESTADO_RELOJ==COBRANDO){
+									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+									//Tx_Pase_a_COBRANDO(SIN_CONEXION_CENTRAL);
+									Tx_Valor_VIAJE();
+								}else{
+									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
+								}
+							}else{
+								TxRta_conDATOS(CAMBIO_RELOJ_NO_PERMITIDO_MOV);
+								Tx_Comando_MENSAJE(VEHICULO_EN_MOVIMIENTO);
+							}
+							}else{
+								Tx_Comando_MENSAJE(EQUIPO_EN_MODO_PROGRAMACION);
+							}
+						}
 
 					/* RECEPCION DE  */
 					/*****************/
@@ -2680,3 +2790,91 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 	}
 
 
+
+
+	void iniPactado(void){
+
+		byte auxPactado[1];
+
+		//marco con 55 espacio de punto decimal para indicar tarifacion normal
+
+		auxPactado[0]  = 0x55;
+
+		EEPROM_WriteBuffer((uint8_t*)&auxPactado, ADDR_EEPROM_PACTADO, 1);
+
+		paseOCUPADO_PACTADO=0;
+
+	}
+
+
+
+
+	void readIniPactado(void){
+
+		 byte auxPactado[SIZE_PACTADO];
+		 byte* pactadoPtr;
+
+		 EEPROM_ReadBuffer(&auxPactado, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
+		 puntoDecimal_PACTADO = *(auxPactado+0);
+		 if(puntoDecimal_PACTADO != 0x55){
+			 paseOCUPADO_PACTADO=1;
+
+			 pactadoPtr = &VALOR_VIAJE_PACTADO;
+			 *(pactadoPtr+3) = *(auxPactado+1);
+			 *(pactadoPtr+2) = *(auxPactado+2);
+			 *(pactadoPtr+1) = *(auxPactado+3);
+			 *(pactadoPtr+0) = *(auxPactado+4);
+
+			 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			 PUNTO_DECIMAL = puntoDecimal_PACTADO;
+
+		 }else{
+			 paseOCUPADO_PACTADO=0;
+		 }
+	}
+
+
+
+	void writePactado(byte* pactadoPtr){
+		 byte* auxPactado;
+
+		 auxPactado = &VALOR_VIAJE_PACTADO;
+		 puntoDecimal_PACTADO = *pactadoPtr;
+
+		 //guardo importe recibido de la app en VALOR_VIAJE_PACTADO
+		 //el micro almacena los tipos en indian LSB
+		 auxPactado[3] 		  = *(pactadoPtr+1);
+		 auxPactado[2] 		  = *(pactadoPtr+2);
+		 auxPactado[1]		  = *(pactadoPtr+3);
+		 auxPactado[0]		  = *(pactadoPtr+4);
+
+		VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+		PUNTO_DECIMAL = puntoDecimal_PACTADO;
+
+		 EEPROM_WriteBuffer(pactadoPtr, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
+		 //prueba
+		 readPactado();
+	}
+
+
+	void readPactado(void){
+
+		 byte auxPactado[SIZE_PACTADO];
+		 byte* pactadoPtr;
+
+		 EEPROM_ReadBuffer(&auxPactado, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
+
+		 pactadoPtr = &VALOR_VIAJE_PACTADO;
+		 puntoDecimal_PACTADO = auxPactado[0];
+		 *(pactadoPtr+3) = auxPactado[1];
+		 *(pactadoPtr+2) = auxPactado[2];
+		 *(pactadoPtr+1) = auxPactado[3];
+		 *(pactadoPtr+0) = auxPactado[4];
+
+		 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+		 PUNTO_DECIMAL = puntoDecimal_PACTADO;
+	}
+	/*
+	if(paseOCUPADO_PACTADO){
+		readPactado();
+	}*/
