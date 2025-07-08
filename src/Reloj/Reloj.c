@@ -442,6 +442,10 @@ void Pase_a_OCUPADO (byte estado){
 
 	if(estado == CON_CONEXION_CENTRAL ){
 		//envio pase a ocupado al celular
+		if(paseOCUPADO_PACTADO){
+			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			PUNTO_DECIMAL = puntoDecimal_PACTADO;
+		}
 		Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 		ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
 	}else if (estado == SIN_CONEXION_CENTRAL ){
@@ -558,6 +562,10 @@ void Pase_a_COBRANDO (byte estado){
 
          if(estado==CON_CONEXION_CENTRAL){
      		//envio pase a cobrando al celular
+     		if(paseOCUPADO_PACTADO){
+     			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+     			PUNTO_DECIMAL = puntoDecimal_PACTADO;
+     		}
      		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
          }
 
@@ -2799,7 +2807,7 @@ void rearmar_y_TX_cmdOcupado(byte nroViaje, byte status){
 		BajadaBandera = tarif.bajadaBandera;                             // Bajada Bandera
 		ptrFichasDistancia = (byte*)&regVIAJE.fichasDist;
 		ptrFichasTiempo = (byte*)&regVIAJE.fichasTime;
-		puntoDECIMAL = regVIAJE.puntoDecimal;;
+		puntoDECIMAL = regVIAJE.puntoDecimal;
 		numeroCHOFER = regVIAJE.chofer;  	//numero de chofer
 		fPESOS  = regVIAJE.fichaPesos;		//ficha o pesos
 
@@ -2835,6 +2843,12 @@ void rearmar_y_TX_cmdOcupado(byte nroViaje, byte status){
 			VALOR_VIAJE  = tarif.bajadaBandera;
 			//valor en pesos
 			Pase_a_OCUPADO_Buffer[9] = puntoDECIMAL;
+
+			if(regVIAJE.estadoConexion_OCUPADO == SIN_CONEXION_CENTRAL){
+				VALOR_VIAJE = regVIAJE.importe;
+				Pase_a_OCUPADO_Buffer[9] = regVIAJE.puntoDecimal;
+			}
+
 
 			Pase_a_OCUPADO_Buffer[10] = *(ptrVALOR_VIAJE+3);             //
 			Pase_a_OCUPADO_Buffer[11] = *(ptrVALOR_VIAJE+2);             //

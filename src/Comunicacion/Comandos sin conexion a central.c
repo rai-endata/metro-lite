@@ -18,6 +18,7 @@
 #include "Timer.h"
 #include "main.h"
 #include "Inicio.h"
+#include "Tarifacion Reloj.h"
 
 static void inc_scGet(void);
 static void inc_scPut(void);
@@ -131,6 +132,10 @@ void check_datosSC(void){
 		}else if(dataSC.estado_reloj == OCUPADO){
 			//transmitir el ultimo comando ?
 			if(datosSC_cntWORD == 0 && ESTADO_RELOJ == OCUPADO){
+				if(paseOCUPADO_PACTADO){
+					VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+					PUNTO_DECIMAL = puntoDecimal_PACTADO;
+				}
 				Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 			}else{
 				//levantar datos de la tabla
@@ -140,6 +145,10 @@ void check_datosSC(void){
 					esperarRespuesta_cmdReloj = 1;
 					rearmar_y_TX_cmdOcupado(dataSC.nro_viaje, status);
 					if(datosSC_cntWORD == 0 && ESTADO_RELOJ == COBRANDO){
+						if(paseOCUPADO_PACTADO){
+							VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+							PUNTO_DECIMAL = puntoDecimal_PACTADO;
+						}
 						Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 					}
 				}else{
