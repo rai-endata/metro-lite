@@ -1592,6 +1592,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			if(!prog_mode){
 				if(datosSC_cntWORD == 0){
 					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+						ticketPACTADO = 0;
 						N 	= *Rx_data_ptr++;               // Extraigo N
 						cmd = *Rx_data_ptr++;               // Extraigo CMD
 						//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
@@ -1694,6 +1695,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 							TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 							paseOCUPADO_APP=1;
 							paseOCUPADO_PACTADO=1;
+							ticketPACTADO = 1;
 							Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 							//envia valor de viaje para que muestre bajada de bandera
 							Tx_Valor_VIAJE();
@@ -1848,6 +1850,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						yaTrasmitioUltimo_cmdReloj = 0;
 						if(!prog_mode){
 						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
+							ticketPACTADO = 0;
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
 							//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
@@ -1940,6 +1943,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 									paseOCUPADO_APP=1;
 									paseOCUPADO_PACTADO=1;
+									ticketPACTADO = 1;
 									Pase_a_OCUPADO(SIN_CONEXION_CENTRAL);
 									//envia valor de viaje para que muestre bajada de bandera
 									Tx_Valor_VIAJE();
@@ -2818,6 +2822,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		 puntoDecimal_PACTADO = *(auxPactado+0);
 		 if(puntoDecimal_PACTADO != 0x55){
 			 paseOCUPADO_PACTADO=1;
+			 ticketPACTADO = 1;
 
 			 pactadoPtr = &VALOR_VIAJE_PACTADO;
 			 *(pactadoPtr+3) = *(auxPactado+1);

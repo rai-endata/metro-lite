@@ -140,102 +140,102 @@ void print_ticket_viaje(void){
 			string_copy_incDest(ptrDouble,"      ");
 			//string_copy_incDest(ptrDouble,&buffer_nro_correlativo_viaje);
 			string_copy_incDest(ptrDouble,&buffer_nroTICKET);
-			//string_copy_incDest(ptrDouble,"         ÑANDU");
-			//disableBOLD(ptrDouble);
-			//clearBOLD(ptrDouble);
 			add_LF(ptrDouble);
-			//deshabilitar_negrita(ptrDouble);
-			//disableFONT_ITALIC(ptrDouble);
-			printLINE(ptrDouble);
-			//add_LF(ptrDouble);
+			//printLINE(ptrDouble);
 			//print nombre de empresa
 			printEMPRESA(ptrDouble);
 			//print datos del titular
 			//printCABECERA(ptrDouble,1);
 			printCABECERA(ptrDouble,0);
-			string_copy_incDest(ptrDouble,"Tarifa: ");
-			if(TARIFA_PESOS){
-				string_copy_incDest(ptrDouble,"               ");
-			}else{
-				if(EqPESOS_hab){
+
+////
+			if(!ticketPACTADO){
+				string_copy_incDest(ptrDouble,"Tarifa: ");
+				if(TARIFA_PESOS){
 					string_copy_incDest(ptrDouble,"               ");
 				}else{
-					string_copy_incDest(ptrDouble,"               ");
+					if(EqPESOS_hab){
+						string_copy_incDest(ptrDouble,"               ");
+					}else{
+						string_copy_incDest(ptrDouble,"               ");
+					}
 				}
-			}
-			string_copy_incDest(ptrDouble,&buffer_TarifaN);
-			if(TARIFA.diaNoche==0){
-			  //TARIFA DIURNA
-			  string_copy_incDest(ptrDouble,"D");
-			}else{
-			  //TARIFA NOCTURNA
-			  string_copy_incDest(ptrDouble,"N");
-			}
-
-			add_LF(ptrDouble);
-
-			string_copy_incDest(ptrDouble,"Bajada: ");
-
-			if(TARIFA_PESOS){
-				if(PUNTO_DECIMAL == 0){
-					string_copy_incDest(ptrDouble,"               ");
+				string_copy_incDest(ptrDouble,&buffer_TarifaN);
+				if(TARIFA.diaNoche==0){
+				  //TARIFA DIURNA
+				  string_copy_incDest(ptrDouble,"D");
 				}else{
-					string_copy_incDest(ptrDouble,"              ");
+				  //TARIFA NOCTURNA
+				  string_copy_incDest(ptrDouble,"N");
 				}
-			}else{
-				if(EqPESOS_hab){
-					string_copy_incDest(ptrDouble,"              ");
-				}else{
-					string_copy_incDest(ptrDouble,"                ");
-				}
-			}
 
-			string_copy_incDest(ptrDouble,&buffer_Bajada);
-			add_LF(ptrDouble);
+				add_LF(ptrDouble);
 
-			if(SERVICIO_TAXI){
-				string_copy_incDest(ptrDouble,"Valor Ficha:");
+				string_copy_incDest(ptrDouble,"Bajada: ");
+
 				if(TARIFA_PESOS){
 					if(PUNTO_DECIMAL == 0){
-						string_copy_incDest(ptrDouble,"           ");
+						string_copy_incDest(ptrDouble,"               ");
 					}else{
-						string_copy_incDest(ptrDouble,"          ");
+						string_copy_incDest(ptrDouble,"              ");
 					}
 				}else{
 					if(EqPESOS_hab){
-						string_copy_incDest(ptrDouble,"          ");
+						string_copy_incDest(ptrDouble,"              ");
 					}else{
-						string_copy_incDest(ptrDouble,"            ");
+						string_copy_incDest(ptrDouble,"                ");
 					}
 				}
-				string_copy_incDest(ptrDouble,&buffer_ValorFichaD);
-				add_LF(ptrDouble);
-			}else{
-				string_copy_incDest(ptrDouble,"Valor F. Dist:");
-				if(TARIFA_PESOS){
-					if(PUNTO_DECIMAL == 0){
-						string_copy_incDest(ptrDouble,"         ");
-					}else{
-						string_copy_incDest(ptrDouble,"        ");
-					}
-				}else{
-					if(EqPESOS_hab){
-						string_copy_incDest(ptrDouble,"        ");
-					}else{
-						string_copy_incDest(ptrDouble,"          ");
-					}
-				}
-				string_copy_incDest(ptrDouble,&buffer_ValorFichaD);
+
+				string_copy_incDest(ptrDouble,&buffer_Bajada);
 				add_LF(ptrDouble);
 
-				string_copy_incDest(ptrDouble,"Valor F. Tiempo:");
-				string_copy_incDest(ptrDouble,"       ");
-				string_copy_incDest(ptrDouble,&buffer_ValorFichaT);
-				add_LF(ptrDouble);
+				if(SERVICIO_TAXI){
+					string_copy_incDest(ptrDouble,"Valor Ficha:");
+					if(TARIFA_PESOS){
+						if(PUNTO_DECIMAL == 0){
+							string_copy_incDest(ptrDouble,"           ");
+						}else{
+							string_copy_incDest(ptrDouble,"          ");
+						}
+					}else{
+						if(EqPESOS_hab){
+							string_copy_incDest(ptrDouble,"          ");
+						}else{
+							string_copy_incDest(ptrDouble,"            ");
+						}
+					}
+					string_copy_incDest(ptrDouble,&buffer_ValorFichaD);
+					add_LF(ptrDouble);
+				}else{
+					string_copy_incDest(ptrDouble,"Valor F. Dist:");
+					if(TARIFA_PESOS){
+						if(PUNTO_DECIMAL == 0){
+							string_copy_incDest(ptrDouble,"         ");
+						}else{
+							string_copy_incDest(ptrDouble,"        ");
+						}
+					}else{
+						if(EqPESOS_hab){
+							string_copy_incDest(ptrDouble,"        ");
+						}else{
+							string_copy_incDest(ptrDouble,"          ");
+						}
+					}
+					string_copy_incDest(ptrDouble,&buffer_ValorFichaD);
+					add_LF(ptrDouble);
+
+					string_copy_incDest(ptrDouble,"Valor F. Tiempo:");
+					string_copy_incDest(ptrDouble,"       ");
+					string_copy_incDest(ptrDouble,&buffer_ValorFichaT);
+					add_LF(ptrDouble);
+				}
+			}
+///////
+			if(!ticketPACTADO){
+				printLINE(ptrDouble);
 			}
 
-
-			printLINE(ptrDouble);
 			string_copy_incDest(ptrDouble,"Viaje Nro.:             ");
 			string_copy_incDest(ptrDouble,&buffer_nro_viaje);
 			add_LF(ptrDouble);

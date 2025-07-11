@@ -2844,10 +2844,10 @@ void rearmar_y_TX_cmdOcupado(byte nroViaje, byte status){
 			//valor en pesos
 			Pase_a_OCUPADO_Buffer[9] = puntoDECIMAL;
 
-			if(regVIAJE.estadoConexion_OCUPADO == SIN_CONEXION_CENTRAL){
-				VALOR_VIAJE = regVIAJE.importe;
-				Pase_a_OCUPADO_Buffer[9] = regVIAJE.puntoDecimal;
-			}
+			//if(paseOCUPADO_PACTADO){
+			//	VALOR_VIAJE = regVIAJE.importe;
+			//	Pase_a_OCUPADO_Buffer[9] = regVIAJE.puntoDecimal;
+			//}
 
 
 			Pase_a_OCUPADO_Buffer[10] = *(ptrVALOR_VIAJE+3);             //

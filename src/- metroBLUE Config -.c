@@ -18,8 +18,11 @@
 
 
 
-char versionFIRMWARE[] =  "v2.2.1";
-char fechaFIRMWARE[] =  " (08/07/2025)";
+char versionFIRMWARE[] =  "v2.2.2";
+char fechaFIRMWARE[] =  " (10/07/2025)";
+
+// Version v2.2.2 -10/07/2025
+//* Corrige comando pactado
 
 
 // Version v2.2.0 -07/07/2025

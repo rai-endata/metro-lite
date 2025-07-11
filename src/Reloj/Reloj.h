@@ -79,7 +79,7 @@
 			  byte por_banderita			:1;
 			  byte por_app					:1;
 			  byte por_pactado				:1;
-			  byte :1;
+			  byte ticket_pactado			:1;
 			  byte :1;
 	      }Bits;
 	 }tPASE_OCUPADO;
@@ -90,10 +90,13 @@
 	 	#define status_paseOCUPADO	_status_paseOCUPADO.byte
 	 	#define paseOCUPADO_BOTON			_status_paseOCUPADO.Bits.por_boton
 		#define paseOCUPADO_SENSOR_ASIENTO	_status_paseOCUPADO.Bits.por_sensor_asientoOCUP
-		#define paseLIBRE_SENSOR_ASIENTO	_status_paseOCUPADO.Bits.por_sensor_asientoLIB
+		#define paseLIBRE_SENSOR_ASIENTO    _status_paseOCUPADO.Bits.por_sensor_asientoLIB
 		#define paseOCUPADO_BANDERITA		_status_paseOCUPADO.Bits.por_banderita
 		#define paseOCUPADO_APP				_status_paseOCUPADO.Bits.por_app
-		#define paseOCUPADO_PACTADO				_status_paseOCUPADO.Bits.por_pactado
+		#define paseOCUPADO_PACTADO			_status_paseOCUPADO.Bits.por_pactado
+		#define ticketPACTADO				_status_paseOCUPADO.Bits.ticket_pactado
+
+
 
 	//#define BANDERA_OUT_PIN                GPIO_PIN_5
 	#define BANDERA_OUT_PIN                GPIO_PIN_5
