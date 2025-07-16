@@ -486,7 +486,7 @@
 
   /* RUTINAS */
   /***********/      
-    extern void prgRELOJ_ini (void);
+
     extern tEEPROM_ERROR prgRELOJ_reprogCOMUNES (word newK);
     extern byte PROG_determineDeleteReportes (void);
     
@@ -601,8 +601,6 @@
     extern void read_relojT1D_eeprom(uint8_t* buffer_backup);
     extern void read_relojCOMUN_eeprom(uint8_t* buffer_backup);
     extern tEEPROM_ERROR chkCRC_EnEEPROM(uint32_t addrEEPROM, uint16_t longTOread);
-    extern void levantar_progRELOJ (void);
-    extern void levantar_progTICKET (void);
     extern void readProgRELOJ (uint32_t blockProg);
 
 

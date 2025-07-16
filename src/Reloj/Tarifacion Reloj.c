@@ -125,7 +125,6 @@
   uint32_t fichas_Total;
   uint32_t VALOR_VIAJE;                    // Valor del Viaje
   uint32_t VALOR_VIAJE_PACTADO;            // Valor del Viaje recibido desde la central
-  uint8_t puntoDecimal_PACTADO;            // punto decimal recibido desde la central
 
   uint32_t VALOR_VIAJE_mostrar;			   // Valor del Viaje a mostrar en la app del celular
   byte tarifa;
@@ -242,7 +241,6 @@
 
 		if(paseOCUPADO_PACTADO){
 			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-			PUNTO_DECIMAL = puntoDecimal_PACTADO;
 		}
     }
 
@@ -412,7 +410,6 @@
 		}
 		if(paseOCUPADO_PACTADO){
 			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-			PUNTO_DECIMAL = puntoDecimal_PACTADO;
 		}
 	}
 

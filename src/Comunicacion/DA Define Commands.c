@@ -548,7 +548,6 @@ typeTxCMD CMD_NULL={0,0,0,0,0,0x0000};
 
 		if(paseOCUPADO_PACTADO){
 			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-			PUNTO_DECIMAL = puntoDecimal_PACTADO;
 		}
 
 	    CMD_Valor_VIAJE.Tx_F = 1;                      // Levanto Bandera de Tx

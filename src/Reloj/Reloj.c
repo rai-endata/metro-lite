@@ -98,6 +98,7 @@ static uint16_t cambioRELOJ_TO_cnt;	// Contador del timer para pasar de A PAGAR 
 /* VARIABLES */
 /*************/
 // Variables de Informe de Comandos
+
 	uint8_t cntSendValorViaje = 3;
 
     uint16_t kmRecorridos_INTERNO;            // KM Recorridos segun el reloj interno
@@ -444,7 +445,6 @@ void Pase_a_OCUPADO (byte estado){
 		//envio pase a ocupado al celular
 		if(paseOCUPADO_PACTADO){
 			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-			PUNTO_DECIMAL = puntoDecimal_PACTADO;
 		}
 		Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 		ESTADO_RELOJ_CONEXION = CON_CONEXION_CENTRAL;
@@ -564,7 +564,6 @@ void Pase_a_COBRANDO (byte estado){
      		//envio pase a cobrando al celular
      		if(paseOCUPADO_PACTADO){
      			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-     			PUNTO_DECIMAL = puntoDecimal_PACTADO;
      		}
      		Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
          }

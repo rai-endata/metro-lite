@@ -27,7 +27,7 @@
 
     extern uint32_t VALOR_VIAJE;
     extern uint32_t VALOR_VIAJE_PACTADO;
-    extern uint8_t puntoDecimal_PACTADO;
+
     extern uint32_t VALOR_VIAJE_mostrar;			   // Valor del Viaje a mostrar en la app del celular
     extern uint32_t fichas_xPulsos;          // Cantidad de Fichas que cayeron por PULSOS
     extern uint32_t fichas_xTiempo;          // Cantidad de Fichas que cayeron por TIEMPO

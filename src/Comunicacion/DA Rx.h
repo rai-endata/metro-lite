@@ -94,10 +94,11 @@ extern void Rx_DA_clrTxRta_F (void);
 	void Rx_appDesconectada_deCentral (byte* Rx_data_ptr);
 	extern void Tx_respVersion_Equipo(void);
 	extern void writePactado(byte* pactadoPtr);
+	extern void savePactado(byte* pactadoPtr);
 	extern void readPactado(void);
-	void iniPactado(void);
-	void readIniPactado(void);
-	void readPactado(void);
+	extern void iniPactado(void);
+	extern void readIniPactado(void);
+
 
 
 

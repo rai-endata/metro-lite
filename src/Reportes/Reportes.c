@@ -404,11 +404,7 @@
         }else{
         	regOcupa.punto_decimal =  PUNTO_DECIMAL;
         }
-    	if(paseOCUPADO_PACTADO){
-    		regOcupa.punto_decimal = puntoDecimal_PACTADO;
-    	}
 
-        
         queueDone = queueNewReg((tREG_GENERIC*) &regOcupa);  // Intento encolar nuevo registro
       }else{
         queueDone = 0;

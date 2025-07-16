@@ -180,10 +180,6 @@ int main(void)
 	ASIENTO_ini();
 	determinePrimerEncendido();         	//Determinar si se trata del 1er Encendido
 
-	//iniPactado();
-	//readIniPactado();
-
-
 	#ifdef VISOR_REPORTES
 		iniREPORTES();           //Inicializacion de Reportes y Reporte de 30 Dias
 	#endif

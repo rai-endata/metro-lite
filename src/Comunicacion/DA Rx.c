@@ -1688,6 +1688,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						N 	= *Rx_data_ptr++;               // Extraigo N
 						cmd = *Rx_data_ptr++;               // Extraigo CMD
 						SaveDatGps(Rx_data_ptr + 4, OCUP);
+						savePactado(Rx_data_ptr);
 						writePactado(Rx_data_ptr);
 		                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 		                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
@@ -1938,6 +1939,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								N 	= *Rx_data_ptr++;               // Extraigo N
 								cmd = *Rx_data_ptr++;               // Extraigo CMD
 								SaveDatGps(Rx_data_ptr + 4, OCUP);
+								savePactado(Rx_data_ptr);
 								writePactado(Rx_data_ptr);
 								if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
@@ -2817,6 +2819,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 		 byte auxPactado[SIZE_PACTADO];
 		 byte* pactadoPtr;
+		 byte puntoDecimal_PACTADO;
 
 		 EEPROM_ReadBuffer(&auxPactado, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
 		 puntoDecimal_PACTADO = *(auxPactado+0);
@@ -2831,8 +2834,6 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			 *(pactadoPtr+0) = *(auxPactado+4);
 
 			 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-			 PUNTO_DECIMAL = puntoDecimal_PACTADO;
-
 		 }else{
 			 paseOCUPADO_PACTADO=0;
 		 }
@@ -2841,31 +2842,46 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 
 	void writePactado(byte* pactadoPtr){
-		 byte* auxPactado;
-
-		 auxPactado = &VALOR_VIAJE_PACTADO;
-		 puntoDecimal_PACTADO = *pactadoPtr;
-
-		 //guardo importe recibido de la app en VALOR_VIAJE_PACTADO
-		 //el micro almacena los tipos en indian LSB
-		 auxPactado[3] 		  = *(pactadoPtr+1);
-		 auxPactado[2] 		  = *(pactadoPtr+2);
-		 auxPactado[1]		  = *(pactadoPtr+3);
-		 auxPactado[0]		  = *(pactadoPtr+4);
-
-		VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-		PUNTO_DECIMAL = puntoDecimal_PACTADO;
-
 		 EEPROM_WriteBuffer(pactadoPtr, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
-		 //prueba
-		 readPactado();
 	}
 
+	void savePactado(byte* pactadoPtr){
+			 byte* auxPactado;
+			 byte diff;
+			 byte puntoDecimal, puntoDecimal_PACTADO;
+
+			 puntoDecimal = (byte)PUNTO_DECIMAL; //convierte 3 bits a byte
+
+			 auxPactado = &VALOR_VIAJE_PACTADO;
+			 puntoDecimal_PACTADO = *pactadoPtr;
+
+			 //guardo importe recibido de la app en VALOR_VIAJE_PACTADO
+			 //el micro almacena los tipos en indian LSB
+			 auxPactado[3] 		  = *(pactadoPtr+1);
+			 auxPactado[2] 		  = *(pactadoPtr+2);
+			 auxPactado[1]		  = *(pactadoPtr+3);
+			 auxPactado[0]		  = *(pactadoPtr+4);
+
+			 //Ajusto VALOR_VIAJE_PACTADO si es necesario
+			if(puntoDecimal > puntoDecimal_PACTADO){
+				//mayor
+				diff = 	puntoDecimal - puntoDecimal_PACTADO;
+				diff = diff*10;
+				VALOR_VIAJE_PACTADO = VALOR_VIAJE_PACTADO*diff;
+			}else{
+				//menor
+				diff = 	puntoDecimal_PACTADO - puntoDecimal;
+				diff = diff*10;
+				VALOR_VIAJE_PACTADO = VALOR_VIAJE_PACTADO/diff;
+			}
+			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+		}
 
 	void readPactado(void){
 
 		 byte auxPactado[SIZE_PACTADO];
 		 byte* pactadoPtr;
+		 byte puntoDecimal_PACTADO;
 
 		 EEPROM_ReadBuffer(&auxPactado, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
 
@@ -2877,9 +2893,4 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		 *(pactadoPtr+0) = auxPactado[4];
 
 		 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-		 PUNTO_DECIMAL = puntoDecimal_PACTADO;
-	}
-	/*
-	if(paseOCUPADO_PACTADO){
-		readPactado();
-	}*/
+	 }

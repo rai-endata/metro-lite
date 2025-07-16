@@ -223,6 +223,7 @@ tDirProg			dirProg;
 			//levanta datos de programacion de reloj
 			readProgRELOJ (dir_ProgOk);
 			//ini varios
+
 			if(TARIFA_PESOS){
 				//muestra importe
 				fichaPESOS=1;

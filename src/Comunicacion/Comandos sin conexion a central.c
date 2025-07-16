@@ -134,7 +134,6 @@ void check_datosSC(void){
 			if(datosSC_cntWORD == 0 && ESTADO_RELOJ == OCUPADO){
 				if(paseOCUPADO_PACTADO){
 					VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-					PUNTO_DECIMAL = puntoDecimal_PACTADO;
 				}
 				Tx_Pase_a_OCUPADO(CON_CONEXION_CENTRAL);
 			}else{
@@ -147,7 +146,6 @@ void check_datosSC(void){
 					if(datosSC_cntWORD == 0 && ESTADO_RELOJ == COBRANDO){
 						if(paseOCUPADO_PACTADO){
 							VALOR_VIAJE = VALOR_VIAJE_PACTADO;
-							PUNTO_DECIMAL = puntoDecimal_PACTADO;
 						}
 						Tx_Pase_a_COBRANDO(CON_CONEXION_CENTRAL);
 					}
