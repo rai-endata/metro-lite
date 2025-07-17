@@ -1593,11 +1593,17 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 				if(datosSC_cntWORD == 0){
 					if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 						ticketPACTADO = 0;
+						paseOCUPADO_PACTADO=0;
+						resetPactado();				//por si hay un corte corto, para que no levante pactado
 						N 	= *Rx_data_ptr++;               // Extraigo N
 						cmd = *Rx_data_ptr++;               // Extraigo CMD
 						//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
 						tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
 						SaveDatGps(Rx_data_ptr, OCUP);
+						VELOCIDAD_MAX = 0;
+						VELOCIDAD_MAX_VIAJE = 0;
+						EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+
 		                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 		                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
 		                // o bien desde fuera de servicio por sensor de asiento
@@ -1690,6 +1696,9 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						SaveDatGps(Rx_data_ptr + 4, OCUP);
 						savePactado(Rx_data_ptr);
 						writePactado(Rx_data_ptr);
+						VELOCIDAD_MAX = 0;
+						VELOCIDAD_MAX_VIAJE = 0;
+						EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
 		                if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 		                //normalmente pasa a ocupado edesde el estado libre por un cambio del chofer o por sensor de asiento
 		                // o bien desde fuera de servicio por sensor de asiento
@@ -1852,13 +1861,17 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 						if(!prog_mode){
 						if(VELCOCIDAD_PERMITE_CAMBIO_RELOJ){
 							ticketPACTADO = 0;
+							paseOCUPADO_PACTADO=0;
+							resetPactado();				//por si hay un corte corto, para que no levante pactado
 							N 	= *Rx_data_ptr++;               // Extraigo N
 							cmd = *Rx_data_ptr++;               // Extraigo CMD
 							//TARIFA.numero = *Rx_data_ptr++;            // Extraigo DATA_1
 
 							tarifa = *Rx_data_ptr++;            // Extraigo DATA_1
 							SaveDatGps(Rx_data_ptr, OCUP);
-
+							VELOCIDAD_MAX = 0;
+							VELOCIDAD_MAX_VIAJE = 0;
+							EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
 							if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 								if (seleccionManualTarifas){
 									if(tarifa > 4){
@@ -1941,6 +1954,10 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 								SaveDatGps(Rx_data_ptr + 4, OCUP);
 								savePactado(Rx_data_ptr);
 								writePactado(Rx_data_ptr);
+								VELOCIDAD_MAX = 0;
+								VELOCIDAD_MAX_VIAJE = 0;
+								EEPROM_WriteBuffer((uint8_t*) &VELOCIDAD_MAX_VIAJE, ADDR_EEPROM_VELOCIDAD_MAX_VIAJE, SIZE_VELOCIDAD_MAX_VIAJE);
+
 								if(ESTADO_RELOJ==LIBRE || ESTADO_RELOJ==FUERA_SERVICIO){
 									TxRta_conDATOS(CAMBIO_RELOJ_PERMITIDO);
 									paseOCUPADO_APP=1;
@@ -2798,7 +2815,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 
 
-	void iniPactado(void){
+	void resetPactado(void){
 
 		byte auxPactado[1];
 
@@ -2808,7 +2825,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 
 		EEPROM_WriteBuffer((uint8_t*)&auxPactado, ADDR_EEPROM_PACTADO, 1);
 
-		paseOCUPADO_PACTADO=0;
+		//paseOCUPADO_PACTADO=0;
 
 	}
 
@@ -2826,20 +2843,11 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		 if(puntoDecimal_PACTADO != 0x55){
 			 paseOCUPADO_PACTADO=1;
 			 ticketPACTADO = 1;
-
-			 pactadoPtr = &VALOR_VIAJE_PACTADO;
-			 *(pactadoPtr+3) = *(auxPactado+1);
-			 *(pactadoPtr+2) = *(auxPactado+2);
-			 *(pactadoPtr+1) = *(auxPactado+3);
-			 *(pactadoPtr+0) = *(auxPactado+4);
-
-			 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+			 savePactado((byte*)&auxPactado);
 		 }else{
 			 paseOCUPADO_PACTADO=0;
 		 }
 	}
-
-
 
 	void writePactado(byte* pactadoPtr){
 		 EEPROM_WriteBuffer(pactadoPtr, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
@@ -2876,7 +2884,7 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 			}
 			VALOR_VIAJE = VALOR_VIAJE_PACTADO;
 		}
-
+/*
 	void readPactado(void){
 
 		 byte auxPactado[SIZE_PACTADO];
@@ -2893,4 +2901,15 @@ static void READandPRINT(byte** ptrptrTABLA, byte tipo){
 		 *(pactadoPtr+0) = auxPactado[4];
 
 		 VALOR_VIAJE = VALOR_VIAJE_PACTADO;
+	 }
+*/
+
+	void readPactado(void){
+
+		 byte auxPactado[SIZE_PACTADO];
+
+		 EEPROM_ReadBuffer((byte*)&auxPactado, ADDR_EEPROM_PACTADO, SIZE_PACTADO);
+
+		 savePactado((byte*)&auxPactado);
+
 	 }

@@ -96,7 +96,7 @@ extern void Rx_DA_clrTxRta_F (void);
 	extern void writePactado(byte* pactadoPtr);
 	extern void savePactado(byte* pactadoPtr);
 	extern void readPactado(void);
-	extern void iniPactado(void);
+	extern void resetPactado(void);
 	extern void readIniPactado(void);
 
 

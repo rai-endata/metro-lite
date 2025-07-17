@@ -18,8 +18,12 @@
 
 
 
-char versionFIRMWARE[] =  "v2.2.3";
-char fechaFIRMWARE[] =  " (16/07/2025)";
+char versionFIRMWARE[] =  "v2.2.4";
+char fechaFIRMWARE[] =  " (17/07/2025)";
+
+// Version v2.2.4 -16/07/2025
+//* Otra Corrige comando pactado - error en punto decimal
+
 
 // Version v2.2.3 -16/07/2025
 //* Corrige comando pactado - error en punto decimal

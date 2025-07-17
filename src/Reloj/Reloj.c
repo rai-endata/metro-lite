@@ -2444,7 +2444,7 @@ void cambio_de_reloj_x_sensor_asiento(void){
 	 paseOCUPADO_SENSOR_ASIENTO=0;
 	 paseOCUPADO_BANDERITA=0;
 	 paseOCUPADO_APP=0;
-	 paseOCUPADO_PACTADO=0;
+	 //paseOCUPADO_PACTADO=0;
  }
 
  /* PASE A LIBRE INTERNO - desde FUERA DE SERVICIO */
